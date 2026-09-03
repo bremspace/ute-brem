@@ -8,6 +8,7 @@ use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use App\Models\UserLog;
 use App\Services\StockLedgerService;
+use App\Services\InventoryProjectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,9 @@ class PurchaseOrderController extends Controller
 {
     public function __construct(
         private readonly StockLedgerService $stockLedgerService,
-        private readonly \App\Services\BackOfficeCashService $backOfficeCashService
+        private readonly \App\Services\BackOfficeCashService $backOfficeCashService,
+        private readonly \App\Services\AccountingPostingService $accountingPostingService,
+        private readonly InventoryProjectionService $inventoryProjectionService
     ) {
     }
 
@@ -164,6 +167,9 @@ class PurchaseOrderController extends Controller
                     \Carbon\Carbon::parse($po->ordered_at)->toDateString()
                 );
             }
+
+            // Post double-entry journal (pembelian: persediaan / kas / hutang)
+            $this->accountingPostingService->postPurchase($po, auth()->id());
 
             // Update buying price records on product using Moving Average HPP
             $currentHpp = (float) ($product->purchase_price ?: 0);
@@ -365,8 +371,142 @@ class PurchaseOrderController extends Controller
                 'Pelunasan hutang PO ' . $purchaseOrder->po_number,
                 \Carbon\Carbon::parse($validated['payment_at'])->toDateString()
             );
+
+            $this->accountingPostingService->postPurchasePayment(
+                $purchaseOrder, (float) $amount, $validated['payment_method'], auth()->id()
+            );
         });
 
         return back()->with('success', 'Pelunasan hutang supplier berhasil dicatat.');
+    }
+
+    /**
+     * Buat draft PO otomatis untuk produk kritis yang dipilih (Restock).
+     * input: items[] = [product_id, qty?], location_id?
+     */
+    public function generateAutoPO(Request $request)
+    {
+        $validated = $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.qty' => 'nullable|numeric|min:0',
+            'location_id' => 'nullable|exists:locations,id',
+        ]);
+
+        $defaultLocationId = $request->integer('location_id');
+
+        $created = 0;
+        $skipped = [];
+
+        DB::transaction(function () use ($validated, $defaultLocationId, &$created, &$skipped) {
+            $seq = $this->autoPoSeq(date('Ymd'));
+
+            foreach ($validated['items'] as $idx => $item) {
+                $product = Product::with('suppliers')->find($item['product_id']);
+                if (! $product || ! $product->is_active) {
+                    $skipped[] = ['product' => $product?->name ?? "#{$item['product_id']}", 'reason' => 'Produk tidak aktif'];
+                    continue;
+                }
+
+                $supplier = $product->suppliers->first();
+                if (! $supplier) {
+                    $skipped[] = ['product' => $product->name, 'reason' => 'Tidak ada supplier'];
+                    continue;
+                }
+
+                $locationId = $defaultLocationId
+                    ?: $product->default_location_id
+                    ?: Location::where('is_active', true)->value('id');
+                if (! $locationId) {
+                    $skipped[] = ['product' => $product->name, 'reason' => 'Lokasi tidak ada'];
+                    continue;
+                }
+
+                $current = $this->inventoryProjectionService->currentStock($product);
+                $qty = ($item['qty'] !== null && (float) $item['qty'] > 0)
+                    ? (float) $item['qty']
+                    : $this->inventoryProjectionService->quantityToOrder($product, $current);
+                if ($qty <= 0) {
+                    $skipped[] = ['product' => $product->name, 'reason' => 'Stok sudah memenuhi / qty 0'];
+                    continue;
+                }
+
+                $unitPrice = (float) $product->purchase_price;
+                $seq++;
+
+                PurchaseOrder::create([
+                    'po_number' => $this->autoPoNumber('PO', date('Ymd'), $seq),
+                    'product_id' => $product->id,
+                    'supplier_id' => $supplier->id,
+                    'location_id' => $locationId,
+                    'quantity' => $qty,
+                    'unit_price' => $unitPrice,
+                    'total_price' => round($unitPrice * $qty, 2),
+                    'payment_method' => 'tempo',
+                    'credit_status' => 'tempo',
+                    'paid_amount' => 0,
+                    'status' => 'draft',
+                    'notes' => 'Auto-PO (restock) dari proyeksi stok kritikal',
+                    'ordered_at' => now(),
+                    'created_by' => auth()->id(),
+                ]);
+
+                $created++;
+            }
+        });
+
+        // Catat audit log
+        if ($created > 0) {
+            \App\Models\UserLog::log(
+                'CREATE_AUTO_PO',
+                'Auto-PO dirancang',
+                "Membuat $created draft PO dari proyeksi stok kritikal"
+            );
+        }
+
+        if ($created === 0) {
+            return back()->withErrors(['items' => 'Tidak ada item yang dapat dibuatkan PO. ' . collect($skipped)->implode('; ', fn ($s) => "{$s['product']} ({$s['reason']})")]);
+        }
+
+        return redirect()->route('purchase-orders.index')
+            ->with('success', "Berhasil membuat {$created} draft PO otomatis.")
+            ->with('warning', $skipped ? 'Beberapa item dilewati: ' . collect($skipped)->implode('; ', fn ($s) => "{$s['product']} ({$s['reason']})") : null);
+    }
+
+    /**
+     * Layar rekomendasi restock — produk kritis berdasar rumus ROP, dikelompokkan per supplier.
+     */
+    public function restockRecommendation(Request $request)
+    {
+        if ($request->boolean('recalculate')) {
+            $this->inventoryProjectionService->assignAbcClasses();
+        }
+
+        Product::where('is_active', true)->chunkById(200, function ($chunk) {
+            foreach ($chunk as $p) {
+                $this->inventoryProjectionService->recalculateProjection($p);
+            }
+        });
+
+        $critical = $this->inventoryProjectionService->getCriticalItems();
+
+        return view('purchase-orders.auto', [
+            'critical' => $critical['all'],
+            'bySupplier' => $critical['by_supplier'],
+            'totalCritical' => $critical['total'],
+        ]);
+    }
+
+    private function autoPoSeq(string $ymd): int
+    {
+        return (int) PurchaseOrder::where('po_number', 'like', "PO-{$ymd}-%")->count();
+    }    private function autoPoNumber(string $prefix, string $ymd, int $seq): string
+    {
+        $number = sprintf('%s-%s-%03d', $prefix, $ymd, $seq);
+        while (PurchaseOrder::where('po_number', $number)->exists()) {
+            $seq++;
+            $number = sprintf('%s-%s-%03d', $prefix, $ymd, $seq);
+        }
+        return $number;
     }
 }

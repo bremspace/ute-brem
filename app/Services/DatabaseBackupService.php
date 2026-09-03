@@ -47,21 +47,18 @@ class DatabaseBackupService
         // Get all tables
         if ($driver === 'sqlite') {
             $tables = DB::select("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-            $tablesKey = 'name';
-            $tableTypeKey = null;
         } else {
             $tables = DB::select('SHOW FULL TABLES');
-            $tablesKey = 'Tables_in_' . $dbName;
-            $tableTypeKey = 'Table_type';
         }
 
         $pdo = DB::getPdo();
 
         foreach ($tables as $table) {
-            $tableName = $table->$tablesKey;
-            $tableType = ($tableTypeKey && isset($table->$tableTypeKey)) ? $table->$tableTypeKey : 'BASE TABLE';
+            $tableVars = get_object_vars($table);
+            $tableName = (string) reset($tableVars);
+            $tableType = count($tableVars) > 1 ? (string) next($tableVars) : 'BASE TABLE';
 
-            if ($driver !== 'sqlite' && $tableType === 'VIEW') {
+            if ($driver !== 'sqlite' && strtoupper($tableType) === 'VIEW') {
                 continue;
             }
 
@@ -73,8 +70,8 @@ class DatabaseBackupService
 
             // Fetch table creation syntax
             if ($driver === 'sqlite') {
-                $createTableResult = DB::select("SELECT sql FROM sqlite_master WHERE type='table' AND name = ?", [$tableName])[0];
-                $createSql = $createTableResult->sql;
+                $createTableResult = DB::select("SELECT sql FROM sqlite_master WHERE type='table' AND name = ?", [$tableName]);
+                $createSql = !empty($createTableResult) ? $createTableResult[0]->sql : null;
             } else {
                 $createTable = DB::select("SHOW CREATE TABLE `{$tableName}`");
                 $createSql = $createTable[0]->{'Create Table'} ?? $createTable[0]->{'Create View'} ?? null;
@@ -85,6 +82,19 @@ class DatabaseBackupService
             }
 
             fwrite($handle, $createSql . ";\n\n");
+
+            // In SQLite, dump table indexes immediately so foreign key constraints and unique checks are satisfied
+            if ($driver === 'sqlite') {
+                $tableIndexes = DB::select("SELECT sql FROM sqlite_master WHERE type='index' AND tbl_name = ? AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%'", [$tableName]);
+                foreach ($tableIndexes as $tIndex) {
+                    if (!empty($tIndex->sql)) {
+                        fwrite($handle, $tIndex->sql . ";\n");
+                    }
+                }
+                if (!empty($tableIndexes)) {
+                    fwrite($handle, "\n");
+                }
+            }
 
             // Dump data
             fwrite($handle, "-- Dumping data for table `{$tableName}`\n\n");
@@ -100,13 +110,14 @@ class DatabaseBackupService
 
             // Write inserts in buffered groups of 100 rows using lazy cursor
             $buffer = [];
-            foreach (DB::table($tableName)->orderBy($columns[0], 'asc')->cursor() as $row) {
+            $firstCol = $columns[0];
+            foreach (DB::table($tableName)->orderBy($firstCol, 'asc')->cursor() as $row) {
                 $values = [];
                 foreach ((array) $row as $val) {
                     if ($val === null) {
                         $values[] = 'NULL';
                     } else {
-                        $values[] = $pdo->quote($val);
+                        $values[] = $pdo->quote((string) $val);
                     }
                 }
                 $buffer[] = "(" . implode(", ", $values) . ")";
@@ -153,6 +164,9 @@ class DatabaseBackupService
         // Disable foreign key checks
         if ($driver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = OFF;');
+            try {
+                DB::getPdo()->exec('PRAGMA foreign_keys = OFF;');
+            } catch (\Throwable $e) {}
         } else {
             DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         }
@@ -179,6 +193,9 @@ class DatabaseBackupService
         // Re-enable foreign key checks
         if ($driver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = ON;');
+            try {
+                DB::getPdo()->exec('PRAGMA foreign_keys = ON;');
+            } catch (\Throwable $e) {}
         } else {
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         }

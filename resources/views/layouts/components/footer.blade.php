@@ -2,11 +2,12 @@
     <div class="container-xxl">
         <div class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
             <div class="mb-2 mb-md-0">
-                ©
+                <strong>UTE Parts POS</strong> &mdash; Sistem Kasir &amp; Pembukuan
+                &middot; &copy;
                 <script>
                     document.write(new Date().getFullYear());
                 </script>
-                , <a href="https://mestafora.com" target="_blank" rel="noopener" class="footer-link">Mestafora</a>
+                <a href="https://mestafora.com" target="_blank" rel="noopener" class="footer-link">Mestafora</a>
             </div>
             <div class="d-none">
                 <a href="https://themeselection.com/item/category/admin-templates/" target="_blank"

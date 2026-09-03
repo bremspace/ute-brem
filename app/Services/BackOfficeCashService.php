@@ -171,7 +171,7 @@ class BackOfficeCashService
         });
     }
 
-    private function resolveAccountForPaymentMethod(string $paymentMethod): ?BackOfficeCashAccount
+    public function resolveAccountForPaymentMethod(string $paymentMethod): ?BackOfficeCashAccount
     {
         $paymentMethod = strtolower($paymentMethod);
 

@@ -91,6 +91,24 @@
                      <div class="text-truncate">Transfer Cabang</div>
                  </a>
              </li>
+             <li class="menu-item {{ request()->routeIs('stock-opname.*') ? 'active' : '' }}">
+                 <a href="{{ route('stock-opname.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-clipboard"></i>
+                     <div class="text-truncate">Stock Opname</div>
+                 </a>
+             </li>
+             <li class="menu-item {{ request()->routeIs('picking-requests.*') ? 'active' : '' }}">
+                 <a href="{{ route('picking-requests.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-cart-add"></i>
+                     <div class="text-truncate">Picking Request</div>
+                 </a>
+             </li>
+             <li class="menu-item {{ request()->routeIs('item-serials.*') ? 'active' : '' }}">
+                 <a href="{{ route('item-serials.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-qr-scan"></i>
+                     <div class="text-truncate">Serial & Bin Tracking</div>
+                 </a>
+             </li>
          @endif
 
          @if (auth()->user()->hasPermission('master.access'))
@@ -99,6 +117,41 @@
                      <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
                      <div class="text-truncate">Laporan</div>
                  </a>
+             </li>
+             <li class="menu-item {{ request()->routeIs('purchase-orders.restock') ? 'active' : '' }}">
+                 <a href="{{ route('purchase-orders.restock') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-cart-download"></i>
+                     <div class="text-truncate">Rekomendasi Restock</div>
+                 </a>
+             </li>
+         @endif
+
+         @if (auth()->user()->hasPermission('accounting.access'))
+             <li class="menu-item {{ request()->routeIs('accounting.*') ? 'active open' : '' }}">
+                 <a href="javascript:void(0);" class="menu-link menu-toggle">
+                     <i class="menu-icon tf-icons bx bx-book-open"></i>
+                     <div class="text-truncate">Akuntansi</div>
+                 </a>
+                 <ul class="menu-sub">
+                     <li class="menu-item {{ request()->routeIs('accounting.ledger', 'accounting.index') ? 'active' : '' }}">
+                         <a href="{{ route('accounting.ledger') }}" class="menu-link"><div class="text-truncate">Buku Besar</div></a>
+                     </li>
+                     <li class="menu-item {{ request()->routeIs('accounting.journal') ? 'active' : '' }}">
+                         <a href="{{ route('accounting.journal') }}" class="menu-link"><div class="text-truncate">Jurnal Umum</div></a>
+                     </li>
+                     <li class="menu-item {{ request()->routeIs('accounting.chart') ? 'active' : '' }}">
+                         <a href="{{ route('accounting.chart') }}" class="menu-link"><div class="text-truncate">Bagan Akun</div></a>
+                     </li>
+                     <li class="menu-item {{ request()->routeIs('accounting.trial_balance') ? 'active' : '' }}">
+                         <a href="{{ route('accounting.trial_balance') }}" class="menu-link"><div class="text-truncate">Neraca Saldo</div></a>
+                     </li>
+                     <li class="menu-item {{ request()->routeIs('accounting.profit_loss') ? 'active' : '' }}">
+                         <a href="{{ route('accounting.profit_loss') }}" class="menu-link"><div class="text-truncate">Laba Rugi</div></a>
+                     </li>
+                     <li class="menu-item {{ request()->routeIs('accounting.balance_sheet') ? 'active' : '' }}">
+                         <a href="{{ route('accounting.balance_sheet') }}" class="menu-link"><div class="text-truncate">Neraca</div></a>
+                     </li>
+                 </ul>
              </li>
          @endif
 
@@ -204,6 +257,66 @@
                  <a href="{{ route('suppliers.index') }}" class="menu-link">
                      <i class="menu-icon tf-icons bx bx-store"></i>
                      <div class="text-truncate">Supplier</div>
+                 </a>
+             </li>
+         @endif
+
+         @if (auth()->user()->hasPermission('master.categories.view'))
+             <li class="menu-item {{ request()->routeIs('categories.*') ? 'active' : '' }}">
+                 <a href="{{ route('categories.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-category"></i>
+                     <div class="text-truncate">Kategori</div>
+                 </a>
+             </li>
+         @endif
+
+         @if (auth()->user()->hasPermission('master.sub_categories.view'))
+             <li class="menu-item {{ request()->routeIs('sub-categories.*') ? 'active' : '' }}">
+                 <a href="{{ route('sub-categories.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-category-alt"></i>
+                     <div class="text-truncate">Sub Kategori</div>
+                 </a>
+             </li>
+         @endif
+
+         @if (auth()->user()->hasPermission('master.brands.view'))
+             <li class="menu-item {{ request()->routeIs('brands.*') ? 'active' : '' }}">
+                 <a href="{{ route('brands.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-tag"></i>
+                     <div class="text-truncate">Brand</div>
+                 </a>
+             </li>
+         @endif
+
+         @if (auth()->user()->hasPermission('master.products.view'))
+             <li class="menu-item {{ request()->routeIs('product-makers.*') ? 'active' : '' }}">
+                 <a href="{{ route('product-makers.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-cog"></i>
+                     <div class="text-truncate">Product Maker</div>
+                 </a>
+             </li>
+             <li class="menu-item {{ request()->routeIs('units.*') ? 'active' : '' }}">
+                 <a href="{{ route('units.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-move-horizontal"></i>
+                     <div class="text-truncate">Satuan (Unit)</div>
+                 </a>
+             </li>
+         @endif
+
+         @if (auth()->user()->hasPermission('master.product_types.view'))
+             <li class="menu-item {{ request()->routeIs('product-types.*') ? 'active' : '' }}">
+                 <a href="{{ route('product-types.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-mobile-alt"></i>
+                     <div class="text-truncate">Tipe Produk</div>
+                 </a>
+             </li>
+         @endif
+
+         @if (auth()->user()->hasPermission('master.locations.view'))
+             <li class="menu-item {{ request()->routeIs('locations.*') ? 'active' : '' }}">
+                 <a href="{{ route('locations.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-map-pin"></i>
+                     <div class="text-truncate">Lokasi & Rak</div>
                  </a>
              </li>
          @endif

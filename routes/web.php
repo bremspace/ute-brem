@@ -31,6 +31,10 @@ use App\Http\Controllers\PrinterSettingController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceTransactionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AccountingController;
+use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\PickingRequestController;
+use App\Http\Controllers\ItemSerialController;
 
 Route::get('/', [WebsiteProductController::class, 'index'])->name('website.products.index');
 Route::get('/member/login', [WebsiteCustomerAuthController::class, 'loginForm'])->name('website.member.login');
@@ -461,6 +465,58 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit_loss');
         Route::get('/reports/services', [ReportController::class, 'services'])->name('reports.services');
     });
+
+    // Pembukuan / Akuntansi (double-entry)
+    Route::middleware(['permission:accounting.access'])->group(function () {
+        Route::get('/accounting', [AccountingController::class, 'ledger'])->name('accounting.index');
+        Route::get('/accounting/ledger', [AccountingController::class, 'ledger'])->name('accounting.ledger');
+        Route::get('/accounting/journal', [AccountingController::class, 'journal'])->name('accounting.journal');
+        Route::get('/accounting/chart', [AccountingController::class, 'chart'])->name('accounting.chart');
+        Route::get('/accounting/trial-balance', [AccountingController::class, 'trialBalance'])->name('accounting.trial_balance');
+        Route::get('/accounting/profit-loss', [AccountingController::class, 'profitLoss'])->name('accounting.profit_loss');
+        Route::get('/accounting/balance-sheet', [AccountingController::class, 'balanceSheet'])->name('accounting.balance_sheet');
+    });
+
+    // WMS: Stock Opname (inventory / cycle count)
+    Route::middleware(['permission:master.product_stocks.view'])->group(function () {
+        Route::get('/stock-opname', [StockOpnameController::class, 'index'])->name('stock-opname.index');
+        Route::get('/stock-opname/create', [StockOpnameController::class, 'create'])->name('stock-opname.create');
+        Route::get('/stock-opname/{stockOpname}', [StockOpnameController::class, 'show'])->name('stock-opname.show');
+        Route::post('/stock-opname/{stockOpname}/complete', [StockOpnameController::class, 'complete'])->name('stock-opname.complete');
+        Route::delete('/stock-opname/{stockOpname}', [StockOpnameController::class, 'destroy'])->name('stock-opname.destroy');
+    });
+
+    Route::middleware(['permission:master.product_stocks.edit'])->group(function () {
+        Route::post('/stock-opname', [StockOpnameController::class, 'store'])->name('stock-opname.store');
+    });
+
+    // WMS: Internal Picking Request (teknisi servis)
+    Route::middleware(['permission:master.product_stocks.view'])->group(function () {
+        Route::get('/picking-requests', [PickingRequestController::class, 'index'])->name('picking-requests.index');
+        Route::get('/picking-requests/create', [PickingRequestController::class, 'create'])->name('picking-requests.create');
+        Route::get('/picking-requests/{pickingRequest}', [PickingRequestController::class, 'show'])->name('picking-requests.show');
+        Route::delete('/picking-requests/{pickingRequest}', [PickingRequestController::class, 'destroy'])->name('picking-requests.destroy');
+    });
+    Route::middleware(['permission:master.product_stocks.edit'])->group(function () {
+        Route::post('/picking-requests', [PickingRequestController::class, 'store'])->name('picking-requests.store');
+        Route::post('/picking-requests/{pickingRequest}/fulfill', [PickingRequestController::class, 'fulfill'])->name('picking-requests.fulfill');
+        Route::post('/picking-requests/{pickingRequest}/cancel', [PickingRequestController::class, 'cancel'])->name('picking-requests.cancel');
+    });
+
+    // WMS: Rekomendasi Restock + Auto PO
+    Route::middleware(['permission:master.access'])->group(function () {
+        Route::get('/purchase-orders/restock', [PurchaseOrderController::class, 'restockRecommendation'])->name('purchase-orders.restock');
+        Route::post('/purchase-orders/generate-auto-po', [PurchaseOrderController::class, 'generateAutoPO'])->name('purchase-orders.generate_auto_po');
+    });
+
+    // WMS: Serial & Bin Tracking
+    Route::middleware(['permission:master.product_stocks.view'])->group(function () {
+        Route::get('/item-serials', [ItemSerialController::class, 'index'])->name('item-serials.index');
+        Route::get('/item-serials/create', [ItemSerialController::class, 'create'])->name('item-serials.create');
+        Route::post('/item-serials', [ItemSerialController::class, 'store'])->name('item-serials.store');
+    });
+
+
 
     Route::middleware(['permission:master.products.view'])->group(function () {
         Route::get('/units', [UnitController::class, 'index'])->name('units.index');

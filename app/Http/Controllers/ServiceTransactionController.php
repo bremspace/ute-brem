@@ -13,6 +13,7 @@ use App\Models\TransactionPayment;
 use App\Models\User;
 use App\Services\BackOfficeCashService;
 use App\Services\StockLedgerService;
+use App\Services\AccountingPostingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -23,7 +24,8 @@ class ServiceTransactionController extends Controller
 {
     public function __construct(
         private readonly StockLedgerService $stockLedgerService,
-        private readonly BackOfficeCashService $backOfficeCashService
+        private readonly BackOfficeCashService $backOfficeCashService,
+        private readonly AccountingPostingService $accountingPostingService
     ) {
     }
 
@@ -315,6 +317,9 @@ class ServiceTransactionController extends Controller
                 );
             }
 
+            // Post double-entry journal (jurnal service)
+            $this->accountingPostingService->postService($transaction, auth()->id());
+
             return $transaction->fresh(['items', 'cashier', 'technician', 'location']);
         });
 
@@ -386,6 +391,9 @@ class ServiceTransactionController extends Controller
                 'Pelunasan tempo Servis ' . $serviceTransaction->service_code,
                 Carbon::parse($validated['payment_at'])->toDateString()
             );
+
+            // Post double-entry journal (pelunasan tempo service)
+            $this->accountingPostingService->postServicePayment($serviceTransaction, (float) $amount, $validated['payment_method'], auth()->id());
         });
 
         return back()->with('success', 'Pelunasan tempo service berhasil dicatat.');
@@ -460,6 +468,9 @@ class ServiceTransactionController extends Controller
                         );
                     }
                 }
+
+                // Reverse ledger journal for voided service
+                $this->accountingPostingService->reverseService($serviceTransaction, auth()->id());
             });
         } catch (\Throwable $exception) {
             return back()->with('error', $exception->getMessage());

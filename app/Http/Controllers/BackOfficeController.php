@@ -19,8 +19,10 @@ use Illuminate\Validation\Rule;
 
 class BackOfficeController extends Controller
 {
-    public function __construct(private readonly StockLedgerService $stockLedgerService)
-    {
+    public function __construct(
+        private readonly StockLedgerService $stockLedgerService,
+        private readonly \App\Services\AccountingPostingService $accountingPostingService
+    ) {
     }
 
     public function dashboard()
@@ -133,7 +135,7 @@ class BackOfficeController extends Controller
             $amount = (float) $validated['amount'];
             $this->applyCashDelta($account, $type === 'income' ? $amount : -$amount);
 
-            BackOfficeCashTransaction::create([
+            $trx = BackOfficeCashTransaction::create([
                 'transaction_code' => $this->generateCode($type === 'income' ? 'TPK' : 'TKK', BackOfficeCashTransaction::class, 'transaction_code'),
                 'transaction_date' => $validated['transaction_date'],
                 'transaction_type' => $type,
@@ -145,6 +147,9 @@ class BackOfficeController extends Controller
                 'reference' => $validated['reference'] ?? null,
                 'created_by' => auth()->id(),
             ]);
+
+            // Post double-entry journal (pemasukan/pengeluaran)
+            $this->accountingPostingService->postCash($trx, auth()->id());
         });
 
         return back()->with('success', ($type === 'income' ? 'Pemasukan' : 'Pengeluaran') . ' berhasil dicatat.');
@@ -181,7 +186,7 @@ class BackOfficeController extends Controller
             $this->applyCashDelta($source, -$amount);
             $this->applyCashDelta($target, $amount);
 
-            BackOfficeCashTransaction::create([
+            $trx = BackOfficeCashTransaction::create([
                 'transaction_code' => $this->generateCode('MTK', BackOfficeCashTransaction::class, 'transaction_code'),
                 'transaction_date' => $validated['transaction_date'],
                 'transaction_type' => 'mutation',
@@ -192,6 +197,9 @@ class BackOfficeController extends Controller
                 'reference' => $validated['reference'] ?? null,
                 'created_by' => auth()->id(),
             ]);
+
+            // Post double-entry journal (mutasi kas)
+            $this->accountingPostingService->postCashMutation($trx, auth()->id());
         });
 
         return back()->with('success', 'Mutasi kas berhasil dicatat.');
@@ -247,6 +255,9 @@ class BackOfficeController extends Controller
                 'cash_transaction_id' => $cashTransaction->id,
                 'created_by' => auth()->id(),
             ]);
+
+            // Post double-entry journal (kasbon karyawan)
+            $this->accountingPostingService->postEmployeeAdvance($cashTransaction, auth()->id());
         });
 
         return back()->with('success', 'Kasbon karyawan berhasil dicatat.');

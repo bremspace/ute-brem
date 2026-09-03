@@ -50,6 +50,8 @@
     <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/css/core.css') }}" />
     <link rel="stylesheet" href="{{ asset('sneat/assets/css/demo.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/custom-styles.css') }}">
+    <!-- Modern minimal overrides -->
+    <link rel="stylesheet" href="{{ asset('css/uteparts-modern.css') }}">
 
     <!-- Vendors CSS -->
 

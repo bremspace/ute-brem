@@ -103,6 +103,12 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'master.locations.edit', 'display_name' => 'Locations - Edit', 'description' => 'Can edit locations', 'module' => 'master', 'parent' => 'master.access', 'sort_order' => 27],
             ['name' => 'master.locations.delete', 'display_name' => 'Locations - Delete', 'description' => 'Can delete locations', 'module' => 'master', 'parent' => 'master.access', 'sort_order' => 28],
 
+            // Master > Branches
+            ['name' => 'master.branches.view', 'display_name' => 'Branches - View', 'description' => 'Can view branches', 'module' => 'master', 'parent' => 'master.access', 'sort_order' => 29],
+            ['name' => 'master.branches.create', 'display_name' => 'Branches - Create', 'description' => 'Can create branches', 'module' => 'master', 'parent' => 'master.access', 'sort_order' => 30],
+            ['name' => 'master.branches.edit', 'display_name' => 'Branches - Edit', 'description' => 'Can edit branches', 'module' => 'master', 'parent' => 'master.access', 'sort_order' => 31],
+            ['name' => 'master.branches.delete', 'display_name' => 'Branches - Delete', 'description' => 'Can delete branches', 'module' => 'master', 'parent' => 'master.access', 'sort_order' => 32],
+
             // Master > Suppliers
             ['name' => 'master.suppliers.view', 'display_name' => 'Suppliers - View', 'description' => 'Can view suppliers', 'module' => 'master', 'parent' => 'master.access', 'sort_order' => 29],
             ['name' => 'master.suppliers.create', 'display_name' => 'Suppliers - Create', 'description' => 'Can create suppliers', 'module' => 'master', 'parent' => 'master.access', 'sort_order' => 30],
@@ -127,6 +133,9 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'transactions.view', 'display_name' => 'Transaksi - View', 'description' => 'Can view transactions', 'module' => 'transactions', 'parent' => null, 'sort_order' => 5],
             ['name' => 'transactions.create', 'display_name' => 'Transaksi - Create', 'description' => 'Can create / sell transactions', 'module' => 'transactions', 'parent' => null, 'sort_order' => 6],
             ['name' => 'transactions.settings', 'display_name' => 'Transaksi - Settings', 'description' => 'Can manage member point settings', 'module' => 'transactions', 'parent' => null, 'sort_order' => 7],
+
+            // === AKUNTANSI (Pembukuan Double-Entry) ===
+            ['name' => 'accounting.access', 'display_name' => 'Akuntansi - Akses', 'description' => 'Can access accounting / pembukuan module', 'module' => 'accounting', 'parent' => null, 'sort_order' => 8],
 
         ];
 
@@ -193,6 +202,10 @@ class RolePermissionSeeder extends Seeder
                     'master.locations.create',
                     'master.locations.edit',
                     'master.locations.delete',
+                    'master.branches.view',
+                    'master.branches.create',
+                    'master.branches.edit',
+                    'master.branches.delete',
                     'master.suppliers.view',
                     'master.suppliers.create',
                     'master.suppliers.edit',
@@ -208,6 +221,7 @@ class RolePermissionSeeder extends Seeder
                     'transactions.view',
                     'transactions.create',
                     'transactions.settings',
+                    'accounting.access',
                 ]
             ],
             [
@@ -239,6 +253,7 @@ class RolePermissionSeeder extends Seeder
                     'master.brands.view',
                     'master.product_types.view',
                     'master.locations.view',
+                    'master.branches.view',
                     'master.suppliers.view',
                     'master.customer_groups.view',
                     'master.product_stocks.view',

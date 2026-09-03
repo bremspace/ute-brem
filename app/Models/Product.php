@@ -35,6 +35,12 @@ class Product extends Model
         'stock_global',
         'stock_min',
         'stock_max',
+        'adu',
+        'lead_time_days',
+        'safety_stock',
+        'rop',
+        'abc_class',
+        'last_projection_at',
         'damaged_stock',
         'discount_value',
         'member_point',
@@ -66,6 +72,10 @@ class Product extends Model
         'stock_global' => 'decimal:2',
         'stock_min' => 'decimal:2',
         'stock_max' => 'decimal:2',
+        'adu' => 'decimal:4',
+        'safety_stock' => 'decimal:4',
+        'rop' => 'decimal:4',
+        'last_projection_at' => 'datetime',
         'damaged_stock' => 'decimal:2',
         'discount_value' => 'decimal:2',
         'member_point' => 'decimal:2',
@@ -150,6 +160,11 @@ class Product extends Model
     public function stocks()
     {
         return $this->hasMany(ProductStock::class)->with(['location', 'rack'])->orderBy('location_id');
+    }
+
+    public function serials()
+    {
+        return $this->hasMany(ItemSerial::class);
     }
 
     public function stockMovements()

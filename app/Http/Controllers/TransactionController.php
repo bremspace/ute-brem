@@ -15,6 +15,7 @@ use App\Models\SaleItem;
 use App\Models\TransactionPayment;
 use App\Services\BackOfficeCashService;
 use App\Services\StockLedgerService;
+use App\Services\AccountingPostingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,8 @@ class TransactionController extends Controller
 
     public function __construct(
         private readonly StockLedgerService $stockLedgerService,
-        private readonly BackOfficeCashService $backOfficeCashService
+        private readonly BackOfficeCashService $backOfficeCashService,
+        private readonly AccountingPostingService $accountingPostingService
     ) {
     }
 
@@ -431,6 +433,9 @@ class TransactionController extends Controller
                     );
                 }
 
+                // Post double-entry journal (jurnal penjualan + HPP)
+                $this->accountingPostingService->postSale($sale, auth()->id());
+
                 return $sale->fresh(['items', 'customer', 'location', 'cashier']);
             });
         } catch (\Throwable $exception) {
@@ -515,6 +520,10 @@ class TransactionController extends Controller
                 $sale->customer,
                 'Pelunasan tempo POS ' . $sale->sale_code,
                 Carbon::parse($validated['payment_at'])->toDateString()
+            );
+
+            $this->accountingPostingService->postSalePayment(
+                $sale, (float) $amount, $validated['payment_method'], auth()->id()
             );
         });
 
@@ -646,6 +655,9 @@ class TransactionController extends Controller
                         );
                     }
                 }
+
+                // Reverse ledger journal for voided sale
+                $this->accountingPostingService->reverseSale($sale, auth()->id());
             });
         } catch (\Throwable $exception) {
             return back()->with('error', $exception->getMessage());
