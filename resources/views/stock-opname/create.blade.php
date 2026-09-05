@@ -8,7 +8,7 @@
         <h4 class="fw-semibold mb-0">Buat Stock Opname</h4>
         <small class="text-muted">Isi jumlah stok fisik (actual) untuk tiap produk. Selisih vs sistem dicatat saat diproses.</small>
     </div>
-    <a href="{{ route('stock-opname.index') }}" class="btn btn-light btn-sm">Kembali</a>
+    <a href="{{ route('stock-opname.index') }}" class="btn btn-outline-secondary btn-sm">Kembali</a>
 </div>
 
 <div class="card mb-3">

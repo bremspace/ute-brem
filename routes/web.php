@@ -27,6 +27,10 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\WebsiteCustomerAuthController;
 use App\Http\Controllers\WebsiteProductController;
+use App\Http\Controllers\Website\CartController;
+use App\Http\Controllers\Website\CheckoutController;
+use App\Http\Controllers\Website\OrderController;
+use App\Http\Controllers\Website\PaymentController;
 use App\Http\Controllers\PrinterSettingController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceTransactionController;
@@ -37,11 +41,37 @@ use App\Http\Controllers\PickingRequestController;
 use App\Http\Controllers\ItemSerialController;
 
 Route::get('/', [WebsiteProductController::class, 'index'])->name('website.products.index');
+Route::get('/products/{slug}', [WebsiteProductController::class, 'show'])->name('website.products.show');
 Route::get('/member/login', [WebsiteCustomerAuthController::class, 'loginForm'])->name('website.member.login');
 Route::post('/member/login', [WebsiteCustomerAuthController::class, 'login'])->name('website.member.login.submit');
+Route::get('/member/register', [WebsiteCustomerAuthController::class, 'registerForm'])->name('website.member.register');
+Route::post('/member/register', [WebsiteCustomerAuthController::class, 'register'])->name('website.member.register.submit');
+Route::get('/member/orders', [WebsiteCustomerAuthController::class, 'orders'])->name('website.member.orders');
+Route::get('/member/points', [WebsiteCustomerAuthController::class, 'points'])->name('website.member.points');
 Route::get('/member/password', [WebsiteCustomerAuthController::class, 'passwordForm'])->name('website.member.password.edit');
 Route::post('/member/password', [WebsiteCustomerAuthController::class, 'updatePassword'])->name('website.member.password.update');
 Route::post('/member/logout', [WebsiteCustomerAuthController::class, 'logout'])->name('website.member.logout');
+
+// Cart routes (guest cart, no auth middleware)
+Route::get('/cart', [CartController::class, 'index'])->name('website.cart');
+Route::post('/cart/add', [CartController::class, 'add'])->name('website.cart.add');
+Route::put('/cart/{item}', [CartController::class, 'update'])->name('website.cart.update');
+Route::patch('/cart/{item}', [CartController::class, 'update']);
+Route::delete('/cart/{item}', [CartController::class, 'remove'])->name('website.cart.remove');
+Route::post('/cart/clear', [CartController::class, 'clear'])->name('website.cart.clear');
+
+// Checkout routes
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('website.checkout');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('website.checkout.store');
+
+// Order routes
+Route::get('/orders/{code}', [OrderController::class, 'show'])->name('website.order.show');
+Route::get('/orders/{code}/track', [OrderController::class, 'track'])->name('website.order.track');
+
+// Payment routes (Phase 2 - DuitKu integration)
+Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('website.payment.callback');
+Route::get('/payment/return', [PaymentController::class, 'return'])->name('website.payment.return');
+Route::get('/payment/{code}/status', [PaymentController::class, 'status'])->name('website.payment.status');
 
 Auth::routes();
 

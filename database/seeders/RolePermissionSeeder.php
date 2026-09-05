@@ -29,6 +29,10 @@ class RolePermissionSeeder extends Seeder
 
         // Create permissions following menu hierarchy structure
         $this->command->info('Creating permissions...');
+
+        // Disable FK checks for bulk insert to avoid parent-child ordering issues
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
         $permissions = [
 
             // === MANAGEMENT (Header) ===
@@ -142,6 +146,9 @@ class RolePermissionSeeder extends Seeder
         foreach ($permissions as $permission) {
             Permission::create($permission);
         }
+
+        // Re-enable foreign key checks after permission insertion
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         // Create role templates for user creation
         $this->command->info('Creating role templates...');

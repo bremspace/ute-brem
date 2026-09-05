@@ -1,4 +1,5 @@
  <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+     {{-- Brand Header --}}
      <div class="app-brand demo">
          <a href="{{ route('home') }}" class="app-brand-link">
              <span class="app-brand-text fw-bold text-uppercase text-primary" style="letter-spacing: 0.08em;">
@@ -16,7 +17,7 @@
      <div class="menu-inner-shadow"></div>
 
      <ul class="menu-inner py-1">
-         <!-- Dashboard -->
+         {{-- Dashboard --}}
          <li class="menu-item {{ request()->routeIs('home') ? 'active' : '' }}">
              <a href="{{ route('home') }}" class="menu-link">
                  <i class="menu-icon tf-icons bx bx-home-smile"></i>
@@ -31,6 +32,7 @@
              </a>
          </li>
 
+         {{-- Master Transaksi --}}
          @if (auth()->user()->hasPermission('master.access'))
              <li class="menu-header small text-uppercase">
                  <span class="menu-header-text">Master Transaksi</span>
@@ -126,6 +128,7 @@
              </li>
          @endif
 
+         {{-- Akuntansi --}}
          @if (auth()->user()->hasPermission('accounting.access'))
              <li class="menu-item {{ request()->routeIs('accounting.*') ? 'active open' : '' }}">
                  <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -155,6 +158,7 @@
              </li>
          @endif
 
+         {{-- Back Office --}}
          @if (auth()->user()->hasPermission('master.access'))
              <li class="menu-header small text-uppercase">
                  <span class="menu-header-text">Back Office</span>
@@ -222,6 +226,7 @@
              </li>
          @endif
 
+         {{-- Master Data --}}
          @if (auth()->user()->hasPermission('master.access'))
              <li class="menu-header small text-uppercase">
                  <span class="menu-header-text">Master Data</span>
@@ -337,12 +342,12 @@
              </li>
          @endif
 
-         <!-- Management -->
+         {{-- Management --}}
          <li class="menu-header small text-uppercase">
              <span class="menu-header-text">Management</span>
          </li>
 
-         <!-- Users -->
+         {{-- Users --}}
          @if (auth()->user()->hasPermission('management.users.view'))
              <li class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
                  <a href="{{ route('users.index') }}" class="menu-link">
@@ -352,7 +357,7 @@
              </li>
          @endif
 
-         <!-- Roles (RBAC) -->
+         {{-- Roles (RBAC) --}}
          @if (auth()->user()->hasPermission('management.roles.view'))
              <li class="menu-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
                  <a href="{{ route('roles.index') }}" class="menu-link">
@@ -362,14 +367,14 @@
              </li>
          @endif
 
-        @if (auth()->user()->hasPermission('management.settings.printer'))
-            <li class="menu-item {{ request()->routeIs('settings.*') ? 'active' : '' }}">
-                <a href="{{ route('settings.printer.edit') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-cog"></i>
-                    <div class="text-truncate">Setting</div>
-                </a>
-            </li>
-        @endif
+         @if (auth()->user()->hasPermission('management.settings.printer'))
+             <li class="menu-item {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                 <a href="{{ route('settings.printer.edit') }}" class="menu-link">
+                     <i class="menu-icon tf-icons bx bx-cog"></i>
+                     <div class="text-truncate">Setting</div>
+                 </a>
+             </li>
+         @endif
 
      </ul>
  </aside>

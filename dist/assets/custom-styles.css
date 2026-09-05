@@ -1,6 +1,6 @@
 :root {
-  --bs-primary: #e24afa;
-  --bs-primary-rgb: 226, 74, 250;
+  --bs-primary: #5c73f8;
+  --bs-primary-rgb: 92, 115, 248;
 }
 
 .bg-primary {
@@ -21,6 +21,6 @@
 }
 
 .btn-primary:hover {
-  background-color: #c93ae0; /* versi lebih gelap */
-  border-color: #c93ae0;
+  background-color: #4a5fd4; /* versi lebih gelap */
+  border-color: #4a5fd4;
 }

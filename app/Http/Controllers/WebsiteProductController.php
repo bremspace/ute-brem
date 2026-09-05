@@ -50,6 +50,51 @@ class WebsiteProductController extends Controller
         ]);
     }
 
+    public function show(string $slug)
+    {
+        $customer = session('website_customer');
+        $isMember = ! empty($customer) && (($customer['type'] ?? null) === 'member');
+
+        $product = Product::query()
+            ->with(['category', 'subCategory', 'brand', 'maker', 'productTypes', 'images', 'stocks', 'defaultLocation', 'defaultRack', 'barcodes'])
+            ->where('is_active', true)
+            ->where('is_published', true)
+            ->where('slug', $slug)
+            ->first();
+
+        if (! $product) {
+            abort(404);
+        }
+
+        if (Schema::hasColumn('products', 'is_member_only') && $product->is_member_only && ! $isMember) {
+            abort(404);
+        }
+
+        $relatedProducts = collect();
+        if ($product->category_id) {
+            $relatedQuery = Product::query()
+                ->with(['images'])
+                ->where('is_active', true)
+                ->where('is_published', true)
+                ->where('id', '!=', $product->id)
+                ->where('category_id', $product->category_id);
+
+            if (Schema::hasColumn('products', 'is_member_only') && ! $isMember) {
+                $relatedQuery->where(function ($inner) {
+                    $inner->where('is_member_only', false)->orWhereNull('is_member_only');
+                });
+            }
+
+            $relatedProducts = $relatedQuery->limit(4)->get();
+        }
+
+        return view('website.products.show', [
+            'product' => $product,
+            'customer' => $customer,
+            'relatedProducts' => $relatedProducts,
+        ]);
+    }
+
     private function applyFilters($query, Request $request): void
     {
         $query->when($request->filled('q'), function ($filter) use ($request) {

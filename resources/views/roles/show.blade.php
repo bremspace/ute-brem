@@ -13,11 +13,11 @@
                         <h5 class="mb-0">Detail Role</h5>
                         <div>
                             @if(auth()->user()->hasPermission('management.roles.edit'))
-                                <a href="{{ route('roles.edit', $role) }}" class="btn btn-warning me-2">
+                                <a href="{{ route('roles.edit', $role) }}" class="btn btn-outline-primary me-2">
                                     <i class="bx bx-edit-alt me-1"></i> Edit
                                 </a>
                             @endif
-                            <a href="{{ route('roles.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary">
                                 <i class="bx bx-arrow-back me-1"></i> Kembali
                             </a>
                         </div>

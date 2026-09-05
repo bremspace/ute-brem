@@ -11,7 +11,7 @@
             · <span class="badge {{ $pickingRequest->status === 'fulfilled' ? 'bg-success' : ($pickingRequest->status === 'cancelled' ? 'bg-secondary' : 'bg-warning text-dark') }}">{{ ucfirst($pickingRequest->status) }}</span>
         </small>
     </div>
-    <a href="{{ route('picking-requests.index') }}" class="btn btn-light btn-sm">Kembali</a>
+    <a href="{{ route('picking-requests.index') }}" class="btn btn-outline-secondary btn-sm">Kembali</a>
 </div>
 
 <div class="card">
@@ -49,7 +49,7 @@
         <form method="POST" action="{{ route('picking-requests.fulfill', $pickingRequest) }}"
               onsubmit="return confirm('Proses picking ini? Stok gudang akan terpotong dan serial di-reserve.');">
             @csrf
-            <button class="btn btn-success"><i class="bx bx-check me-1"></i>Proses Picking</button>
+            <button class="btn btn-primary"><i class="bx bx-check me-1"></i>Proses Picking</button>
         </form>
         <form method="POST" action="{{ route('picking-requests.cancel', $pickingRequest) }}">
             @csrf

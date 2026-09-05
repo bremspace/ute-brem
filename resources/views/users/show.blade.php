@@ -13,21 +13,21 @@
                         <h5 class="mb-0">Detail User</h5>
                         <div>
                             @if(auth()->user()->hasPermission('users.edit'))
-                                <a href="{{ route('users.edit', $user) }}" class="btn btn-warning me-2">
-                                    <i class="bx bx-edit-alt me-1"></i> Edit
-                                </a>
-                                <a href="{{ route('users.roles', $user) }}" class="btn btn-success me-2">
-                                    <i class="bx bx-shield me-1"></i> Kelola Role
-                                </a>
+<a href="{{ route('users.edit', $user) }}" class="btn btn-outline-primary me-2">
+                                     <i class="bx bx-edit-alt me-1"></i> Edit
+                                 </a>
+                                 <a href="{{ route('users.roles', $user) }}" class="btn btn-outline-primary me-2">
+                                     <i class="bx bx-shield me-1"></i> Kelola Role
+                                 </a>
                             @endif
                             @if(auth()->user()->hasPermission('users.logs'))
-                                <a href="{{ route('users.user-logs', $user) }}" class="btn btn-info me-2">
+                                <a href="{{ route('users.user-logs', $user) }}" class="btn btn-outline-primary me-2">
                                     <i class="bx bx-history me-1"></i> Activity Log
                                 </a>
                             @endif
-                            <a href="{{ route('users.index') }}" class="btn btn-secondary">
-                                <i class="bx bx-arrow-back me-1"></i> Kembali
-                            </a>
+<a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
+                                 <i class="bx bx-arrow-back me-1"></i> Kembali
+                             </a>
                         </div>
                     </div>
                     <div class="card-body">

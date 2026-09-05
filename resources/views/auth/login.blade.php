@@ -209,7 +209,7 @@
         .updates-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(32, 15, 35, 0.95), rgba(45, 27, 50, 0.8), rgba(226, 74, 250, 0.15));
+            background: linear-gradient(135deg, rgba(32, 15, 35, 0.95), rgba(45, 27, 50, 0.8), rgba(92, 115, 248, 0.15));
             z-index: 1;
         }
 
@@ -305,15 +305,15 @@
         }
 
         .btn-primary {
-            background-color: #e24afa;
-            border-color: #e24afa;
-            box-shadow: 0 6px 16px rgba(226, 74, 250, 0.35);
+            background-color: #5c73f8;
+            border-color: #5c73f8;
+            box-shadow: 0 6px 16px rgba(92, 115, 248, 0.35);
         }
 
         .btn-primary:hover,
         .btn-primary:focus {
-            background-color: #c93ae0;
-            border-color: #c93ae0;
+            background-color: #4a5fd4;
+            border-color: #4a5fd4;
         }
 
         .login-glow {
@@ -329,7 +329,7 @@
         .login-glow-left {
             top: -120px;
             left: -120px;
-            background: rgba(226, 74, 250, 0.5);
+            background: rgba(92, 115, 248, 0.5);
         }
 
         .login-glow-right {

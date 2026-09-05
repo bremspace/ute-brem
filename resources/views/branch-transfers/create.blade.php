@@ -127,7 +127,7 @@
                         </div>
 
                         <div class="text-end mt-4">
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="bx bx-save me-1"></i> Simpan Draf
                             </button>
                         </div>

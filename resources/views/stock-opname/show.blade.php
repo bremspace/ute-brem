@@ -11,7 +11,7 @@
             · <span class="badge {{ $opname->status === 'completed' ? 'bg-success' : 'bg-warning text-dark' }}">{{ ucfirst($opname->status) }}</span>
         </small>
     </div>
-    <a href="{{ route('stock-opname.index') }}" class="btn btn-light btn-sm">Kembali</a>
+    <a href="{{ route('stock-opname.index') }}" class="btn btn-outline-secondary btn-sm">Kembali</a>
 </div>
 
 <div class="card">
@@ -62,7 +62,7 @@
     <form method="POST" action="{{ route('stock-opname.complete', $opname) }}" class="mt-3"
           onsubmit="return confirm('Proses opname ini? Selisih stok akan disesuaikan dan dicatat ke pembukuan.');">
         @csrf
-        <button class="btn btn-success">Proses / Tutup Opname</button>
+        <button class="btn btn-primary">Proses / Tutup Opname</button>
     </form>
 @endif
 @endsection

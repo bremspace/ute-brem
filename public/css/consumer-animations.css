@@ -1,0 +1,177 @@
+/* ============================================================
+   UTE Parts — Consumer Animations & Micro-interactions
+   Phase 5 polish. Built on the consumer layout tokens (--c-*).
+   Every animation is gated behind prefers-reduced-motion.
+   ============================================================ */
+
+/* ---------- Add-to-cart fly ---------------------------------
+   A fixed-position clone of the product thumbnail that flies
+   from the add button to the cart icon. The JS helper sets
+   --fly-dx/--fly-dy (full delta) and --fly-mx/--fly-my (55%
+   midpoint) so the arc always lands on the cart icon. */
+.fly-to-cart {
+    position: fixed;
+    z-index: 3000;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: var(--c-primary);
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 4px 12px rgba(var(--c-primary-rgb), 0.4);
+    pointer-events: none;
+    animation: flyToCart 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes flyToCart {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    55% {
+        transform: translate(var(--fly-mx, 60px), var(--fly-my, -60px)) scale(0.55);
+        opacity: 0.85;
+    }
+    100% {
+        transform: translate(var(--fly-dx, 200px), var(--fly-dy, -200px)) scale(0.1);
+        opacity: 0;
+    }
+}
+
+/* ---------- Toggle switch -----------------------------------
+   Smooth slide knob. Markup:
+   <label class="toggle-switch">
+     <input type="checkbox">
+     <span class="toggle-track"></span>
+   </label> */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.toggle-switch input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch .toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: var(--c-surface-300);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.toggle-switch .toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: var(--c-shadow-sm);
+    transition: transform 0.2s ease;
+}
+
+.toggle-switch input:checked + .toggle-track {
+    background: var(--c-primary);
+}
+
+.toggle-switch input:checked + .toggle-track::after {
+    transform: translateX(20px);
+}
+
+.toggle-switch input:focus-visible + .toggle-track {
+    box-shadow: 0 0 0 3px rgba(var(--c-primary-rgb), 0.25);
+}
+
+.toggle-switch input:disabled + .toggle-track {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ---------- Button press feedback ---------------------------
+   Bootstrap .btn on consumer pages (view toggle, reset, etc.)
+   scales down on press. Scoped to .consumer-layout so the
+   admin panel is untouched. */
+.consumer-layout .btn {
+    transition: transform 0.12s ease, color 0.15s ease-in-out,
+        background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
+        box-shadow 0.15s ease-in-out;
+}
+
+.consumer-layout .btn:not(:disabled):not(.disabled):active {
+    transform: scale(0.96);
+}
+
+/* ---------- Scroll reveal -----------------------------------
+   Hidden only when JS is available (.js on <html>); the layout
+   script reveals elements via IntersectionObserver. Without JS
+   the content stays visible. */
+.js .scroll-reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.js .scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ---------- Checkout step pop -------------------------------
+   Plays when a step becomes active (class toggled by the
+   checkout script). */
+.checkout-step.active .checkout-step-dot {
+    animation: stepPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes stepPop {
+    0%   { transform: scale(0.85); }
+    60%  { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
+
+/* ---------- Cart total flash --------------------------------
+   Brief scale pulse when the summary total is recalculated. */
+.value-flash {
+    animation: valueFlash 0.3s ease-out;
+}
+
+@keyframes valueFlash {
+    0%   { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+/* ---------- Reduced motion ---------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .fly-to-cart {
+        animation: none;
+        opacity: 1;
+    }
+
+    .toggle-switch .toggle-track,
+    .toggle-switch .toggle-track::after {
+        transition: none;
+    }
+
+    .js .scroll-reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .checkout-step.active .checkout-step-dot,
+    .value-flash {
+        animation: none;
+    }
+}

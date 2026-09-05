@@ -122,7 +122,7 @@
                             <button type="button" class="btn btn-outline-danger btn-sm me-2" id="deselectAll">
                                 <i class="bx bx-square me-1"></i> Deselect All
                             </button>
-                            <a href="{{ route('users.index') }}" class="btn btn-secondary btn-sm">
+                            <a href="{{ route('users.index') }}" class="btn btn-outline-secondary btn-sm">
                                 <i class="bx bx-arrow-back me-1"></i> Back
                             </a>
                         </div>

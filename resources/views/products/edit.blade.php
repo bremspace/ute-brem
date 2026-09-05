@@ -13,7 +13,7 @@
                             <i class="bx bx-layer me-1"></i> Stok Lokasi
                         </a>
                     @endif
-                    <a href="{{ route('products.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
                         <i class="bx bx-arrow-back me-1"></i> Kembali
                     </a>
                 </div>

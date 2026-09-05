@@ -326,7 +326,7 @@
                         <iframe id="receiptPrintFrame" title="receipt-print" style="width:0;height:0;border:0;position:absolute;left:-9999px;top:-9999px;"></iframe>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Tidak</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tidak</button>
                         <button type="button" class="btn btn-primary" id="confirmPrintReceiptBtn">
                             <i class="bx bx-printer me-1"></i> Cetak
                         </button>
@@ -767,7 +767,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary">
                             <i class="bx bx-save me-1"></i> Simpan Pelunasan
                         </button>

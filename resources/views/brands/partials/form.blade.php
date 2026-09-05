@@ -2,4 +2,4 @@
 <div class="mb-3"><label class="form-label" for="slug">Slug</label><input type="text" id="slug" name="slug" class="form-control @error('slug') is-invalid @enderror" value="{{ old('slug',$brand?->slug) }}" placeholder="Kosongkan untuk otomatis"><div class="form-text">Slug otomatis mengikuti nama, tapi bisa Anda ubah manual.</div>@error('slug')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
 <div class="form-check form-switch mb-4"><input class="form-check-input" type="checkbox" name="is_active" value="1" {{ old('is_active',$brand?->is_active ?? true) ? 'checked' : '' }}><label class="form-check-label">Brand aktif</label></div>
 <button type="submit" class="btn btn-primary"><i class="bx bx-save me-1"></i>Simpan</button>
-<a href="{{ route('brands.index') }}" class="btn btn-secondary"><i class="bx bx-x me-1"></i>Batal</a>
+<a href="{{ route('brands.index') }}" class="btn btn-outline-secondary"><i class="bx bx-x me-1"></i>Batal</a>

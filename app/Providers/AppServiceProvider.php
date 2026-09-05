@@ -33,5 +33,20 @@ class AppServiceProvider extends ServiceProvider
             $company = PrinterSettingController::companySettings();
             $view->with('appCompanyName', trim((string) ($company['name'] ?? '')) ?: 'UTE Parts');
         });
+
+        View::composer('website.*', function ($view) {
+            $customer = session('website_customer');
+            $customerId = is_array($customer) ? (int) ($customer['id'] ?? 0) : 0;
+
+            try {
+                $cart = app(\App\Services\CartService::class)->getCart(
+                    $customerId > 0 ? $customerId : null,
+                    session()->getId()
+                );
+                $view->with('cartCount', $cart->items()->count());
+            } catch (\Throwable $e) {
+                $view->with('cartCount', 0);
+            }
+        });
     }
 }

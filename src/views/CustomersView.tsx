@@ -13,16 +13,31 @@ import {
   Plus,
   Pencil,
   Trash2,
-  X,
-  Search,
   Check,
-  ChevronRight,
   History,
   DollarSign,
-  Filter,
   ArrowDownCircle,
-  ArrowUpCircle
+  ArrowUpCircle,
 } from 'lucide-react';
+import clsx from 'clsx';
+import {
+  Button,
+  Card,
+  Input,
+  Select,
+  SearchInput,
+  StatCard,
+  Tabs,
+  Toggle,
+  Modal,
+  TableContainer,
+  TableHeader,
+  TableBase,
+  TableRow,
+  TableEmpty,
+  StatusBadge,
+} from '../components/ui';
+import type { SelectOption, TabItem } from '../components/ui';
 
 type Tab = 'pelanggan' | 'grup';
 
@@ -43,6 +58,11 @@ const emptyGroupForm = {
 };
 
 const fmtRp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`;
+
+const TAB_ITEMS: TabItem[] = [
+  { id: 'pelanggan', label: 'Pelanggan', icon: <Users className="w-3.5 h-3.5" /> },
+  { id: 'grup', label: 'Grup Pelanggan', icon: <Tag className="w-3.5 h-3.5" /> },
+];
 
 export const CustomersView: React.FC = () => {
   const {
@@ -251,6 +271,17 @@ export const CustomersView: React.FC = () => {
 
   const memberCount = (groupId: number) => customers.filter(c => c.customer_group_id === groupId).length;
 
+  const groupOptions: SelectOption[] = [
+    { value: 'all', label: 'Semua Grup' },
+    ...customerGroups.filter(g => g.is_active).map(g => ({ value: g.id, label: g.name })),
+  ];
+
+  const typeOptions: SelectOption[] = [
+    { value: 'all', label: 'Semua Tipe' },
+    { value: 'member', label: 'Member' },
+    { value: 'regular', label: 'Regular' },
+  ];
+
   // ==================== RENDER ====================
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -263,182 +294,153 @@ export const CustomersView: React.FC = () => {
       </div>
 
       {/* Tab Bar */}
-      <div className="flex gap-1 bg-slate-100 rounded-xl p-1 w-fit">
-        <button
-          onClick={() => setTab('pelanggan')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${tab === 'pelanggan' ? 'bg-white shadow-sm text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
-        >
-          <Users className="w-3.5 h-3.5 inline mr-1.5" />
-          Pelanggan
-        </button>
-        <button
-          onClick={() => setTab('grup')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${tab === 'grup' ? 'bg-white shadow-sm text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
-        >
-          <Tag className="w-3.5 h-3.5 inline mr-1.5" />
-          Grup Pelanggan
-        </button>
-      </div>
+      <Tabs
+        tabs={TAB_ITEMS}
+        activeTab={tab}
+        onChange={(id) => setTab(id as Tab)}
+        variant="segmented"
+      />
 
       {/* ================== TAB: PELANGGAN ================== */}
       {tab === 'pelanggan' && (
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Pelanggan</span>
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><Users className="w-4 h-4" /></div>
-              </div>
-              <div className="mt-3 text-2xl font-black text-slate-900">{customers.length}</div>
-              <div className="text-xs text-slate-500 mt-1">{customers.filter(c => c.is_active).length} aktif</div>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Member</span>
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><Sparkles className="w-4 h-4" /></div>
-              </div>
-              <div className="mt-3 text-2xl font-black text-amber-600">{totalMembers}</div>
-              <div className="text-xs text-slate-500 mt-1">Pelanggan terdaftar member</div>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Poin Beredar</span>
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><Coins className="w-4 h-4" /></div>
-              </div>
-              <div className="mt-3 text-2xl font-black text-emerald-700">{totalPoints.toLocaleString('id-ID')}</div>
-              <div className="text-xs text-slate-500 mt-1">Poin seluruh member</div>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Piutang Pelanggan</span>
-                <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center"><CreditCard className="w-4 h-4" /></div>
-              </div>
-              <div className="mt-3 text-2xl font-black text-red-600">{fmtRp(totalCredit)}</div>
-              <div className="text-xs text-slate-500 mt-1">Tagihan tempo belum lunas</div>
-            </div>
+            <StatCard
+              label="Total Pelanggan"
+              value={customers.length}
+              description={`${customers.filter(c => c.is_active).length} aktif`}
+              icon={<Users className="w-4 h-4" />}
+              color="info"
+            />
+            <StatCard
+              label="Total Member"
+              value={totalMembers}
+              description="Pelanggan terdaftar member"
+              icon={<Sparkles className="w-4 h-4" />}
+              color="warning"
+            />
+            <StatCard
+              label="Total Poin Beredar"
+              value={totalPoints.toLocaleString('id-ID')}
+              description="Poin seluruh member"
+              icon={<Coins className="w-4 h-4" />}
+              color="success"
+            />
+            <StatCard
+              label="Piutang Pelanggan"
+              value={fmtRp(totalCredit)}
+              description="Tagihan tempo belum lunas"
+              icon={<CreditCard className="w-4 h-4" />}
+              color="danger"
+            />
           </div>
 
           {/* Toolbar */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <Card className="p-4">
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
               <div className="flex items-center gap-2 flex-wrap flex-1">
-                <div className="relative flex-1 min-w-[200px]">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
+                <div className="flex-1 min-w-[200px]">
+                  <SearchInput
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Cari nama, telepon, email, kode member..."
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
-                <select
+                <Select
                   value={filterGroup}
                   onChange={e => setFilterGroup(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="all">Semua Grup</option>
-                  {customerGroups.filter(g => g.is_active).map(g => (
-                    <option key={g.id} value={g.id}>{g.name}</option>
-                  ))}
-                </select>
-                <select
+                  options={groupOptions}
+                  wrapperClassName="w-auto"
+                />
+                <Select
                   value={filterType}
                   onChange={e => setFilterType(e.target.value as typeof filterType)}
-                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="all">Semua Tipe</option>
-                  <option value="member">Member</option>
-                  <option value="regular">Regular</option>
-                </select>
+                  options={typeOptions}
+                  wrapperClassName="w-auto"
+                />
               </div>
-              <button
-                onClick={openAddCustomer}
-                className="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-md shadow-primary-600/30 transition-all flex items-center gap-1.5 whitespace-nowrap"
-              >
-                <UserPlus className="w-4 h-4" />
+              <Button onClick={openAddCustomer} icon={<UserPlus className="w-4 h-4" />}>
                 Tambah Pelanggan
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
 
           {/* Customer Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-100">
-                  <tr>
-                    <th className="px-5 py-3">Nama</th>
-                    <th className="px-4 py-3">Kontak</th>
-                    <th className="px-4 py-3">Grup</th>
-                    <th className="px-4 py-3">Tipe</th>
-                    <th className="px-4 py-3 text-right">Poin</th>
-                    <th className="px-4 py-3 text-center">Aktif</th>
-                    <th className="px-4 py-3">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {filteredCustomers.map(c => (
-                    <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-5 py-3">
-                        <div className="font-bold text-slate-800">{c.name}</div>
-                        {c.member_code && (
-                          <div className="text-[10px] text-amber-600 font-mono mt-0.5">{c.member_code}</div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {c.phone && <div className="flex items-center gap-1 text-slate-600"><Phone className="w-3 h-3" />{c.phone}</div>}
-                        {c.email && <div className="flex items-center gap-1 text-slate-500"><Mail className="w-3 h-3" />{c.email}</div>}
-                        {!c.phone && !c.email && <span className="text-slate-400">-</span>}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {customerGroups.find(g => g.id === c.customer_group_id)?.name || <span className="text-slate-400">-</span>}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${c.type === 'member' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>
-                          {c.type === 'member' ? 'MEMBER' : 'REGULAR'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right font-bold text-slate-800">
-                        {c.type === 'member' ? c.points_balance.toLocaleString('id-ID') : '-'}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => toggleActive(c)}
-                          className={`w-9 h-5 rounded-full transition-colors relative ${c.is_active ? 'bg-primary-600' : 'bg-slate-300'}`}
-                        >
-                          <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${c.is_active ? 'left-[18px]' : 'left-0.5'}`} />
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => openEditCustomer(c)} title="Edit" className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => deleteCustomer(c.id)} title="Hapus" className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-                          {c.type === 'member' && (
-                            <button onClick={() => openPointModal(c)} title="Poin" className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"><Coins className="w-3.5 h-3.5" /></button>
-                          )}
-                          <button onClick={() => openTxModal(c)} title="Transaksi" className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"><History className="w-3.5 h-3.5" /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredCustomers.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="px-5 py-12 text-center text-slate-400">
-                        <Users className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-                        <p className="font-semibold text-sm">Belum ada pelanggan ditemukan</p>
-                        <p className="text-xs mt-1">Klik "Tambah Pelanggan" untuk menambah data baru.</p>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <TableContainer>
+            <TableBase
+              columns={[
+                { header: 'Nama', className: 'px-5' },
+                { header: 'Kontak' },
+                { header: 'Grup' },
+                { header: 'Tipe' },
+                { header: 'Poin', align: 'right' },
+                { header: 'Aktif', align: 'center' },
+                { header: 'Aksi' },
+              ]}
+              emptyMessage="Belum ada pelanggan ditemukan"
+              emptyIcon={<Users className="w-10 h-10 mx-auto text-slate-300" />}
+              colSpan={7}
+            >
+              {filteredCustomers.map(c => (
+                <TableRow key={c.id}>
+                  <td className="px-5 py-3">
+                    <div className="font-bold text-slate-800">{c.name}</div>
+                    {c.member_code && (
+                      <div className="text-[10px] text-amber-600 font-mono mt-0.5">{c.member_code}</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {c.phone && <div className="flex items-center gap-1 text-slate-600"><Phone className="w-3 h-3" />{c.phone}</div>}
+                    {c.email && <div className="flex items-center gap-1 text-slate-500"><Mail className="w-3 h-3" />{c.email}</div>}
+                    {!c.phone && !c.email && <span className="text-slate-400">-</span>}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {customerGroups.find(g => g.id === c.customer_group_id)?.name || <span className="text-slate-400">-</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={c.type}>
+                      {c.type === 'member' ? 'MEMBER' : 'REGULAR'}
+                    </StatusBadge>
+                  </td>
+                  <td className="px-4 py-3 text-right font-bold text-slate-800">
+                    {c.type === 'member' ? c.points_balance.toLocaleString('id-ID') : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <Toggle
+                      checked={c.is_active}
+                      onChange={() => toggleActive(c)}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="xs" onClick={() => openEditCustomer(c)} title="Edit">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="xs" onClick={() => deleteCustomer(c.id)} title="Hapus" className="hover:!text-red-600 hover:!bg-red-50">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                      {c.type === 'member' && (
+                        <Button variant="ghost" size="xs" onClick={() => openPointModal(c)} title="Poin" className="hover:!text-emerald-600 hover:!bg-emerald-50">
+                          <Coins className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="xs" onClick={() => openTxModal(c)} title="Transaksi" className="hover:!text-blue-600 hover:!bg-blue-50">
+                        <History className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </td>
+                </TableRow>
+              ))}
+              {filteredCustomers.length === 0 && (
+                <TableEmpty
+                  colSpan={7}
+                  message="Belum ada pelanggan ditemukan. Klik 'Tambah Pelanggan' untuk menambah data baru."
+                  icon={<Users className="w-10 h-10 mx-auto mb-2 text-slate-300" />}
+                />
+              )}
+            </TableBase>
+          </TableContainer>
         </>
       )}
 
@@ -446,434 +448,374 @@ export const CustomersView: React.FC = () => {
       {tab === 'grup' && (
         <>
           <div className="flex justify-end">
-            <button
-              onClick={openAddGroup}
-              className="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-md shadow-primary-600/30 transition-all flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
+            <Button onClick={openAddGroup} icon={<Plus className="w-4 h-4" />}>
               Tambah Grup
-            </button>
+            </Button>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-100">
-                  <tr>
-                    <th className="px-5 py-3">Nama Grup</th>
-                    <th className="px-4 py-3 text-center">Diskon %</th>
-                    <th className="px-4 py-3">Deskripsi</th>
-                    <th className="px-4 py-3 text-center">Jumlah Anggota</th>
-                    <th className="px-4 py-3">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {customerGroups.map(g => (
-                    <tr key={g.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-5 py-3 font-bold text-slate-800">{g.name}</td>
-                      <td className="px-4 py-3 text-center font-bold text-primary-700">{g.discount_percent}%</td>
-                      <td className="px-4 py-3 text-slate-600">{g.description || <span className="text-slate-400">-</span>}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">{memberCount(g.id)}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => openEditGroup(g)} title="Edit" className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => deleteGroup(g.id)} title="Hapus" className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {customerGroups.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-5 py-12 text-center text-slate-400">
-                        <Tag className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-                        <p className="font-semibold text-sm">Belum ada grup pelanggan</p>
-                        <p className="text-xs mt-1">Klik "Tambah Grup" untuk membuat grup baru.</p>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <TableContainer>
+            <TableBase
+              columns={[
+                { header: 'Nama Grup', className: 'px-5' },
+                { header: 'Diskon %', align: 'center' },
+                { header: 'Deskripsi' },
+                { header: 'Jumlah Anggota', align: 'center' },
+                { header: 'Aksi' },
+              ]}
+              emptyMessage="Belum ada grup pelanggan"
+              emptyIcon={<Tag className="w-10 h-10 mx-auto text-slate-300" />}
+              colSpan={5}
+            >
+              {customerGroups.map(g => (
+                <TableRow key={g.id}>
+                  <td className="px-5 py-3 font-bold text-slate-800">{g.name}</td>
+                  <td className="px-4 py-3 text-center font-bold text-primary-700">{g.discount_percent}%</td>
+                  <td className="px-4 py-3 text-slate-600">{g.description || <span className="text-slate-400">-</span>}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">{memberCount(g.id)}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="xs" onClick={() => openEditGroup(g)} title="Edit">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="xs" onClick={() => deleteGroup(g.id)} title="Hapus" className="hover:!text-red-600 hover:!bg-red-50">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </td>
+                </TableRow>
+              ))}
+              {customerGroups.length === 0 && (
+                <TableEmpty
+                  colSpan={5}
+                  message="Belum ada grup pelanggan. Klik 'Tambah Grup' untuk membuat grup baru."
+                  icon={<Tag className="w-10 h-10 mx-auto mb-2 text-slate-300" />}
+                />
+              )}
+            </TableBase>
+          </TableContainer>
         </>
       )}
 
       {/* ================== MODAL: ADD/EDIT CUSTOMER ================== */}
-      {showCustomerModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowCustomerModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-slate-200" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-black text-slate-900">{editingCustomer ? 'Edit Pelanggan' : 'Tambah Pelanggan Baru'}</h3>
-              <button onClick={() => setShowCustomerModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"><X className="w-4 h-4" /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-600 mb-1">Nama Lengkap *</label>
-                <input
-                  type="text"
-                  value={customerForm.name}
-                  onChange={e => setCustomerForm(p => ({ ...p, name: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="Nama pelanggan"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Telepon</label>
-                  <input
-                    type="text"
-                    value={customerForm.phone}
-                    onChange={e => setCustomerForm(p => ({ ...p, phone: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="08xxx"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={customerForm.email}
-                    onChange={e => setCustomerForm(p => ({ ...p, email: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="email@contoh.com"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Tipe Pelanggan *</label>
-                  <select
-                    value={customerForm.type}
-                    onChange={e => setCustomerForm(p => ({ ...p, type: e.target.value as 'regular' | 'member' }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="regular">Regular</option>
-                    <option value="member">Member</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Grup Pelanggan</label>
-                  <select
-                    value={customerForm.customer_group_id || ''}
-                    onChange={e => setCustomerForm(p => ({ ...p, customer_group_id: e.target.value ? Number(e.target.value) : undefined }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">Tanpa Grup</option>
-                    {customerGroups.filter(g => g.is_active).map(g => (
-                      <option key={g.id} value={g.id}>{g.name} ({g.discount_percent}% diskon)</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              {customerForm.type === 'member' && (
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Kode Member</label>
-                  <input
-                    type="text"
-                    value={editingCustomer ? customerForm.member_code : genMemberCode()}
-                    readOnly
-                    className="w-full px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl text-xs font-mono font-bold text-amber-700"
-                  />
-                  <p className="text-[10px] text-slate-400 mt-1">Kode member digenerate otomatis.</p>
-                </div>
-              )}
-            </div>
-            <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-              <button onClick={() => setShowCustomerModal(false)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors">Batal</button>
-              <button onClick={saveCustomer} className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5" />
-                {editingCustomer ? 'Simpan Perubahan' : 'Tambah Pelanggan'}
-              </button>
-            </div>
+      <Modal
+        open={showCustomerModal}
+        onClose={() => setShowCustomerModal(false)}
+        title={editingCustomer ? 'Edit Pelanggan' : 'Tambah Pelanggan Baru'}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowCustomerModal(false)}>Batal</Button>
+            <Button onClick={saveCustomer} icon={<Check className="w-3.5 h-3.5" />}>
+              {editingCustomer ? 'Simpan Perubahan' : 'Tambah Pelanggan'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Nama Lengkap"
+            required
+            value={customerForm.name}
+            onChange={e => setCustomerForm(p => ({ ...p, name: e.target.value }))}
+            placeholder="Nama pelanggan"
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Telepon"
+              value={customerForm.phone}
+              onChange={e => setCustomerForm(p => ({ ...p, phone: e.target.value }))}
+              placeholder="08xxx"
+            />
+            <Input
+              label="Email"
+              type="email"
+              value={customerForm.email}
+              onChange={e => setCustomerForm(p => ({ ...p, email: e.target.value }))}
+              placeholder="email@contoh.com"
+            />
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Tipe Pelanggan"
+              required
+              value={customerForm.type}
+              onChange={e => setCustomerForm(p => ({ ...p, type: e.target.value as 'regular' | 'member' }))}
+              options={[
+                { value: 'regular', label: 'Regular' },
+                { value: 'member', label: 'Member' },
+              ]}
+            />
+            <Select
+              label="Grup Pelanggan"
+              value={customerForm.customer_group_id || ''}
+              onChange={e => setCustomerForm(p => ({ ...p, customer_group_id: e.target.value ? Number(e.target.value) : undefined }))}
+              placeholder="Tanpa Grup"
+              options={customerGroups.filter(g => g.is_active).map(g => ({
+                value: g.id,
+                label: `${g.name} (${g.discount_percent}% diskon)`,
+              }))}
+            />
+          </div>
+          {customerForm.type === 'member' && (
+            <div>
+              <Input
+                label="Kode Member"
+                value={editingCustomer ? customerForm.member_code : genMemberCode()}
+                readOnly
+                className="!bg-amber-50 !border-amber-200 !font-mono !font-bold !text-amber-700"
+              />
+              <p className="text-[10px] text-slate-400 mt-1">Kode member digenerate otomatis.</p>
+            </div>
+          )}
         </div>
-      )}
+      </Modal>
 
       {/* ================== MODAL: POINTS ================== */}
-      {showPointModal && pointCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowPointModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-slate-200 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <Modal
+        open={showPointModal}
+        onClose={() => setShowPointModal(false)}
+        title="Poin Pelanggan"
+        subtitle={pointCustomer ? `${pointCustomer.name} ${pointCustomer.member_code ? `(${pointCustomer.member_code})` : ''}` : undefined}
+        size="lg"
+      >
+        {pointCustomer && (
+          <div className="space-y-4">
+            {/* Balance */}
+            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-black text-slate-900">Poin Pelanggan</h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">{pointCustomer.name} {pointCustomer.member_code && `(${pointCustomer.member_code})`}</p>
+                <div className="text-[11px] font-bold text-emerald-600 uppercase">Saldo Poin Saat Ini</div>
+                <div className="text-2xl font-black text-emerald-700 mt-1">{pointCustomer.points_balance.toLocaleString('id-ID')}</div>
               </div>
-              <button onClick={() => setShowPointModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"><X className="w-4 h-4" /></button>
+              <Coins className="w-8 h-8 text-emerald-400" />
             </div>
 
-            <div className="p-6 space-y-4 overflow-y-auto flex-1">
-              {/* Balance */}
-              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
-                <div>
-                  <div className="text-[11px] font-bold text-emerald-600 uppercase">Saldo Poin Saat Ini</div>
-                  <div className="text-2xl font-black text-emerald-700 mt-1">{pointCustomer.points_balance.toLocaleString('id-ID')}</div>
-                </div>
-                <Coins className="w-8 h-8 text-emerald-400" />
+            {/* Redeem Form */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+              <div className="text-xs font-bold text-slate-700">Tukar Poin</div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="Jumlah Poin"
+                  type="number"
+                  min={1}
+                  max={pointCustomer.points_balance}
+                  value={redeemPoints}
+                  onChange={e => setRedeemPoints(e.target.value)}
+                  placeholder="0"
+                />
+                <Input
+                  label="Catatan"
+                  value={redeemNotes}
+                  onChange={e => setRedeemNotes(e.target.value)}
+                  placeholder="Opsional"
+                />
               </div>
-
-              {/* Redeem Form */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                <div className="text-xs font-bold text-slate-700">Tukar Poin</div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 mb-1">Jumlah Poin</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={pointCustomer.points_balance}
-                      value={redeemPoints}
-                      onChange={e => setRedeemPoints(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 mb-1">Catatan</label>
-                    <input
-                      type="text"
-                      value={redeemNotes}
-                      onChange={e => setRedeemNotes(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="Opsional"
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={handleRedeem}
-                  disabled={!redeemPoints || parseInt(redeemPoints, 10) <= 0}
-                  className="px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5"
-                >
-                  <ArrowDownCircle className="w-3.5 h-3.5" />
-                  Tukarkan Poin
-                </button>
-              </div>
-
-              {/* Ledger History */}
-              <div>
-                <div className="text-xs font-bold text-slate-700 mb-2">Riwayat Poin</div>
-                {pointLedgerForCustomer.length === 0 ? (
-                  <p className="text-xs text-slate-400 text-center py-4">Belum ada riwayat poin.</p>
-                ) : (
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                    {pointLedgerForCustomer.map(l => (
-                      <div key={l.id} className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-slate-100">
-                        <div className="flex items-center gap-2">
-                          {l.points > 0 ? (
-                            <ArrowUpCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                          ) : (
-                            <ArrowDownCircle className="w-4 h-4 text-red-500 shrink-0" />
-                          )}
-                          <div>
-                            <div className="text-[11px] font-semibold text-slate-700">{l.notes || l.source}</div>
-                            <div className="text-[10px] text-slate-400">{new Date(l.created_at).toLocaleString('id-ID')}</div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className={`text-xs font-bold ${l.points > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                            {l.points > 0 ? '+' : ''}{l.points}
-                          </div>
-                          <div className="text-[10px] text-slate-400">Saldo: {l.balance_after}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================== MODAL: TRANSAKSI & PIUTANG ================== */}
-      {showTxModal && txCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowTxModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 border border-slate-200 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-              <div>
-                <h3 className="text-sm font-black text-slate-900">Transaksi Pelanggan</h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">{txCustomer.name}</p>
-              </div>
-              <button onClick={() => setShowTxModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"><X className="w-4 h-4" /></button>
+              <Button
+                onClick={handleRedeem}
+                disabled={!redeemPoints || parseInt(redeemPoints, 10) <= 0}
+                icon={<ArrowDownCircle className="w-3.5 h-3.5" />}
+                variant="primary"
+              >
+                Tukarkan Poin
+              </Button>
             </div>
 
-            <div className="p-6 space-y-4 overflow-y-auto flex-1">
-              {/* Unpaid Credit Summary */}
-              {unpaidSales.length > 0 && (
-                <div className="p-4 bg-red-50 rounded-xl border border-red-200 space-y-3">
-                  <div className="text-xs font-bold text-red-700">Piutang Belum Lunas ({unpaidSales.length})</div>
-                  {unpaidSales.map(s => {
-                    const unpaidAmt = s.grand_total - (s.paid_amount || 0);
-                    return (
-                      <div key={s.id} className="p-3 bg-white rounded-lg border border-red-100">
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <span className="text-xs font-mono font-bold text-primary-700">{s.sale_code}</span>
-                            <span className="text-[10px] text-slate-500 ml-2">{new Date(s.sale_at).toLocaleDateString('id-ID')}</span>
-                          </div>
-                          <span className="text-xs font-black text-red-600">{fmtRp(unpaidAmt)}</span>
-                        </div>
-                        {paySaleId === s.id ? (
-                          <div className="flex items-center gap-2 mt-2">
-                            <input
-                              type="number"
-                              min={1}
-                              max={unpaidAmt}
-                              value={payAmount}
-                              onChange={e => setPayAmount(e.target.value)}
-                              className="w-32 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
-                              placeholder="Jumlah bayar"
-                            />
-                            <select
-                              value={payMethod}
-                              onChange={e => setPayMethod(e.target.value as typeof payMethod)}
-                              className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            >
-                              <option value="cash">Tunai</option>
-                              <option value="transfer">Transfer</option>
-                              <option value="qris">QRIS</option>
-                            </select>
-                            <button
-                              onClick={() => { handlePayCredit(); setPaySaleId(null); }}
-                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg"
-                            >
-                              Bayar
-                            </button>
-                            <button
-                              onClick={() => setPaySaleId(null)}
-                              className="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg"
-                            >
-                              Batal
-                            </button>
-                          </div>
+            {/* Ledger History */}
+            <div>
+              <div className="text-xs font-bold text-slate-700 mb-2">Riwayat Poin</div>
+              {pointLedgerForCustomer.length === 0 ? (
+                <p className="text-xs text-slate-400 text-center py-4">Belum ada riwayat poin.</p>
+              ) : (
+                <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                  {pointLedgerForCustomer.map(l => (
+                    <div key={l.id} className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-slate-100">
+                      <div className="flex items-center gap-2">
+                        {l.points > 0 ? (
+                          <ArrowUpCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                         ) : (
-                          <button
-                            onClick={() => { setPaySaleId(s.id); setPayAmount(unpaidAmt.toString()); }}
-                            className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-[10px] font-bold rounded-lg flex items-center gap-1"
-                          >
-                            <DollarSign className="w-3 h-3" />
-                            Bayar Piutang
-                          </button>
+                          <ArrowDownCircle className="w-4 h-4 text-red-500 shrink-0" />
                         )}
+                        <div>
+                          <div className="text-[11px] font-semibold text-slate-700">{l.notes || l.source}</div>
+                          <div className="text-[10px] text-slate-400">{new Date(l.created_at).toLocaleString('id-ID')}</div>
+                        </div>
                       </div>
-                    );
-                  })}
+                      <div className="text-right">
+                        <div className={clsx('text-xs font-bold', l.points > 0 ? 'text-emerald-600' : 'text-red-600')}>
+                          {l.points > 0 ? '+' : ''}{l.points}
+                        </div>
+                        <div className="text-[10px] text-slate-400">Saldo: {l.balance_after}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
-
-              {/* All Sales */}
-              <div>
-                <div className="text-xs font-bold text-slate-700 mb-2">Riwayat Transaksi</div>
-                {customerSales.length === 0 ? (
-                  <p className="text-xs text-slate-400 text-center py-6">Belum ada transaksi.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-100">
-                        <tr>
-                          <th className="px-4 py-2">No. Nota</th>
-                          <th className="px-4 py-2">Tanggal</th>
-                          <th className="px-4 py-2 text-right">Total</th>
-                          <th className="px-4 py-2 text-right">Bayar</th>
-                          <th className="px-4 py-3">Metode</th>
-                          <th className="px-4 py-2">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 text-slate-700">
-                        {customerSales.slice(0, 20).map(s => (
-                          <tr key={s.id} className="hover:bg-slate-50/70">
-                            <td className="px-4 py-2 font-mono font-bold text-primary-700">{s.sale_code}</td>
-                            <td className="px-4 py-2">{new Date(s.sale_at).toLocaleDateString('id-ID')}</td>
-                            <td className="px-4 py-2 text-right font-bold">{fmtRp(s.grand_total)}</td>
-                            <td className="px-4 py-2 text-right text-slate-600">{fmtRp(s.paid_amount || 0)}</td>
-                            <td className="px-4 py-2 uppercase font-semibold text-slate-600">{s.payment_method}</td>
-                            <td className="px-4 py-2">
-                              {s.credit_status ? (
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                  s.credit_status === 'paid' ? 'bg-emerald-100 text-emerald-800' :
-                                  s.credit_status === 'partial' ? 'bg-amber-100 text-amber-800' :
-                                  'bg-red-100 text-red-800'
-                                }`}>
-                                  {s.credit_status.toUpperCase()}
-                                </span>
-                              ) : (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">PAID</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
+
+      {/* ================== MODAL: TRANSAKSI & PIUTANG ================== */}
+      <Modal
+        open={showTxModal}
+        onClose={() => setShowTxModal(false)}
+        title="Transaksi Pelanggan"
+        subtitle={txCustomer?.name}
+        size="xl"
+      >
+        {txCustomer && (
+          <div className="space-y-4">
+            {/* Unpaid Credit Summary */}
+            {unpaidSales.length > 0 && (
+              <div className="p-4 bg-red-50 rounded-xl border border-red-200 space-y-3">
+                <div className="text-xs font-bold text-red-700">Piutang Belum Lunas ({unpaidSales.length})</div>
+                {unpaidSales.map(s => {
+                  const unpaidAmt = s.grand_total - (s.paid_amount || 0);
+                  return (
+                    <div key={s.id} className="p-3 bg-white rounded-lg border border-red-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <span className="text-xs font-mono font-bold text-primary-700">{s.sale_code}</span>
+                          <span className="text-[10px] text-slate-500 ml-2">{new Date(s.sale_at).toLocaleDateString('id-ID')}</span>
+                        </div>
+                        <span className="text-xs font-black text-red-600">{fmtRp(unpaidAmt)}</span>
+                      </div>
+                      {paySaleId === s.id ? (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Input
+                            type="number"
+                            min={1}
+                            max={unpaidAmt}
+                            value={payAmount}
+                            onChange={e => setPayAmount(e.target.value)}
+                            placeholder="Jumlah bayar"
+                            className="!w-32"
+                          />
+                          <Select
+                            value={payMethod}
+                            onChange={e => setPayMethod(e.target.value as typeof payMethod)}
+                            options={[
+                              { value: 'cash', label: 'Tunai' },
+                              { value: 'transfer', label: 'Transfer' },
+                              { value: 'qris', label: 'QRIS' },
+                            ]}
+                            wrapperClassName="!w-auto"
+                          />
+                          <Button
+                            variant="success"
+                            size="xs"
+                            onClick={() => { handlePayCredit(); setPaySaleId(null); }}
+                          >
+                            Bayar
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="xs"
+                            onClick={() => setPaySaleId(null)}
+                          >
+                            Batal
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          size="xs"
+                          onClick={() => { setPaySaleId(s.id); setPayAmount(unpaidAmt.toString()); }}
+                          icon={<DollarSign className="w-3 h-3" />}
+                        >
+                          Bayar Piutang
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* All Sales */}
+            <div>
+              <div className="text-xs font-bold text-slate-700 mb-2">Riwayat Transaksi</div>
+              {customerSales.length === 0 ? (
+                <p className="text-xs text-slate-400 text-center py-6">Belum ada transaksi.</p>
+              ) : (
+                <TableContainer>
+                  <TableBase
+                    columns={[
+                      { header: 'No. Nota' },
+                      { header: 'Tanggal' },
+                      { header: 'Total', align: 'right' },
+                      { header: 'Bayar', align: 'right' },
+                      { header: 'Metode' },
+                      { header: 'Status' },
+                    ]}
+                  >
+                    {customerSales.slice(0, 20).map(s => (
+                      <TableRow key={s.id}>
+                        <td className="px-4 py-2 font-mono font-bold text-primary-700">{s.sale_code}</td>
+                        <td className="px-4 py-2">{new Date(s.sale_at).toLocaleDateString('id-ID')}</td>
+                        <td className="px-4 py-2 text-right font-bold">{fmtRp(s.grand_total)}</td>
+                        <td className="px-4 py-2 text-right text-slate-600">{fmtRp(s.paid_amount || 0)}</td>
+                        <td className="px-4 py-2 uppercase font-semibold text-slate-600">{s.payment_method}</td>
+                        <td className="px-4 py-2">
+                          <StatusBadge status={s.credit_status || 'paid'}>
+                            {(s.credit_status || 'paid').toUpperCase()}
+                          </StatusBadge>
+                        </td>
+                      </TableRow>
+                    ))}
+                  </TableBase>
+                </TableContainer>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* ================== MODAL: ADD/EDIT GROUP ================== */}
-      {showGroupModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowGroupModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 border border-slate-200" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-black text-slate-900">{editingGroup ? 'Edit Grup' : 'Tambah Grup Baru'}</h3>
-              <button onClick={() => setShowGroupModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"><X className="w-4 h-4" /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-600 mb-1">Nama Grup *</label>
-                <input
-                  type="text"
-                  value={groupForm.name}
-                  onChange={e => setGroupForm(p => ({ ...p, name: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="Contoh: VIP, Reseller"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-600 mb-1">Diskon (%)</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={groupForm.discount_percent}
-                  onChange={e => setGroupForm(p => ({ ...p, discount_percent: Number(e.target.value) }))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-600 mb-1">Deskripsi</label>
-                <input
-                  type="text"
-                  value={groupForm.description}
-                  onChange={e => setGroupForm(p => ({ ...p, description: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="Deskripsi singkat (opsional)"
-                />
-              </div>
-              <div className="flex items-center gap-3">
-                <label className="text-[11px] font-bold text-slate-600">Aktif</label>
-                <button
-                  type="button"
-                  onClick={() => setGroupForm(p => ({ ...p, is_active: !p.is_active }))}
-                  className={`w-9 h-5 rounded-full transition-colors relative ${groupForm.is_active ? 'bg-primary-600' : 'bg-slate-300'}`}
-                >
-                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${groupForm.is_active ? 'left-[18px]' : 'left-0.5'}`} />
-                </button>
-              </div>
-            </div>
-            <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-              <button onClick={() => setShowGroupModal(false)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors">Batal</button>
-              <button onClick={saveGroup} className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5" />
-                {editingGroup ? 'Simpan' : 'Tambah Grup'}
-              </button>
-            </div>
+      <Modal
+        open={showGroupModal}
+        onClose={() => setShowGroupModal(false)}
+        title={editingGroup ? 'Edit Grup' : 'Tambah Grup Baru'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowGroupModal(false)}>Batal</Button>
+            <Button onClick={saveGroup} icon={<Check className="w-3.5 h-3.5" />}>
+              {editingGroup ? 'Simpan' : 'Tambah Grup'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Nama Grup"
+            required
+            value={groupForm.name}
+            onChange={e => setGroupForm(p => ({ ...p, name: e.target.value }))}
+            placeholder="Contoh: VIP, Reseller"
+          />
+          <Input
+            label="Diskon (%)"
+            type="number"
+            min={0}
+            max={100}
+            value={groupForm.discount_percent}
+            onChange={e => setGroupForm(p => ({ ...p, discount_percent: Number(e.target.value) }))}
+          />
+          <Input
+            label="Deskripsi"
+            value={groupForm.description}
+            onChange={e => setGroupForm(p => ({ ...p, description: e.target.value }))}
+            placeholder="Deskripsi singkat (opsional)"
+          />
+          <div className="flex items-center gap-3">
+            <Toggle
+              checked={groupForm.is_active}
+              onChange={() => setGroupForm(p => ({ ...p, is_active: !p.is_active }))}
+              label="Aktif"
+            />
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

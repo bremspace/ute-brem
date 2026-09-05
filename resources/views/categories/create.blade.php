@@ -7,7 +7,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Tambah Kategori</h5>
-                <a href="{{ route('categories.index') }}" class="btn btn-secondary">
+                <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary">
                     <i class="bx bx-arrow-back me-1"></i> Kembali
                 </a>
             </div>

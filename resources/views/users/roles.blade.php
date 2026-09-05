@@ -26,12 +26,12 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Kelola Role: {{ $user->name }}</h5>
                         <div>
-                            <a href="{{ route('users.show', $user) }}" class="btn btn-info me-2">
-                                <i class="bx bx-show me-1"></i> Lihat User
-                            </a>
-                            <a href="{{ route('users.index') }}" class="btn btn-secondary">
-                                <i class="bx bx-arrow-back me-1"></i> Kembali
-                            </a>
+<a href="{{ route('users.show', $user) }}" class="btn btn-outline-primary me-2">
+                                 <i class="bx bx-show me-1"></i> Lihat User
+                             </a>
+                             <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
+                                 <i class="bx bx-arrow-back me-1"></i> Kembali
+                             </a>
                         </div>
                     </div>
                     <div class="card-body">
@@ -84,9 +84,9 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bx bx-save me-1"></i> Update Role
                                 </button>
-                                <a href="{{ route('users.index') }}" class="btn btn-secondary">
-                                    <i class="bx bx-x me-1"></i> Batal
-                                </a>
+<a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
+                                     <i class="bx bx-x me-1"></i> Batal
+                                 </a>
                             </div>
                         </form>
                     </div>
@@ -135,7 +135,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <button type="button" class="btn btn-success btn-sm" onclick="quickAddRole()">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="quickAddRole()">
                             <i class="bx bx-plus me-1"></i> Tambah Role
                         </button>
                     </div>
@@ -156,8 +156,8 @@
                     <p id="confirmMessage"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-danger" id="confirmButton">Ya, Hapus</button>
+<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                     <button type="button" class="btn btn-danger" id="confirmButton">Ya, Hapus</button>
                 </div>
             </div>
         </div>

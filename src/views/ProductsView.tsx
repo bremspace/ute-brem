@@ -1,25 +1,43 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { Product } from '../types';
+import clsx from 'clsx';
 import {
   Plus,
-  Search,
   Package,
   AlertTriangle,
   TrendingUp,
   Layers,
-  Filter,
   Edit3,
   Trash2,
   Upload,
   Barcode,
-  ChevronDown,
-  X,
+  MapPin,
   Save,
-  Eye,
-  EyeOff,
-  MapPin
+  Image,
+  X,
 } from 'lucide-react';
+import {
+  Button,
+  Card,
+  CardHeader,
+  Input,
+  Select,
+  Badge,
+  TableContainer,
+  TableHeader,
+  TableBase,
+  TableRow,
+  TableEmpty,
+  Modal,
+  Tabs,
+  SearchInput,
+  StatCard,
+  Toggle,
+} from '../components/ui';
+import type { SelectOption } from '../components/ui';
+
+/* ──────────────────────────── Types ──────────────────────────── */
 
 type FormState = {
   product_code: string;
@@ -41,6 +59,7 @@ type FormState = {
   is_active: boolean;
   is_published: boolean;
   description: string;
+  image_url: string;
 };
 
 const emptyForm: FormState = {
@@ -63,7 +82,32 @@ const emptyForm: FormState = {
   is_active: true,
   is_published: true,
   description: '',
+  image_url: '',
 };
+
+type FormTab = 'standard' | 'advance' | 'member' | 'price-tiers' | 'variants';
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
+/* ──────────────────────────── Helpers ──────────────────────────── */
+
+function formatRp(n: number) {
+  return `Rp ${n.toLocaleString('id-ID')}`;
+}
+
+function stockBadgeVariant(qty: number, stockMin: number): 'danger' | 'amber' | 'success' {
+  if (qty <= 0) return 'danger';
+  if (qty <= stockMin) return 'amber';
+  return 'success';
+}
+
+function stockBadgeLabel(qty: number, stockMin: number): string {
+  if (qty <= 0) return 'Habis';
+  if (qty <= stockMin) return 'Menipis';
+  return 'Aman';
+}
+
+/* ──────────────────────────── Component ──────────────────────────── */
 
 export const ProductsView: React.FC = () => {
   const {
@@ -81,14 +125,24 @@ export const ProductsView: React.FC = () => {
     setSelectedLocationId,
   } = useApp();
 
+  /* ── filter / search state ── */
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState<number | 'all'>('all');
   const [filterBrand, setFilterBrand] = useState<number | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [filterLowStock, setFilterLowStock] = useState(false);
+
+  /* ── modal / form state ── */
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [activeFormTab, setActiveFormTab] = useState<FormTab>('standard');
+
+  /* ── pagination state ── */
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  /* ─────────── Derived data ─────────── */
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
@@ -107,9 +161,15 @@ export const ProductsView: React.FC = () => {
     });
   }, [products, search, filterCategory, filterBrand, filterStatus, filterLowStock]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const paginatedProducts = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredProducts.slice(start, start + pageSize);
+  }, [filteredProducts, safePage, pageSize]);
+
   const totalProduk = products.length;
-  const totalSkuAktif = products.filter(p => p.is_active).length;
-  const stokMenipis = products.filter(p => p.stock_global <= p.stock_min).length;
+  const totalStok = products.reduce((sum, p) => sum + p.stock_global, 0);
   const nilaiTotalStok = products.reduce((sum, p) => sum + p.stock_global * p.purchase_price, 0);
 
   const selectedLocName = locations.find(l => l.id === selectedLocationId)?.name || 'Global';
@@ -119,9 +179,73 @@ export const ProductsView: React.FC = () => {
     return subCategories.filter(sc => sc.category_id === form.category_id);
   }, [subCategories, form.category_id]);
 
+  /* ─────────── Select option builders ─────────── */
+
+  const categoryOptions: SelectOption[] = useMemo(
+    () => [{ value: 'all', label: 'Semua Kategori' }, ...categories.map(c => ({ value: c.id, label: c.name }))],
+    [categories],
+  );
+
+  const brandOptions: SelectOption[] = useMemo(
+    () => [{ value: 'all', label: 'Semua Brand' }, ...brands.map(b => ({ value: b.id, label: b.name }))],
+    [brands],
+  );
+
+  const statusFilterOptions: SelectOption[] = [
+    { value: 'all', label: 'Semua Status' },
+    { value: 'active', label: 'Aktif' },
+    { value: 'inactive', label: 'Nonaktif' },
+  ];
+
+  const locationOptions: SelectOption[] = useMemo(
+    () =>
+      locations
+        .filter(l => l.is_active)
+        .map(l => ({ value: l.id, label: l.name })),
+    [locations],
+  );
+
+  const formCategoryOptions: SelectOption[] = useMemo(
+    () => [{ value: '', label: '— Pilih —' }, ...categories.map(c => ({ value: c.id, label: c.name }))],
+    [categories],
+  );
+
+  const formSubCategoryOptions: SelectOption[] = useMemo(
+    () => [{ value: '', label: '— Pilih —' }, ...filteredSubCategories.map(sc => ({ value: sc.id, label: sc.name }))],
+    [filteredSubCategories],
+  );
+
+  const formBrandOptions: SelectOption[] = useMemo(
+    () => [{ value: '', label: '— Pilih —' }, ...brands.map(b => ({ value: b.id, label: b.name }))],
+    [brands],
+  );
+
+  const formMakerOptions: SelectOption[] = useMemo(
+    () => [{ value: '', label: '— Pilih —' }, ...makers.map(m => ({ value: m.id, label: m.name }))],
+    [makers],
+  );
+
+  const formTypeOptions: SelectOption[] = useMemo(
+    () => [{ value: '', label: '— Pilih —' }, ...productTypes.map(pt => ({ value: pt.id, label: pt.name }))],
+    [productTypes],
+  );
+
+  const formSupplierOptions: SelectOption[] = useMemo(
+    () => [{ value: '', label: '— Pilih —' }, ...suppliers.map(s => ({ value: s.id, label: s.name }))],
+    [suppliers],
+  );
+
+  const formUnitOptions: SelectOption[] = useMemo(
+    () => [{ value: '', label: '— Pilih —' }, ...units.map(u => ({ value: u.id, label: u.name }))],
+    [units],
+  );
+
+  /* ─────────── Actions ─────────── */
+
   function openAdd() {
     setEditId(null);
     setForm({ ...emptyForm, product_code: `PRD-${Date.now().toString().slice(-6)}` });
+    setActiveFormTab('standard');
     setShowForm(true);
   }
 
@@ -147,7 +271,9 @@ export const ProductsView: React.FC = () => {
       is_active: p.is_active,
       is_published: p.is_published,
       description: p.description || '',
+      image_url: '',
     });
+    setActiveFormTab('standard');
     setShowForm(true);
   }
 
@@ -262,541 +388,617 @@ export const ProductsView: React.FC = () => {
     });
   }
 
-  function formatRp(n: number) {
-    return `Rp ${n.toLocaleString('id-ID')}`;
-  }
+  /* Reset page to 1 when filters change */
+  React.useEffect(() => {
+    setPage(1);
+  }, [search, filterCategory, filterBrand, filterStatus, filterLowStock, pageSize]);
 
+  /* ─────────── Table columns ─────────── */
+  const columns = useMemo(
+    () => [
+      { header: 'Kode' },
+      { header: 'Nama Produk' },
+      { header: 'Kategori' },
+      { header: 'Brand' },
+      { header: 'Tipe' },
+      { header: 'Satuan' },
+      { header: 'Harga Jual', align: 'right' as const },
+      { header: 'Stok', align: 'center' as const },
+      { header: 'Status', align: 'center' as const },
+      { header: 'Aksi', align: 'center' as const },
+    ],
+    [],
+  );
+
+  /* ─────────── Form tabs definition ─────────── */
+  const formTabs = useMemo(
+    () => [
+      { id: 'standard', label: 'Standard' },
+      { id: 'advance', label: 'Advance' },
+      { id: 'member', label: 'Member / Group' },
+      { id: 'price-tiers', label: 'Price Tiers' },
+      { id: 'variants', label: 'Variants' },
+    ],
+    [],
+  );
+
+  /* ─────────── Render ─────────── */
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Page Header */}
+      {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Master Produk & Stok</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Master Produk &amp; Stok</h1>
           <p className="text-xs text-slate-500 mt-1">
             Kelola data produk, harga beli/jual, dan pantau stok per lokasi.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={openAdd}
-            className="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-md shadow-primary-600/30 transition-all flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
+          <Button variant="primary" icon={<Plus className="w-4 h-4" />} onClick={openAdd}>
             Tambah Produk
-          </button>
-          <button className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5">
-            <Upload className="w-4 h-4" />
+          </Button>
+          <Button variant="secondary" icon={<Upload className="w-4 h-4" />}>
             Import Produk
-          </button>
-          <button className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5">
-            <Barcode className="w-4 h-4" />
+          </Button>
+          <Button variant="secondary" icon={<Barcode className="w-4 h-4" />}>
             Cetak Barcode
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Produk</span>
-            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Package className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="text-xl font-black text-slate-900">{totalProduk}</div>
-        </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">SKU Aktif</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <Eye className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="text-xl font-black text-emerald-700">{totalSkuAktif}</div>
-        </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Stok Menipis</span>
-            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-              <AlertTriangle className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="text-xl font-black text-amber-600">{stokMenipis}</div>
-        </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Nilai Total Stok</span>
-            <div className="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">
-              <TrendingUp className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="text-lg font-black text-slate-900">{formatRp(nilaiTotalStok)}</div>
-        </div>
+      {/* ── Stat Cards ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <StatCard
+          value={totalProduk}
+          label="Total Produk"
+          icon={<Package className="w-4 h-4" />}
+          color="primary"
+        />
+        <StatCard
+          value={totalStok.toLocaleString('id-ID')}
+          label="Total Stok"
+          icon={<Layers className="w-4 h-4" />}
+          color="success"
+        />
+        <StatCard
+          value={formatRp(nilaiTotalStok)}
+          label="Nilai Total Stok"
+          icon={<TrendingUp className="w-4 h-4" />}
+          color="violet"
+        />
       </div>
 
-      {/* Location Selector & Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-primary-600" />
-            <span className="text-xs font-bold text-slate-700">Lokasi Stok:</span>
-            <select
-              value={selectedLocationId}
-              onChange={e => setSelectedLocationId(Number(e.target.value))}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {locations.filter(l => l.is_active).map(l => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* ── Location + Filter Bar ── */}
+      <Card noPadding>
+        <div className="p-4 space-y-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Location selector */}
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary-600" />
+              <span className="text-xs font-bold text-slate-700">Lokasi Stok:</span>
+              <Select
+                options={locationOptions}
+                value={selectedLocationId}
+                onChange={e => setSelectedLocationId(Number(e.target.value))}
+                wrapperClassName="w-auto"
+              />
+            </div>
 
-          <div className="h-5 w-px bg-slate-200 hidden sm:block" />
+            <div className="h-5 w-px bg-slate-200 hidden sm:block" />
 
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Cari nama, kode, barcode..."
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            {/* Search */}
+            <div className="relative flex-1 min-w-[200px]">
+              <SearchInput
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Cari nama, kode, barcode..."
+              />
+            </div>
+
+            {/* Category filter */}
+            <Select
+              options={categoryOptions}
+              value={filterCategory}
+              onChange={e => setFilterCategory(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+              wrapperClassName="w-auto"
             />
-          </div>
 
-          <select
-            value={filterCategory}
-            onChange={e => setFilterCategory(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="all">Semua Kategori</option>
-            {categories.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            {/* Brand filter */}
+            <Select
+              options={brandOptions}
+              value={filterBrand}
+              onChange={e => setFilterBrand(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+              wrapperClassName="w-auto"
+            />
 
-          <select
-            value={filterBrand}
-            onChange={e => setFilterBrand(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="all">Semua Brand</option>
-            {brands.map(b => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+            {/* Status filter */}
+            <Select
+              options={statusFilterOptions}
+              value={filterStatus}
+              onChange={e => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive')}
+              wrapperClassName="w-auto"
+            />
 
-          <select
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive')}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="all">Semua Status</option>
-            <option value="active">Aktif</option>
-            <option value="inactive">Nonaktif</option>
-          </select>
-
-          <button
-            onClick={() => setFilterLowStock(!filterLowStock)}
-            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              filterLowStock
-                ? 'bg-amber-100 border border-amber-300 text-amber-800'
-                : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <AlertTriangle className="w-3.5 h-3.5" />
-            Stok Menipis
-          </button>
-        </div>
-      </div>
-
-      {/* Products Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
-            <Layers className="w-4 h-4 text-primary-600" />
-            Daftar Produk
-            <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
-              {filteredProducts.length}
-            </span>
-          </div>
-          <span className="text-[10px] text-slate-400">
-            Menampilkan stok: <span className="font-bold text-primary-600">{selectedLocName}</span>
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-100">
-              <tr>
-                <th className="px-4 py-3">Kode</th>
-                <th className="px-4 py-3">Nama Produk</th>
-                <th className="px-4 py-3">Kategori</th>
-                <th className="px-4 py-3">Brand</th>
-                <th className="px-4 py-3">Supplier</th>
-                <th className="px-4 py-3 text-right">Harga Beli</th>
-                <th className="px-4 py-3 text-right">Harga Jual</th>
-                <th className="px-4 py-3 text-center">Stok</th>
-                <th className="px-4 py-3 text-center">Status</th>
-                <th className="px-4 py-3 text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              {filteredProducts.map(p => {
-                const locStock =
-                  p.stocks?.find(s => s.location_id === selectedLocationId)?.quantity ?? 0;
-                const isLow = p.stock_global <= p.stock_min;
-
-                return (
-                  <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-4 py-3 font-mono font-bold text-primary-700 text-[11px]">
-                      {p.product_code}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-bold text-slate-800 line-clamp-1">{p.name}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        {[p.maker?.name, p.product_type?.name].filter(Boolean).join(' • ') || '—'}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">{p.category?.name || '—'}</td>
-                    <td className="px-4 py-3 text-slate-600">{p.brand?.name || '—'}</td>
-                    <td className="px-4 py-3 text-slate-600">{p.supplier?.name || '—'}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-700">
-                      {formatRp(p.purchase_price)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-bold text-slate-900">
-                      {formatRp(p.selling_price)}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span
-                          className={`text-xs font-black ${
-                            locStock <= 0
-                              ? 'text-red-600'
-                              : isLow
-                              ? 'text-amber-600'
-                              : 'text-emerald-700'
-                          }`}
-                        >
-                          {locStock}
-                        </span>
-                        <span className="text-[9px] text-slate-400">
-                          G: {p.stock_global}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          onClick={() => toggleActive(p.id)}
-                          className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-colors ${
-                            p.is_active
-                              ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                          }`}
-                          title={p.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                        >
-                          {p.is_active ? 'AKTIF' : 'NONAKTIF'}
-                        </button>
-                        {p.is_published ? (
-                          <Eye className="w-3 h-3 text-emerald-500" />
-                        ) : (
-                          <EyeOff className="w-3 h-3 text-slate-400" />
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => openEdit(p)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-                          title="Edit"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(p.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                          title="Hapus"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filteredProducts.length === 0 && (
-                <tr>
-                  <td colSpan={10} className="px-5 py-12 text-center text-slate-400">
-                    <Package className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-                    <p className="text-xs font-semibold">Tidak ada produk ditemukan</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Ubah filter atau tambah produk baru</p>
-                  </td>
-                </tr>
+            {/* Low stock toggle */}
+            <Button
+              variant={filterLowStock ? 'outline' : 'ghost'}
+              size="sm"
+              icon={<AlertTriangle className="w-3.5 h-3.5" />}
+              onClick={() => setFilterLowStock(!filterLowStock)}
+              className={clsx(
+                filterLowStock && 'border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100',
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Modal Form Tambah / Edit Produk */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 px-4">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowForm(false)} />
-          <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            {/* Form Header */}
-            <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b border-slate-100 flex items-center justify-between rounded-t-2xl">
-              <h3 className="text-sm font-black text-slate-900">
-                {editId !== null ? 'Edit Produk' : 'Tambah Produk Baru'}
-              </h3>
-              <button
-                onClick={() => setShowForm(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              {/* Kode & Nama */}
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Produk</label>
-                  <input
-                    type="text"
-                    value={form.product_code}
-                    onChange={e => updateField('product_code', e.target.value)}
-                    placeholder="PRD-XXXXXX"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Produk *</label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={e => updateField('name', e.target.value)}
-                    placeholder="Nama produk"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-              </div>
-
-              {/* Barcode */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Barcode</label>
-                <input
-                  type="text"
-                  value={form.barcode}
-                  onChange={e => updateField('barcode', e.target.value)}
-                  placeholder="Barcode produk"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              {/* Relations */}
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kategori</label>
-                  <select
-                    value={form.category_id}
-                    onChange={e => updateField('category_id', e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">— Pilih —</option>
-                    {categories.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sub Kategori</label>
-                  <select
-                    value={form.sub_category_id}
-                    onChange={e => updateField('sub_category_id', e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">— Pilih —</option>
-                    {filteredSubCategories.map(sc => (
-                      <option key={sc.id} value={sc.id}>{sc.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Brand</label>
-                  <select
-                    value={form.brand_id}
-                    onChange={e => updateField('brand_id', e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">— Pilih —</option>
-                    {brands.map(b => (
-                      <option key={b.id} value={b.id}>{b.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Maker / Pabrikan</label>
-                  <select
-                    value={form.product_maker_id}
-                    onChange={e => updateField('product_maker_id', e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">— Pilih —</option>
-                    {makers.map(m => (
-                      <option key={m.id} value={m.id}>{m.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tipe Produk</label>
-                  <select
-                    value={form.product_type_id}
-                    onChange={e => updateField('product_type_id', e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">— Pilih —</option>
-                    {productTypes.map(pt => (
-                      <option key={pt.id} value={pt.id}>{pt.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Supplier</label>
-                  <select
-                    value={form.supplier_id}
-                    onChange={e => updateField('supplier_id', e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">— Pilih —</option>
-                    {suppliers.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Unit & Prices */}
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan</label>
-                  <select
-                    value={form.unit_id}
-                    onChange={e => updateField('unit_id', e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">— Pilih —</option>
-                    {units.map(u => (
-                      <option key={u.id} value={u.id}>{u.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga Beli (Rp)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.purchase_price}
-                    onChange={e => updateField('purchase_price', Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga Jual (Rp)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.selling_price}
-                    onChange={e => updateField('selling_price', Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-              </div>
-
-              {/* Stock Min */}
-              <div className="w-1/3">
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Stok Minimum</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={form.stock_min}
-                  onChange={e => updateField('stock_min', Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              {/* Checkboxes */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { key: 'allow_open_price' as const, label: 'Open Price' },
-                  { key: 'has_serial_number' as const, label: 'Serial Number' },
-                  { key: 'is_member_only' as const, label: 'Member Only' },
-                  { key: 'is_active' as const, label: 'Aktif' },
-                ].map(cb => (
-                  <label key={cb.key} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={form[cb.key]}
-                      onChange={e => updateField(cb.key, e.target.checked)}
-                      className="w-3.5 h-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-xs font-bold text-slate-700">{cb.label}</span>
-                  </label>
-                ))}
-              </div>
-              <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors w-fit">
-                <input
-                  type="checkbox"
-                  checked={form.is_published}
-                  onChange={e => updateField('is_published', e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-xs font-bold text-slate-700">Published (Tampil di POS)</span>
-              </label>
-
-              {/* Description */}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Deskripsi</label>
-                <textarea
-                  rows={3}
-                  value={form.description}
-                  onChange={e => updateField('description', e.target.value)}
-                  placeholder="Deskripsi produk (opsional)"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Form Footer */}
-            <div className="sticky bottom-0 bg-white z-10 px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-2 rounded-b-2xl">
-              <button
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-md shadow-primary-600/30 transition-all flex items-center gap-1.5"
-              >
-                <Save className="w-3.5 h-3.5" />
-                {editId !== null ? 'Simpan Perubahan' : 'Tambah Produk'}
-              </button>
-            </div>
+            >
+              Stok Menipis
+            </Button>
           </div>
         </div>
-      )}
+      </Card>
+
+      {/* ── Products Table ── */}
+      <TableContainer>
+        <TableHeader
+          icon={<Layers className="w-4 h-4 text-primary-600" />}
+          count={filteredProducts.length}
+          extra={
+            <span className="text-[10px] text-slate-400">
+              Menampilkan stok:{' '}
+              <span className="font-bold text-primary-600">{selectedLocName}</span>
+            </span>
+          }
+        >
+          Daftar Produk
+        </TableHeader>
+
+        <TableBase
+          columns={columns}
+          emptyMessage="Tidak ada produk ditemukan"
+          emptyIcon={<Package className="w-10 h-10 mx-auto text-slate-300" />}
+          colSpan={columns.length}
+        >
+          {paginatedProducts.length === 0 ? (
+            <TableEmpty
+              colSpan={columns.length}
+              message="Tidak ada produk ditemukan"
+              icon={<Package className="w-10 h-10 mx-auto mb-2 text-slate-300" />}
+            />
+          ) : (
+            paginatedProducts.map(p => {
+              const locStock =
+                p.stocks?.find(s => s.location_id === selectedLocationId)?.quantity ?? 0;
+              const isLow = p.stock_global <= p.stock_min && p.stock_global > 0;
+              const isOut = p.stock_global <= 0;
+
+              return (
+                <TableRow key={p.id}>
+                  {/* Kode */}
+                  <td className="px-4 py-3 font-mono font-bold text-primary-700 text-[11px]">
+                    {p.product_code}
+                  </td>
+
+                  {/* Nama */}
+                  <td className="px-4 py-3">
+                    <div className="font-bold text-slate-800 line-clamp-1">{p.name}</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      {[p.maker?.name, p.product_type?.name].filter(Boolean).join(' \u2022 ') || '\u2014'}
+                    </div>
+                  </td>
+
+                  {/* Kategori */}
+                  <td className="px-4 py-3 text-slate-600">{p.category?.name || '\u2014'}</td>
+
+                  {/* Brand */}
+                  <td className="px-4 py-3 text-slate-600">{p.brand?.name || '\u2014'}</td>
+
+                  {/* Tipe */}
+                  <td className="px-4 py-3 text-slate-600">{p.product_type?.name || '\u2014'}</td>
+
+                  {/* Satuan */}
+                  <td className="px-4 py-3 text-slate-600">{p.unit?.short_name || p.unit?.name || '\u2014'}</td>
+
+                  {/* Harga Jual */}
+                  <td className="px-4 py-3 text-right font-bold text-slate-900 font-mono">
+                    {formatRp(p.selling_price)}
+                  </td>
+
+                  {/* Stok */}
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex flex-col items-center gap-0.5">
+                      <Badge variant={stockBadgeVariant(locStock, p.stock_min)}>
+                        {locStock}
+                      </Badge>
+                      <span className="text-[9px] text-slate-400">
+                        G: {p.stock_global}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <Badge
+                        variant={p.is_active ? 'success' : 'neutral'}
+                        className="cursor-pointer"
+                        onClick={() => toggleActive(p.id)}
+                        title={p.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                      >
+                        {p.is_active ? 'Aktif' : 'Nonaktif'}
+                      </Badge>
+                      <span
+                        className="cursor-pointer"
+                        onClick={() => togglePublished(p.id)}
+                        title={p.is_published ? 'Sembunyikan dari POS' : 'Tampilkan di POS'}
+                      >
+                        {p.is_published ? (
+                          <Badge variant="success" pill>Published</Badge>
+                        ) : (
+                          <Badge variant="neutral" pill>Draft</Badge>
+                        )}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Aksi */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={<Edit3 className="w-3.5 h-3.5" />}
+                        onClick={() => openEdit(p)}
+                        title="Edit"
+                      />
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        icon={<Trash2 className="w-3.5 h-3.5" />}
+                        onClick={() => handleDelete(p.id)}
+                        title="Hapus"
+                      />
+                    </div>
+                  </td>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBase>
+
+        {/* ── Pagination ── */}
+        <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2 text-slate-500">
+            <span>Halaman</span>
+            <span className="font-bold text-slate-700">
+              {safePage} / {totalPages}
+            </span>
+            <span className="text-slate-400">({filteredProducts.length} data)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Page size selector */}
+            <Select
+              options={PAGE_SIZE_OPTIONS.map(s => ({ value: s, label: `${s} / hal` }))}
+              value={pageSize}
+              onChange={e => setPageSize(Number(e.target.value))}
+              wrapperClassName="w-auto"
+            />
+            {/* Prev */}
+            <Button
+              variant="ghost"
+              size="xs"
+              disabled={safePage <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+            >
+              Prev
+            </Button>
+            {/* Page numbers */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => {
+                if (totalPages <= 7) return true;
+                if (p === 1 || p === totalPages) return true;
+                if (Math.abs(p - safePage) <= 1) return true;
+                return false;
+              })
+              .reduce<(number | '...')[]>((acc, p, i, arr) => {
+                if (i > 0 && typeof arr[i - 1] === 'number' && p - (arr[i - 1] as number) > 1) {
+                  acc.push('...');
+                }
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) =>
+                p === '...' ? (
+                  <span key={`ellipsis-${i}`} className="px-1 text-slate-400">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={clsx(
+                      'w-7 h-7 rounded-lg text-[11px] font-bold transition-all',
+                      p === safePage
+                        ? 'bg-primary-600 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-slate-100',
+                    )}
+                  >
+                    {p}
+                  </button>
+                ),
+              )}
+            {/* Next */}
+            <Button
+              variant="ghost"
+              size="xs"
+              disabled={safePage >= totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      </TableContainer>
+
+      {/* ──────────────────── Modal Form Tambah / Edit Produk ──────────────────── */}
+      <Modal
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        size="xl"
+        title={editId !== null ? 'Edit Produk' : 'Tambah Produk Baru'}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setShowForm(false)}>
+              Batal
+            </Button>
+            <Button
+              variant="primary"
+              icon={<Save className="w-3.5 h-3.5" />}
+              onClick={handleSave}
+            >
+              {editId !== null ? 'Simpan Perubahan' : 'Tambah Produk'}
+            </Button>
+          </>
+        }
+      >
+        {/* Tabs */}
+        <Tabs
+          tabs={formTabs}
+          activeTab={activeFormTab}
+          onChange={id => setActiveFormTab(id as FormTab)}
+          variant="segmented"
+          className="mb-5"
+        />
+
+        {/* ── Tab: Standard ── */}
+        {activeFormTab === 'standard' && (
+          <div className="space-y-4">
+            {/* Kode & Nama */}
+            <div className="grid grid-cols-3 gap-3">
+              <Input
+                label="Kode Produk"
+                value={form.product_code}
+                onChange={e => updateField('product_code', e.target.value)}
+                placeholder="PRD-XXXXXX"
+              />
+              <div className="col-span-2">
+                <Input
+                  label="Nama Produk"
+                  required
+                  value={form.name}
+                  onChange={e => updateField('name', e.target.value)}
+                  placeholder="Nama produk"
+                />
+              </div>
+            </div>
+
+            {/* Barcode */}
+            <Input
+              label="Barcode"
+              leftIcon={<Barcode className="w-3.5 h-3.5" />}
+              value={form.barcode}
+              onChange={e => updateField('barcode', e.target.value)}
+              placeholder="Barcode produk"
+            />
+
+            {/* Kategori, Sub Kategori, Brand */}
+            <div className="grid grid-cols-3 gap-3">
+              <Select
+                label="Kategori"
+                options={formCategoryOptions}
+                value={form.category_id}
+                onChange={e => updateField('category_id', e.target.value ? Number(e.target.value) : '')}
+              />
+              <Select
+                label="Sub Kategori"
+                options={formSubCategoryOptions}
+                value={form.sub_category_id}
+                onChange={e => updateField('sub_category_id', e.target.value ? Number(e.target.value) : '')}
+              />
+              <Select
+                label="Brand"
+                options={formBrandOptions}
+                value={form.brand_id}
+                onChange={e => updateField('brand_id', e.target.value ? Number(e.target.value) : '')}
+              />
+            </div>
+
+            {/* Maker, Tipe, Supplier */}
+            <div className="grid grid-cols-3 gap-3">
+              <Select
+                label="Maker / Pabrikan"
+                options={formMakerOptions}
+                value={form.product_maker_id}
+                onChange={e => updateField('product_maker_id', e.target.value ? Number(e.target.value) : '')}
+              />
+              <Select
+                label="Tipe Produk"
+                options={formTypeOptions}
+                value={form.product_type_id}
+                onChange={e => updateField('product_type_id', e.target.value ? Number(e.target.value) : '')}
+              />
+              <Select
+                label="Supplier"
+                options={formSupplierOptions}
+                value={form.supplier_id}
+                onChange={e => updateField('supplier_id', e.target.value ? Number(e.target.value) : '')}
+              />
+            </div>
+
+            {/* Satuan, Harga Beli, Harga Jual */}
+            <div className="grid grid-cols-3 gap-3">
+              <Select
+                label="Satuan"
+                options={formUnitOptions}
+                value={form.unit_id}
+                onChange={e => updateField('unit_id', e.target.value ? Number(e.target.value) : '')}
+              />
+              <Input
+                label="Harga Beli (Rp)"
+                type="number"
+                min={0}
+                value={form.purchase_price}
+                onChange={e => updateField('purchase_price', Number(e.target.value))}
+              />
+              <Input
+                label="Harga Jual (Rp)"
+                type="number"
+                min={0}
+                required
+                value={form.selling_price}
+                onChange={e => updateField('selling_price', Number(e.target.value))}
+              />
+            </div>
+
+            {/* Stok Minimum */}
+            <div className="w-1/3">
+              <Input
+                label="Stok Minimum"
+                type="number"
+                min={0}
+                value={form.stock_min}
+                onChange={e => updateField('stock_min', Number(e.target.value))}
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Deskripsi
+              </label>
+              <textarea
+                rows={3}
+                value={form.description}
+                onChange={e => updateField('description', e.target.value)}
+                placeholder="Deskripsi produk (opsional)"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+              />
+            </div>
+
+            {/* Image Upload Preview */}
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Gambar Produk
+              </label>
+              <div className="flex items-start gap-4">
+                <div
+                  className={clsx(
+                    'w-24 h-24 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 text-slate-400 overflow-hidden',
+                    form.image_url && 'border-primary-300',
+                  )}
+                >
+                  {form.image_url ? (
+                    <img
+                      src={form.image_url}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <>
+                      <Image className="w-5 h-5 mb-1" />
+                      <span className="text-[9px] font-semibold">Upload</span>
+                    </>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <Input
+                    value={form.image_url}
+                    onChange={e => updateField('image_url', e.target.value)}
+                    placeholder="URL gambar produk"
+                  />
+                  {form.image_url && (
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      icon={<X className="w-3 h-3" />}
+                      onClick={() => updateField('image_url', '')}
+                    >
+                      Hapus Gambar
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Tab: Advance ── */}
+        {activeFormTab === 'advance' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Toggle
+                checked={form.allow_open_price}
+                onChange={val => updateField('allow_open_price', val)}
+                label="Allow Open Price"
+              />
+              <Toggle
+                checked={form.has_serial_number}
+                onChange={val => updateField('has_serial_number', val)}
+                label="Serial Number"
+              />
+              <Toggle
+                checked={form.is_active}
+                onChange={val => updateField('is_active', val)}
+                label="Aktif"
+              />
+              <Toggle
+                checked={form.is_published}
+                onChange={val => updateField('is_published', val)}
+                label="Published (Tampil di POS)"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── Tab: Member / Group ── */}
+        {activeFormTab === 'member' && (
+          <div className="space-y-4">
+            <Toggle
+              checked={form.is_member_only}
+              onChange={val => updateField('is_member_only', val)}
+              label="Member Only"
+            />
+            <p className="text-xs text-slate-400">
+              Aktifkan jika produk ini hanya tersedia untuk member / grup tertentu.
+            </p>
+          </div>
+        )}
+
+        {/* ── Tab: Price Tiers ── */}
+        {activeFormTab === 'price-tiers' && (
+          <div className="space-y-4">
+            <p className="text-xs text-slate-500">
+              Konfigurasi harga berdasarkan tier atau jumlah pembelian. (Coming soon)
+            </p>
+          </div>
+        )}
+
+        {/* ── Tab: Variants ── */}
+        {activeFormTab === 'variants' && (
+          <div className="space-y-4">
+            <p className="text-xs text-slate-500">
+              Kelola varian produk (warna, ukuran, kapasitas, dll). (Coming soon)
+            </p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

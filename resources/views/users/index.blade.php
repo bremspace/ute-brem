@@ -24,17 +24,17 @@
                 <h5 class="mb-0">Daftar User</h5>
                 <div>
                     @if(auth()->user()->hasPermission('management.users.logs'))
-                        <a href="{{ route('users.logs') }}" class="btn btn-info me-2">
+                        <a href="{{ route('users.logs') }}" class="btn btn-outline-primary me-2">
                             <i class="bx bx-history me-1"></i> Activity Logs
                         </a>
                     @endif
                     @if(auth()->user()->hasPermission('management.users.delete'))
-                        <a href="{{ route('users.trash') }}" class="btn btn-secondary me-2">
+                        <a href="{{ route('users.trash') }}" class="btn btn-outline-secondary me-2">
                             <i class="bx bx-trash me-1"></i> Tempat Sampah
                         </a>
                     @endif
                     @if(auth()->user()->hasPermission('management.roles.view'))
-                        <a href="{{ route('roles.index') }}" class="btn btn-warning me-2 d-none">
+                        <a href="{{ route('roles.index') }}" class="btn btn-outline-primary me-2 d-none">
                             <i class="bx bx-shield me-1"></i> Kelola Role
                         </a>
                     @endif
@@ -124,7 +124,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bx bx-save me-1"></i> Simpan
                             </button>

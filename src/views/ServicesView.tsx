@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { ServiceTransaction, Product, ServiceItem } from '../types';
+import { ServiceTransaction } from '../types';
 import {
   Wrench,
   Smartphone,
-  User,
   Phone,
   Calendar,
   Plus,
@@ -15,16 +14,28 @@ import {
   Package,
   ClipboardList,
   ScanLine,
-  Trash2
+  Trash2,
 } from 'lucide-react';
+import clsx from 'clsx';
 import { PatternLockInput } from '../components/services/PatternLockInput';
+import {
+  Button,
+  Card,
+  Input,
+  Select,
+  StatCard,
+  Tabs,
+  Modal,
+  StatusBadge,
+} from '../components/ui';
+import type { TabItem, SelectOption } from '../components/ui';
 
 const STATUS_META: Record<ServiceTransaction['status'], { label: string; badge: string; dot: string }> = {
   pending: { label: 'Menunggu', badge: 'bg-amber-100 text-amber-800', dot: 'bg-amber-500' },
   in_progress: { label: 'Dikerjakan', badge: 'bg-blue-100 text-blue-800', dot: 'bg-blue-500' },
   completed: { label: 'Selesai', badge: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500' },
   delivered: { label: 'Diambil', badge: 'bg-slate-200 text-slate-700', dot: 'bg-slate-500' },
-  cancelled: { label: 'Dibatalkan', badge: 'bg-red-100 text-red-800', dot: 'bg-red-500' }
+  cancelled: { label: 'Dibatalkan', badge: 'bg-red-100 text-red-800', dot: 'bg-red-500' },
 };
 
 const FILTERS: { key: string; label: string; match: (s: ServiceTransaction) => boolean }[] = [
@@ -33,14 +44,14 @@ const FILTERS: { key: string; label: string; match: (s: ServiceTransaction) => b
   { key: 'in_progress', label: 'Dikerjakan', match: s => s.status === 'in_progress' },
   { key: 'completed', label: 'Selesai', match: s => s.status === 'completed' },
   { key: 'delivered', label: 'Diambil', match: s => s.status === 'delivered' },
-  { key: 'cancelled', label: 'Dibatalkan', match: s => s.status === 'cancelled' }
+  { key: 'cancelled', label: 'Dibatalkan', match: s => s.status === 'cancelled' },
 ];
 
 const LOCK_META: Record<string, string> = {
   none: 'Tanpa Kunci',
   pin: 'PIN',
   pattern: 'Pola',
-  password: 'Password'
+  password: 'Password',
 };
 
 const fmt = (n: number) => `Rp ${n.toLocaleString('id-ID')}`;
@@ -61,16 +72,6 @@ interface DraftItem {
   purchasePrice: number;
 }
 
-interface DraftLine {
-  key: number;
-  itemType: 'service' | 'product';
-  productId?: number;
-  name: string;
-  quantity: number;
-  price: number;
-  purchasePrice: number;
-}
-
 export const ServicesView: React.FC = () => {
   const {
     serviceTransactions,
@@ -79,7 +80,7 @@ export const ServicesView: React.FC = () => {
     completeServicePayment,
     serviceItems,
     products,
-    currentUser
+    currentUser,
   } = useApp();
 
   const [filter, setFilter] = useState('all');
@@ -100,7 +101,7 @@ export const ServicesView: React.FC = () => {
     completenessNotes: '',
     warrantyDays: 7,
     lockType: 'none' as 'none' | 'pin' | 'pattern' | 'password',
-    lockCode: ''
+    lockCode: '',
   });
 
   // Line item builder state
@@ -127,7 +128,7 @@ export const ServicesView: React.FC = () => {
       antrean: by('pending') + by('in_progress'),
       dikerjakan: by('in_progress'),
       selesai: by('completed'),
-      diambil: by('delivered')
+      diambil: by('delivered'),
     };
   }, [serviceTransactions]);
 
@@ -136,7 +137,7 @@ export const ServicesView: React.FC = () => {
       customerName: '', customerPhone: '', deviceBrand: '', deviceModel: '',
       deviceImei: '', deviceColor: '', problemDescription: '',
       conditionNotes: '', completenessNotes: '', warrantyDays: 7,
-      lockType: 'none', lockCode: ''
+      lockType: 'none', lockCode: '',
     });
     setDraftType('service');
     setDraftServiceId('');
@@ -186,7 +187,7 @@ export const ServicesView: React.FC = () => {
         name: si.name,
         quantity: draftQty,
         price: draftPrice,
-        purchasePrice: 0
+        purchasePrice: 0,
       };
       setDraftItems(prev => [...prev, item]);
       setDraftQty(1);
@@ -200,7 +201,7 @@ export const ServicesView: React.FC = () => {
         name: p.name,
         quantity: draftQty,
         price: draftPrice,
-        purchasePrice: draftPurchasePrice
+        purchasePrice: draftPurchasePrice,
       };
       setDraftItems(prev => [...prev, item]);
       setDraftQty(1);
@@ -246,8 +247,8 @@ export const ServicesView: React.FC = () => {
         name: i.name,
         quantity: i.quantity,
         price: i.price,
-        purchasePrice: i.purchasePrice
-      }))
+        purchasePrice: i.purchasePrice,
+      })),
     });
 
     setShowCreate(false);
@@ -262,6 +263,26 @@ export const ServicesView: React.FC = () => {
     completeServicePayment(payingOrder.id, payMethod, paidAmount);
     setPayingOrder(null);
   };
+
+  const filterTabItems: TabItem[] = FILTERS.map(f => ({
+    id: f.key,
+    label: `${f.label} (${serviceTransactions.filter(f.match).length})`,
+  }));
+
+  const serviceItemOptions: SelectOption[] = serviceItems
+    .filter(s => s.is_active)
+    .map(s => ({ value: s.id, label: `${s.name} (${fmt(s.estimated_price)})` }));
+
+  const productOptions: SelectOption[] = products
+    .filter(p => p.is_active)
+    .map(p => ({ value: p.id, label: `${p.name} (Jual ${fmt(p.selling_price)})` }));
+
+  const lockTypeOptions: SelectOption[] = [
+    { value: 'none', label: 'Tanpa Kunci' },
+    { value: 'pin', label: 'PIN' },
+    { value: 'pattern', label: 'Pola (Pattern)' },
+    { value: 'password', label: 'Password' },
+  ];
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -279,52 +300,61 @@ export const ServicesView: React.FC = () => {
           </div>
         </div>
 
-        <button
+        <Button
           onClick={() => { resetForm(); setShowCreate(true); }}
-          className="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-md shadow-primary-600/30 transition-all inline-flex items-center gap-1.5"
+          icon={<Plus className="w-4 h-4" />}
         >
-          <Plus className="w-4 h-4" />
           Buat Order Servis Baru
-        </button>
+        </Button>
       </div>
 
       {/* Summary Kanban Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard icon={<ClipboardList className="w-5 h-5" />} iconClass="bg-amber-50 text-amber-600" label="Total Antrean" value={counts.antrean} sub="Menunggu + Dikerjakan" />
-        <SummaryCard icon={<Wrench className="w-5 h-5" />} iconClass="bg-blue-50 text-blue-600" label="Sedang Dikerjakan" value={counts.dikerjakan} sub="Unit dalam proses servis" />
-        <SummaryCard icon={<Check className="w-5 h-5" />} iconClass="bg-emerald-50 text-emerald-600" label="Selesai Siap Ambil" value={counts.selesai} sub="Unit selesai perbaikan" />
-        <SummaryCard icon={<Package className="w-5 h-5" />} iconClass="bg-slate-100 text-slate-600" label="Sudah Diambil" value={counts.diambil} sub="Unit telah diserahkan" />
+        <StatCard
+          label="Total Antrean"
+          value={`${counts.antrean} Unit`}
+          description="Menunggu + Dikerjakan"
+          icon={<ClipboardList className="w-5 h-5" />}
+          color="warning"
+        />
+        <StatCard
+          label="Sedang Dikerjakan"
+          value={`${counts.dikerjakan} Unit`}
+          description="Unit dalam proses servis"
+          icon={<Wrench className="w-5 h-5" />}
+          color="info"
+        />
+        <StatCard
+          label="Selesai Siap Ambil"
+          value={`${counts.selesai} Unit`}
+          description="Unit selesai perbaikan"
+          icon={<Check className="w-5 h-5" />}
+          color="success"
+        />
+        <StatCard
+          label="Sudah Diambil"
+          value={`${counts.diambil} Unit`}
+          description="Unit telah diserahkan"
+          icon={<Package className="w-5 h-5" />}
+          color="primary"
+        />
       </div>
 
       {/* Status Filter */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {FILTERS.map(f => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
-              filter === f.key
-                ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            {f.label}
-            <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
-              filter === f.key ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-            }`}>
-              {serviceTransactions.filter(f.match).length}
-            </span>
-          </button>
-        ))}
-      </div>
+      <Tabs
+        tabs={filterTabItems}
+        activeTab={filter}
+        onChange={setFilter}
+        variant="pill"
+      />
 
       {/* Order Cards */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-16 text-center text-slate-400">
+        <Card className="flex flex-col items-center justify-center py-16 text-center text-slate-400">
           <Smartphone className="w-12 h-12 stroke-[1.2] mb-2 text-slate-300" />
           <p className="text-sm font-semibold">Tidak ada order servis</p>
           <p className="text-xs text-slate-400 mt-0.5">Buat order servis baru atau ubah filter status</p>
-        </div>
+        </Card>
       ) : (
         <div className="space-y-3">
           {filtered.map(s => (
@@ -343,185 +373,212 @@ export const ServicesView: React.FC = () => {
       )}
 
       {/* Create Modal */}
-      {showCreate && (
-        <Modal onClose={() => setShowCreate(false)} title="Buat Order Servis Baru">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Nama Pelanggan" required>
-                <input value={form.customerName} onChange={e => setField('customerName', e.target.value)} placeholder="Nama pelanggan" className={inputCls} />
-              </Field>
-              <Field label="No. Telepon">
-                <input value={form.customerPhone} onChange={e => setField('customerPhone', e.target.value)} placeholder="08xxxxxxxxxx" className={inputCls} />
-              </Field>
+      <Modal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        title="Buat Order Servis Baru"
+        size="xl"
+        headerIcon={<Wrench className="w-5 h-5" />}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowCreate(false)} icon={<X className="w-4 h-4" />}>
+              Batal
+            </Button>
+            <Button onClick={handleSubmit} icon={<Check className="w-4 h-4" />} className="flex-1">
+              Simpan Order Servis
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input label="Nama Pelanggan" required value={form.customerName} onChange={e => setField('customerName', e.target.value)} placeholder="Nama pelanggan" />
+            <Input label="No. Telepon" value={form.customerPhone} onChange={e => setField('customerPhone', e.target.value)} placeholder="08xxxxxxxxxx" />
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Input label="Brand Device" required value={form.deviceBrand} onChange={e => setField('deviceBrand', e.target.value)} placeholder="Samsung" />
+            <Input label="Model" required value={form.deviceModel} onChange={e => setField('deviceModel', e.target.value)} placeholder="A52" />
+            <Input label="IMEI (opsional)" value={form.deviceImei} onChange={e => setField('deviceImei', e.target.value)} placeholder="IMEI" />
+            <Input label="Warna (opsional)" value={form.deviceColor} onChange={e => setField('deviceColor', e.target.value)} placeholder="Hitam" />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">
+              Deskripsi Masalah <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={form.problemDescription}
+              onChange={e => setField('problemDescription', e.target.value)}
+              rows={3}
+              placeholder="Jelaskan kerusakan/keluhan..."
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Catatan Kondisi (opsional)</label>
+              <textarea
+                value={form.conditionNotes}
+                onChange={e => setField('conditionNotes', e.target.value)}
+                rows={2}
+                placeholder="Kondisi fisik device saat diterima"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
+              />
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Field label="Brand Device" required>
-                <input value={form.deviceBrand} onChange={e => setField('deviceBrand', e.target.value)} placeholder="Samsung" className={inputCls} />
-              </Field>
-              <Field label="Model" required>
-                <input value={form.deviceModel} onChange={e => setField('deviceModel', e.target.value)} placeholder="A52" className={inputCls} />
-              </Field>
-              <Field label="IMEI (opsional)">
-                <input value={form.deviceImei} onChange={e => setField('deviceImei', e.target.value)} placeholder="IMEI" className={inputCls} />
-              </Field>
-              <Field label="Warna (opsional)">
-                <input value={form.deviceColor} onChange={e => setField('deviceColor', e.target.value)} placeholder="Hitam" className={inputCls} />
-              </Field>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Catatan Kelengkapan (opsional)</label>
+              <textarea
+                value={form.completenessNotes}
+                onChange={e => setField('completenessNotes', e.target.value)}
+                rows={2}
+                placeholder="Kelengkapan saat diterima (jok, sim card, dsb)"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
+              />
             </div>
+          </div>
 
-            <Field label="Deskripsi Masalah" required>
-              <textarea value={form.problemDescription} onChange={e => setField('problemDescription', e.target.value)} rows={3} placeholder="Jelaskan kerusakan/keluhan..." className={inputCls} />
-            </Field>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Masa Garansi (hari)"
+              type="number"
+              min="0"
+              value={form.warrantyDays}
+              onChange={e => setField('warrantyDays', Number(e.target.value))}
+            />
+            <Select
+              label="Jenis Kunci Device"
+              value={form.lockType}
+              onChange={e => setField('lockType', e.target.value as any)}
+              options={lockTypeOptions}
+            />
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Catatan Kondisi (opsional)">
-                <textarea value={form.conditionNotes} onChange={e => setField('conditionNotes', e.target.value)} rows={2} placeholder="Kondisi fisik device saat diterima" className={inputCls} />
-              </Field>
-              <Field label="Catatan Kelengkapan (opsional)">
-                <textarea value={form.completenessNotes} onChange={e => setField('completenessNotes', e.target.value)} rows={2} placeholder="Kelengkapan saat diterima (jok, sim card, dsb)" className={inputCls} />
-              </Field>
+          {form.lockType !== 'none' && (
+            <div className={form.lockType === 'pattern' ? '' : 'grid grid-cols-1'}>
+              <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">
+                Kode Kunci {LOCK_META[form.lockType] || ''}
+              </label>
+              {form.lockType === 'pattern' ? (
+                <PatternLockInput value={form.lockCode} onChange={v => setField('lockCode', v)} />
+              ) : (
+                <Input
+                  type="password"
+                  value={form.lockCode}
+                  onChange={e => setField('lockCode', e.target.value)}
+                  placeholder="Masukkan kode kunci"
+                />
+              )}
             </div>
+          )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Masa Garansi (hari)">
-                <input type="number" min="0" value={form.warrantyDays} onChange={e => setField('warrantyDays', Number(e.target.value))} className={inputCls} />
-              </Field>
-              <Field label="Jenis Kunci Device">
-                <select value={form.lockType} onChange={e => setField('lockType', e.target.value as any)} className={inputCls}>
-                  <option value="none">Tanpa Kunci</option>
-                  <option value="pin">PIN</option>
-                  <option value="pattern">Pola (Pattern)</option>
-                  <option value="password">Password</option>
-                </select>
-              </Field>
-            </div>
+          {/* Line Items Builder */}
+          <div className="rounded-2xl border border-slate-200 p-3 space-y-3 bg-slate-50/50">
+            <div className="text-xs font-bold text-slate-700">Tambah Item Servis / Sparepart</div>
 
-            {form.lockType !== 'none' && (
-              <div className={form.lockType === 'pattern' ? '' : 'grid grid-cols-1'}>
-                <Field label={`Kode Kunci ${LOCK_META[form.lockType] || ''}`}>
-                  {form.lockType === 'pattern' ? (
-                    <PatternLockInput value={form.lockCode} onChange={v => setField('lockCode', v)} />
-                  ) : (
-                    <input
-                      type="password"
-                      value={form.lockCode}
-                      onChange={e => setField('lockCode', e.target.value)}
-                      placeholder="Masukkan kode kunci"
-                      className={inputCls}
-                    />
-                  )}
-                </Field>
-              </div>
-            )}
-
-            {/* Line Items Builder */}
-            <div className="rounded-2xl border border-slate-200 p-3 space-y-3 bg-slate-50/50">
-              <div className="text-xs font-bold text-slate-700">Tambah Item Servis / Sparepart</div>
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDraftTypeChange('service')}
-                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                    draftType === 'service' ? 'bg-primary-600 text-white' : 'bg-white border border-slate-200 text-slate-600'
-                  }`}
-                >
-                  Servis
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDraftTypeChange('product')}
-                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                    draftType === 'product' ? 'bg-primary-600 text-white' : 'bg-white border border-slate-200 text-slate-600'
-                  }`}
-                >
-                  Sparepart
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
-                {draftType === 'service' ? (
-                  <div className="sm:col-span-7">
-                    <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Pilih Jenis Servis</label>
-                    <select value={draftServiceId} onChange={e => handleDraftServiceSelect(e.target.value === '' ? '' : Number(e.target.value))} className={inputCls}>
-                      <option value="">-- Pilih servis --</option>
-                      {serviceItems.filter(s => s.is_active).map(s => (
-                        <option key={s.id} value={s.id}>{s.name} ({fmt(s.estimated_price)})</option>
-                      ))}
-                    </select>
-                  </div>
-                ) : (
-                  <div className="sm:col-span-7">
-                    <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Pilih Sparepart</label>
-                    <select value={draftProductId} onChange={e => handleDraftProductSelect(e.target.value === '' ? '' : Number(e.target.value))} className={inputCls}>
-                      <option value="">-- Pilih sparepart --</option>
-                      {products.filter(p => p.is_active).map(p => (
-                        <option key={p.id} value={p.id}>{p.name} (Jual {fmt(p.selling_price)})</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Qty</label>
-                  <input type="number" min="1" value={draftQty} onChange={e => setDraftQty(Math.max(1, Number(e.target.value)))} className={inputCls} />
-                </div>
-
-                <div className="sm:col-span-3 space-y-1">
-                  <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Harga (Rp)</label>
-                  <input type="number" min="0" value={draftPrice} onChange={e => setDraftPrice(Number(e.target.value))} className={inputCls} />
-                </div>
-              </div>
-
-              <button
+            <div className="flex gap-2">
+              <Button
                 type="button"
-                onClick={addDraftItem}
-                disabled={draftType === 'service' ? draftServiceId === '' : draftProductId === ''}
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 disabled:opacity-40 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5"
+                onClick={() => handleDraftTypeChange('service')}
+                variant={draftType === 'service' ? 'primary' : 'secondary'}
+                className="flex-1"
               >
-                <Plus className="w-4 h-4" />
-                Tambah Item
-              </button>
+                Servis
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleDraftTypeChange('product')}
+                variant={draftType === 'product' ? 'primary' : 'secondary'}
+                className="flex-1"
+              >
+                Sparepart
+              </Button>
+            </div>
 
-              {draftItems.length > 0 && (
-                <div className="space-y-2">
-                  {draftItems.map(it => (
-                    <div key={it.key} className="flex items-center justify-between gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2">
-                      <div className="min-w-0">
-                        <div className="text-xs font-bold text-slate-800 truncate">{it.name}</div>
-                        <div className="text-[10px] text-slate-500">
-                          {it.itemType === 'product' ? 'Sparepart' : 'Servis'} × {it.quantity} • {fmt(it.price)}/unit
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs font-black text-primary-700">{fmt(it.price * it.quantity)}</span>
-                        <button type="button" onClick={() => removeDraftItem(it.key)} className="p-1 text-slate-400 hover:text-red-600 rounded-lg">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+              {draftType === 'service' ? (
+                <div className="sm:col-span-7">
+                  <Select
+                    label="Pilih Jenis Servis"
+                    value={draftServiceId}
+                    onChange={e => handleDraftServiceSelect(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="-- Pilih servis --"
+                    options={serviceItemOptions}
+                  />
+                </div>
+              ) : (
+                <div className="sm:col-span-7">
+                  <Select
+                    label="Pilih Sparepart"
+                    value={draftProductId}
+                    onChange={e => handleDraftProductSelect(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="-- Pilih sparepart --"
+                    options={productOptions}
+                  />
                 </div>
               )}
 
-              <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-600">Estimasi Total</span>
-                <span className="text-lg font-black text-primary-700">{fmt(estimatedTotal)}</span>
+              <div className="sm:col-span-2">
+                <Input
+                  label="Qty"
+                  type="number"
+                  min="1"
+                  value={draftQty}
+                  onChange={e => setDraftQty(Math.max(1, Number(e.target.value)))}
+                />
+              </div>
+
+              <div className="sm:col-span-3">
+                <Input
+                  label="Harga (Rp)"
+                  type="number"
+                  min="0"
+                  value={draftPrice}
+                  onChange={e => setDraftPrice(Number(e.target.value))}
+                />
               </div>
             </div>
-          </div>
 
-          <div className="flex gap-2 mt-5 pt-4 border-t border-slate-100">
-            <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1.5">
-              <X className="w-4 h-4" /> Batal
-            </button>
-            <button type="button" onClick={handleSubmit} className="flex-1 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary-600/30 flex items-center justify-center gap-2">
-              <Check className="w-4 h-4" /> Simpan Order Servis
-            </button>
+            <Button
+              type="button"
+              onClick={addDraftItem}
+              disabled={draftType === 'service' ? draftServiceId === '' : draftProductId === ''}
+              icon={<Plus className="w-4 h-4" />}
+              variant="secondary"
+              className="w-full"
+            >
+              Tambah Item
+            </Button>
+
+            {draftItems.length > 0 && (
+              <div className="space-y-2">
+                {draftItems.map(it => (
+                  <div key={it.key} className="flex items-center justify-between gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2">
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-slate-800 truncate">{it.name}</div>
+                      <div className="text-[10px] text-slate-500">
+                        {it.itemType === 'product' ? 'Sparepart' : 'Servis'} × {it.quantity} • {fmt(it.price)}/unit
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs font-black text-primary-700">{fmt(it.price * it.quantity)}</span>
+                      <Button type="button" variant="ghost" size="xs" onClick={() => removeDraftItem(it.key)} className="hover:!text-red-600">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-600">Estimasi Total</span>
+              <span className="text-lg font-black text-primary-700">{fmt(estimatedTotal)}</span>
+            </div>
           </div>
-        </Modal>
-      )}
+        </div>
+      </Modal>
 
       {/* Payment Modal */}
       {payingOrder && (
@@ -539,48 +596,6 @@ export const ServicesView: React.FC = () => {
   );
 };
 
-const inputCls =
-  'w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm';
-
-const Field: React.FC<{ label: string; required?: boolean; children: React.ReactNode }> = ({ label, required, children }) => (
-  <label className="block">
-    <span className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">
-      {label} {required && <span className="text-red-500">*</span>}
-    </span>
-    {children}
-  </label>
-);
-
-const Modal: React.FC<{ title: string; onClose: () => void; children: React.ReactNode }> = ({ title, onClose, children }) => (
-  <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/40 overflow-y-auto">
-    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8">
-      <div className="sticky top-0 bg-white border-b border-slate-100 px-5 py-4 rounded-t-2xl flex items-center justify-between">
-        <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <Wrench className="w-5 h-5 text-primary-600" />
-          {title}
-        </h2>
-        <button type="button" onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-      <div className="px-5 py-5">{children}</div>
-    </div>
-  </div>
-);
-
-const SummaryCard: React.FC<{ icon: React.ReactNode; iconClass: string; label: string; value: number; sub: string }> = ({ icon, iconClass, label, value, sub }) => (
-  <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
-    <div className="flex items-center justify-between">
-      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</span>
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${iconClass}`}>{icon}</div>
-    </div>
-    <div className="mt-3">
-      <div className="text-2xl font-black text-slate-900">{value} Unit</div>
-      <div className="text-xs text-slate-500 mt-1">{sub}</div>
-    </div>
-  </div>
-);
-
 const OrderCard: React.FC<{
   order: ServiceTransaction;
   expanded: boolean;
@@ -594,7 +609,10 @@ const OrderCard: React.FC<{
   const tech = order.technician_name || '-';
 
   return (
-    <div className={`bg-white rounded-2xl border shadow-sm transition-all ${expanded ? 'border-primary-400 ring-1 ring-primary-100' : 'border-slate-200'}`}>
+    <div className={clsx(
+      'bg-white rounded-2xl border shadow-sm transition-all',
+      expanded ? 'border-primary-400 ring-1 ring-primary-100' : 'border-slate-200',
+    )}>
       {/* Card main row */}
       <div className="p-4 flex items-start gap-3 cursor-pointer" onClick={onToggle}>
         <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
@@ -604,12 +622,12 @@ const OrderCard: React.FC<{
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono font-bold text-primary-700 text-xs">{order.service_code}</span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${meta.badge}`}>{meta.label}</span>
+            <StatusBadge status={order.status}>{meta.label}</StatusBadge>
             {order.credit_status === 'unpaid' && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">Belum Lunas</span>
+              <StatusBadge status="unpaid">Belum Lunas</StatusBadge>
             )}
             {order.credit_status === 'partial' && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Cicil</span>
+              <StatusBadge status="partial">Cicil</StatusBadge>
             )}
             <span className="text-[10px] text-slate-400 font-mono">{fmtDate(order.service_at)}</span>
           </div>
@@ -636,25 +654,45 @@ const OrderCard: React.FC<{
       <div className="px-4 pb-4 flex items-center gap-2">
         {order.status === 'pending' && (
           <>
-            <button type="button" onClick={e => { e.stopPropagation(); onStart(); }} className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm shadow-blue-600/30 flex items-center gap-1.5">
-              <Wrench className="w-3.5 h-3.5" /> Mulai Kerjakan
-            </button>
-            <button type="button" onClick={e => { e.stopPropagation(); if (confirm('Batalkan order servis ini?')) onCancel(); }} className="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-xl border border-red-200 flex items-center gap-1.5">
-              <X className="w-3.5 h-3.5" /> Batal
-            </button>
+            <Button
+              size="sm"
+              onClick={e => { e.stopPropagation(); onStart(); }}
+              icon={<Wrench className="w-3.5 h-3.5" />}
+              className="!bg-blue-600 hover:!bg-blue-700 !shadow-blue-600/30"
+            >
+              Mulai Kerjakan
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={e => { e.stopPropagation(); if (confirm('Batalkan order servis ini?')) onCancel(); }}
+              icon={<X className="w-3.5 h-3.5" />}
+              className="!border-red-200 !text-red-600 hover:!bg-red-100"
+            >
+              Batal
+            </Button>
           </>
         )}
 
         {order.status === 'in_progress' && (
-          <button type="button" onClick={e => { e.stopPropagation(); onMarkComplete(); }} className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm shadow-emerald-600/30 flex items-center gap-1.5">
-            <Check className="w-3.5 h-3.5" /> Tandai Selesai
-          </button>
+          <Button
+            size="sm"
+            variant="success"
+            onClick={e => { e.stopPropagation(); onMarkComplete(); }}
+            icon={<Check className="w-3.5 h-3.5" />}
+          >
+            Tandai Selesai
+          </Button>
         )}
 
         {order.status === 'completed' && (
-          <button type="button" onClick={e => { e.stopPropagation(); onPay(); }} className="px-3.5 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-sm shadow-primary-600/30 flex items-center gap-1.5">
-            <Banknote className="w-3.5 h-3.5" /> Ambil & Bayar
-          </button>
+          <Button
+            size="sm"
+            onClick={e => { e.stopPropagation(); onPay(); }}
+            icon={<Banknote className="w-3.5 h-3.5" />}
+          >
+            Ambil & Bayar
+          </Button>
         )}
 
         <span className="ml-auto text-[10px] text-slate-400 font-semibold flex items-center gap-1">
@@ -749,16 +787,33 @@ const PayModal: React.FC<{
     { key: 'cash', label: 'Tunai' },
     { key: 'transfer', label: 'Transfer' },
     { key: 'qris', label: 'QRIS' },
-    { key: 'tempo', label: 'Tempo / Kredit' }
+    { key: 'tempo', label: 'Tempo / Kredit' },
   ];
 
+  const payMethodOptions: SelectOption[] = methods.map(m => ({ value: m.key, label: m.label }));
+
   return (
-    <Modal title="Ambil & Bayar" onClose={onClose}>
+    <Modal
+      open
+      onClose={onClose}
+      title="Ambil & Bayar"
+      size="lg"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} icon={<X className="w-4 h-4" />}>
+            Batal
+          </Button>
+          <Button onClick={onConfirm} icon={<Check className="w-4 h-4" />} className="flex-1">
+            Konfirmasi Penyerahan & Pembayaran
+          </Button>
+        </>
+      }
+    >
       <div className="space-y-4">
         <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-1.5 text-xs">
           <div className="flex justify-between items-center">
             <span className="font-bold text-slate-500">{order.service_code}</span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${STATUS_META[order.status].badge}`}>{STATUS_META[order.status].label}</span>
+            <StatusBadge status={order.status}>{STATUS_META[order.status].label}</StatusBadge>
           </div>
           <div className="flex justify-between text-slate-600"><span>Pelanggan</span><span className="font-semibold text-slate-800">{order.customer_name}</span></div>
           <div className="flex justify-between text-slate-600"><span>Device</span><span className="font-semibold text-slate-800">{order.device_brand} {order.device_model}</span></div>
@@ -774,38 +829,25 @@ const PayModal: React.FC<{
           <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Metode Pembayaran</div>
           <div className="grid grid-cols-2 gap-2">
             {methods.map(m => (
-              <button
+              <Button
                 key={m.key}
                 type="button"
                 onClick={() => setMethod(m.key)}
-                className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all border ${
-                  method === m.key ? 'bg-primary-600 text-white border-primary-600 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                }`}
+                variant={method === m.key ? 'primary' : 'secondary'}
               >
                 {m.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
 
-        <Field label={`Jumlah Dibayar (Rp)`}>
-          <input type="number" min="0" value={amount} onChange={e => setAmount(Number(e.target.value))} className={inputCls} />
-        </Field>
+        <Input label="Jumlah Dibayar (Rp)" type="number" min="0" value={amount} onChange={e => setAmount(Number(e.target.value))} />
 
         {method === 'tempo' && (
           <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
             Tempo = serahkan unit tanpa pelunasan penuh. Sisa tagihan tercatat sebagai piutang ({fmt(Math.max(0, remaining - amount))}).
           </div>
         )}
-
-        <div className="flex gap-2 pt-2">
-          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1.5">
-            <X className="w-4 h-4" /> Batal
-          </button>
-          <button type="button" onClick={onConfirm} className="flex-1 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary-600/30 flex items-center justify-center gap-2">
-            <Check className="w-4 h-4" /> Konfirmasi Penyerahan & Pembayaran
-          </button>
-        </div>
       </div>
     </Modal>
   );

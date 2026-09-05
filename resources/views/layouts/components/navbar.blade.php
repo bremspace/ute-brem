@@ -21,14 +21,15 @@
  @endphp
 
  <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-     id="layout-navbar">
+      id="layout-navbar">
+     {{-- Mobile Sidebar Toggle --}}
      <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
          <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
              <i class="icon-base bx bx-menu icon-md"></i>
          </a>
      </div>
 
-     <!-- Desktop Sidebar Toggle -->
+     {{-- Desktop Sidebar Toggle --}}
      <div class="sidebar-toggle-desktop navbar-nav align-items-xl-center me-4 me-xl-0 d-none d-xl-block">
          <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)" id="sidebar-toggle-btn"
              title="Toggle Sidebar">
@@ -37,26 +38,26 @@
      </div>
 
      <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
-         <!-- Search -->
+         {{-- Search --}}
          <div class="navbar-nav align-items-center me-auto">
              <div class="nav-item d-flex align-items-center position-relative">
                  <span class="w-px-22 h-px-22"><i class="icon-base bx bx-search icon-md"></i></span>
                  <input type="text" id="menu-search"
-                     class="form-control border-0 shadow-none ps-1 ps-sm-2 d-md-block d-none"
+                     class="form-control border-0 shadow-none ps-1 ps-sm-2 d-md-block d-none rounded-lg"
                      placeholder="Search menu..." aria-label="Search menu..." autocomplete="off" autofocus />
 
-                 <!-- Search Results Dropdown -->
+                 {{-- Search Results Dropdown --}}
                  <div id="search-results" class="dropdown-menu search-dropdown d-none"
                      style="width: 320px; max-height: 400px; overflow-y: auto;">
                      <div class="dropdown-header d-flex justify-content-between align-items-center">
                          <small class="text-muted fw-semibold">Search Results</small>
                          <small class="text-muted">
                              <i class="bx bx-info-circle me-1"></i>
-                             <span class="d-none d-sm-inline">Use ↑↓ to navigate, Enter to select</span>
+                             <span class="d-none d-sm-inline">Use arrow keys to navigate</span>
                          </small>
                      </div>
                      <div id="search-results-content">
-                         <!-- Results will be populated here -->
+                         {{-- Results populated by JS --}}
                      </div>
                      <div id="no-results" class="dropdown-item-text text-center text-muted py-3 d-none">
                          <i class="bx bx-search-alt-2 me-2"></i>No results found
@@ -75,15 +76,16 @@
              </div>
          </div>
 
-         <!-- /Search -->
-
+         {{-- Right Actions --}}
          <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+            {{-- Home --}}
             <li class="nav-item me-2">
                 <a class="nav-link px-2" href="{{ route('home') }}" title="Dashboard">
                     <i class="icon-base bx bx-home icon-md"></i>
                 </a>
             </li>
 
+            {{-- Quick Add Product (contextual) --}}
             @if (request()->routeIs('products.*') && !request()->routeIs('products.create') && auth()->user()->hasPermission('master.products.create'))
                 <li class="nav-item me-2">
                     <a class="nav-link px-2" href="{{ route('products.create') }}" title="Tambah Produk">
@@ -91,6 +93,8 @@
                     </a>
                 </li>
             @endif
+
+            {{-- Stock Notifications --}}
              @if(auth()->user()->hasPermission('master.product_stocks.view'))
                  <li class="nav-item navbar-dropdown dropdown me-3">
                      <a class="nav-link dropdown-toggle hide-arrow position-relative px-2" href="javascript:void(0);" data-bs-toggle="dropdown" aria-label="Notifikasi stok minimum">
@@ -165,13 +169,14 @@
                  </li>
              @endif
 
+             {{-- Theme Toggle --}}
              <li class="nav-item me-3">
                  <button type="button" class="btn theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
                      <i class="theme-toggle-icon bx bx-moon"></i>
                  </button>
              </li>
 
-             <!-- User -->
+             {{-- User Dropdown --}}
              <li class="nav-item navbar-dropdown dropdown-user dropdown">
                  <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);"
                      data-bs-toggle="dropdown">
@@ -240,7 +245,6 @@
                      </li>
                  </ul>
              </li>
-             <!--/ User -->
          </ul>
      </div>
  </nav>

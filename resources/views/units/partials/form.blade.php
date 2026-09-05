@@ -7,5 +7,5 @@
 </div>
 <div class="mt-4">
     <button type="submit" class="btn btn-primary"><i class="bx bx-save me-1"></i>Simpan</button>
-    <a href="{{ route('units.index') }}" class="btn btn-secondary"><i class="bx bx-x me-1"></i>Batal</a>
+    <a href="{{ route('units.index') }}" class="btn btn-outline-secondary"><i class="bx bx-x me-1"></i>Batal</a>
 </div>

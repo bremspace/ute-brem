@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Product } from '../types';
+import { clsx } from 'clsx';
 import {
   Search,
   Barcode,
@@ -17,6 +17,7 @@ import {
   Percent,
   Check
 } from 'lucide-react';
+import { Button, Card, Input, Select, Badge } from '../components/ui';
 import { PaymentModal } from '../components/pos/PaymentModal';
 import { ThermalReceiptModal } from '../components/pos/ThermalReceiptModal';
 import { CashSessionModal } from '../components/pos/CashSessionModal';
@@ -60,6 +61,23 @@ export const PosView: React.FC = () => {
     barcodeInputRef.current?.focus();
   }, []);
 
+  // F12 keyboard shortcut for payment
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F12') {
+        e.preventDefault();
+        if (cart.length === 0) return;
+        if (!activeCashSession) {
+          setShowCashSessionModal(true);
+          return;
+        }
+        setShowPaymentModal(true);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [cart.length, activeCashSession]);
+
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
   const customerGroup = selectedCustomer ? customerGroups.find(g => g.id === selectedCustomer.customer_group_id) : null;
 
@@ -88,71 +106,94 @@ export const PosView: React.FC = () => {
     }
   };
 
+  const handlePayClick = () => {
+    if (cart.length === 0) return;
+    if (!activeCashSession) {
+      setShowCashSessionModal(true);
+      return;
+    }
+    setShowPaymentModal(true);
+  };
+
   const subtotal = cart.reduce((sum, item) => sum + (item.quantity * item.price), 0);
   const discountTotal = cart.reduce((sum, item) => sum + (item.discount_amount || 0), 0);
   const grandTotal = Math.max(0, subtotal - discountTotal);
+  const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col lg:flex-row overflow-hidden bg-slate-100">
+    <div className="h-[calc(100vh-4rem)] flex flex-col lg:flex-row overflow-hidden bg-surface-100">
       {/* LEFT SECTION: Catalog & Search */}
-      <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200 bg-white">
+      <div className="flex-1 flex flex-col min-w-0 border-r border-surface-200 bg-white">
         {/* Top Control Bar: Barcode scanner + Search input */}
-        <div className="p-4 border-b border-slate-200 bg-slate-50/70 space-y-3">
+        <div className="p-4 border-b border-surface-200 bg-surface-50 space-y-3">
           <div className="flex items-center gap-3">
             {/* Fast Barcode Scanner input */}
-            <form onSubmit={handleBarcodeSubmit} className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary-600">
-                <Barcode className="w-5 h-5" />
-              </div>
-              <input
+            <form onSubmit={handleBarcodeSubmit} className="flex-1">
+              <Input
                 ref={barcodeInputRef}
                 type="text"
                 value={barcodeInput}
                 onChange={e => setBarcodeInput(e.target.value)}
                 placeholder="Scan Barcode / Tekan Enter..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
+                leftIcon={<Barcode className="w-4 h-4" />}
               />
             </form>
 
             {/* General Search */}
-            <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <Search className="w-4 h-4" />
-              </div>
-              <input
+            <div className="flex-1">
+              <Input
                 type="text"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 placeholder="Cari nama produk, tipe HP, kode..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
+                leftIcon={<Search className="w-4 h-4" />}
               />
             </div>
           </div>
 
-          {/* Category & Brand Pills */}
+          {/* Category Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-            <button
+            <Button
+              variant={selectedCategory === 'all' ? 'primary' : 'ghost'}
+              size="xs"
               onClick={() => setSelectedCategory('all')}
-              className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === 'all'
-                  ? 'bg-primary-600 text-white shadow-sm'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
-              }`}
+              className="whitespace-nowrap"
             >
               Semua Kategori
-            </button>
+            </Button>
             {categories.map(c => (
-              <button
+              <Button
                 key={c.id}
+                variant={selectedCategory === c.id ? 'primary' : 'ghost'}
+                size="xs"
                 onClick={() => setSelectedCategory(c.id)}
-                className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === c.id
-                    ? 'bg-primary-600 text-white shadow-sm'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
-                }`}
+                className="whitespace-nowrap"
               >
                 {c.name}
-              </button>
+              </Button>
+            ))}
+          </div>
+
+          {/* Brand Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+            <Button
+              variant={selectedBrand === 'all' ? 'primary' : 'ghost'}
+              size="xs"
+              onClick={() => setSelectedBrand('all')}
+              className="whitespace-nowrap"
+            >
+              Semua Brand
+            </Button>
+            {brands.map(b => (
+              <Button
+                key={b.id}
+                variant={selectedBrand === b.id ? 'primary' : 'ghost'}
+                size="xs"
+                onClick={() => setSelectedBrand(b.id)}
+                className="whitespace-nowrap"
+              >
+                {b.name}
+              </Button>
             ))}
           </div>
         </div>
@@ -165,24 +206,28 @@ export const PosView: React.FC = () => {
               const isLowStock = currentStock <= (product.stock_min || 0);
 
               return (
-                <div
+                <Card
                   key={product.id}
+                  interactive
+                  noPadding
                   onClick={() => addToCart(product)}
-                  className="bg-white border border-slate-200 hover:border-primary-400 hover:shadow-md rounded-2xl p-3.5 flex flex-col justify-between cursor-pointer transition-all duration-150 group active:scale-[0.98]"
+                  className="p-3.5 flex flex-col justify-between group active:scale-[0.98]"
                 >
                   <div>
                     {/* Header tags */}
                     <div className="flex items-center justify-between gap-1 mb-1.5">
-                      <span className="text-[10px] font-mono font-semibold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded truncate max-w-[120px]">
+                      <Badge variant="neutral" className="font-mono truncate max-w-[120px]">
                         {product.product_code}
-                      </span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                        currentStock > 0
-                          ? isLowStock ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      </Badge>
+                      <Badge
+                        variant={
+                          currentStock > 0
+                            ? isLowStock ? 'warning' : 'success'
+                            : 'danger'
+                        }
+                      >
                         Stok: {currentStock}
-                      </span>
+                      </Badge>
                     </div>
 
                     {/* Product Name */}
@@ -205,14 +250,14 @@ export const PosView: React.FC = () => {
                         <div className="text-[9px] text-amber-600 font-semibold">Open Price</div>
                       )}
                     </div>
-                    <button
-                      type="button"
-                      className="w-7 h-7 rounded-lg bg-primary-50 group-hover:bg-primary-600 text-primary-600 group-hover:text-white flex items-center justify-center transition-colors shadow-sm"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
+                    <Button
+                      variant="primary"
+                      size="xs"
+                      icon={<Plus className="w-4 h-4" />}
+                      className="!w-7 !h-7 !p-0 !rounded-lg"
+                    />
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
@@ -227,36 +272,32 @@ export const PosView: React.FC = () => {
         </div>
       </div>
 
-      {/* RIGHT SECTION: Cart & Checkout (Fixed 380px on desktop) */}
-      <div className="w-full lg:w-[420px] bg-white flex flex-col h-full shadow-lg border-l border-slate-200">
+      {/* RIGHT SECTION: Cart & Checkout (Fixed 420px on desktop) */}
+      <div className="w-full lg:w-[420px] bg-white flex flex-col h-full shadow-lg border-l border-surface-200">
         {/* Customer Header */}
-        <div className="p-4 border-b border-slate-200 bg-slate-50 space-y-2.5">
+        <div className="p-4 border-b border-surface-200 bg-surface-50 space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-primary-600" />
               <span className="text-xs font-bold text-slate-800">Pelanggan POS:</span>
             </div>
             {selectedCustomer?.type === 'member' && (
-              <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-600" />
+              <Badge variant="amber" pill>
+                <Sparkles className="w-3 h-3 text-amber-600 mr-1" />
                 {selectedCustomer.points_balance} Poin
-              </span>
+              </Badge>
             )}
           </div>
 
-          <div className="flex gap-2">
-            <select
-              value={selectedCustomerId}
-              onChange={e => setSelectedCustomerId(Number(e.target.value))}
-              className="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {customers.map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.name} {c.type === 'member' ? `(Member: ${c.member_code})` : '(Umum)'}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            value={selectedCustomerId}
+            onChange={e => setSelectedCustomerId(Number(e.target.value))}
+            options={customers.map(c => ({
+              value: c.id,
+              label: `${c.name} ${c.type === 'member' ? `(Member: ${c.member_code})` : '(Umum)'}`
+            }))}
+            wrapperClassName="flex-1"
+          />
 
           {customerGroup && customerGroup.discount_percent > 0 && (
             <div className="text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center justify-between font-semibold">
@@ -269,10 +310,7 @@ export const PosView: React.FC = () => {
         {/* Cart Item List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
           {cart.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200/90 space-y-2 transition-colors"
-            >
+            <Card key={idx} noPadding className="p-3 space-y-2 hover:bg-slate-50 transition-colors !rounded-xl">
               <div className="flex justify-between items-start gap-2">
                 <div>
                   <h5 className="text-xs font-bold text-slate-800 leading-tight">{item.product.name}</h5>
@@ -280,13 +318,13 @@ export const PosView: React.FC = () => {
                     {item.product.product_code} • {item.unit_name}
                   </div>
                 </div>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => removeFromCart(idx)}
-                  className="p-1 text-slate-400 hover:text-red-600 rounded-lg"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                  icon={<Trash2 className="w-3.5 h-3.5" />}
+                  className="!p-1 text-slate-400 hover:text-red-600"
+                />
               </div>
 
               {/* Price & Quantity Adjuster */}
@@ -294,23 +332,23 @@ export const PosView: React.FC = () => {
                 {/* Editable Price (Open Price support) */}
                 {editingPriceIndex === idx ? (
                   <div className="flex items-center gap-1">
-                    <input
+                    <Input
                       type="number"
                       min="0"
                       value={editingPriceValue}
                       onChange={e => setEditingPriceValue(Number(e.target.value))}
-                      className="w-24 px-1.5 py-0.5 text-xs font-bold border border-primary-500 rounded bg-white text-slate-900"
+                      className="!w-24 !py-0.5 !text-xs !font-bold"
                     />
-                    <button
-                      type="button"
+                    <Button
+                      variant="primary"
+                      size="xs"
+                      icon={<Check className="w-3 h-3" />}
                       onClick={() => {
                         updateCartItemPrice(idx, editingPriceValue);
                         setEditingPriceIndex(null);
                       }}
-                      className="p-1 bg-primary-600 text-white rounded text-[10px]"
-                    >
-                      <Check className="w-3 h-3" />
-                    </button>
+                      className="!p-1 !text-[10px]"
+                    />
                   </div>
                 ) : (
                   <div
@@ -320,9 +358,10 @@ export const PosView: React.FC = () => {
                         setEditingPriceValue(item.price);
                       }
                     }}
-                    className={`text-xs font-bold text-slate-800 ${
-                      item.product.allow_open_price ? 'cursor-pointer hover:text-primary-600 underline decoration-dashed' : ''
-                    }`}
+                    className={clsx(
+                      'text-xs font-bold text-slate-800',
+                      item.product.allow_open_price && 'cursor-pointer hover:text-primary-600 underline decoration-dashed'
+                    )}
                     title={item.product.allow_open_price ? 'Klik untuk ubah harga (Open Price)' : undefined}
                   >
                     Rp {item.price.toLocaleString('id-ID')}
@@ -330,29 +369,29 @@ export const PosView: React.FC = () => {
                 )}
 
                 {/* Qty Controls */}
-                <div className="flex items-center gap-1.5 bg-white border border-slate-300 rounded-lg p-0.5">
-                  <button
-                    type="button"
+                <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg p-0.5">
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => updateCartItemQty(idx, item.quantity - 1)}
-                    className="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </button>
+                    icon={<Minus className="w-3 h-3" />}
+                    className="!w-6 !h-6 !p-0 !rounded"
+                  />
                   <span className="w-8 text-center text-xs font-bold text-slate-900">{item.quantity}</span>
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => updateCartItemQty(idx, item.quantity + 1)}
-                    className="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </button>
+                    icon={<Plus className="w-3 h-3" />}
+                    className="!w-6 !h-6 !p-0 !rounded"
+                  />
                 </div>
 
                 <div className="text-xs font-black text-primary-700 min-w-[70px] text-right">
                   Rp {item.subtotal.toLocaleString('id-ID')}
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
 
           {cart.length === 0 && (
@@ -365,10 +404,10 @@ export const PosView: React.FC = () => {
         </div>
 
         {/* Footer Checkout Summary */}
-        <div className="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
+        <div className="p-4 border-t border-surface-200 bg-surface-50 space-y-3">
           <div className="space-y-1.5 text-xs text-slate-600">
             <div className="flex justify-between">
-              <span>Subtotal ({cart.reduce((s, i) => s + i.quantity, 0)} pcs):</span>
+              <span>Subtotal ({totalItems} pcs):</span>
               <span className="font-semibold text-slate-800">Rp {subtotal.toLocaleString('id-ID')}</span>
             </div>
             {discountTotal > 0 && (
@@ -377,7 +416,7 @@ export const PosView: React.FC = () => {
                 <span>-Rp {discountTotal.toLocaleString('id-ID')}</span>
               </div>
             )}
-            <div className="pt-2 border-t border-slate-200 flex justify-between items-baseline font-bold text-base text-slate-900">
+            <div className="pt-2 border-t border-surface-200 flex justify-between items-baseline font-bold text-base text-slate-900">
               <span>Total Tagihan:</span>
               <span className="text-xl text-primary-700 font-black">
                 Rp {grandTotal.toLocaleString('id-ID')}
@@ -386,29 +425,25 @@ export const PosView: React.FC = () => {
           </div>
 
           <div className="flex gap-2">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="md"
               disabled={cart.length === 0}
               onClick={clearCart}
-              className="px-3.5 py-3 bg-slate-200 hover:bg-slate-300 disabled:opacity-50 text-slate-700 font-bold text-xs rounded-xl"
+              className="!px-3.5 !py-3 !bg-slate-200 hover:!bg-slate-300 !text-slate-700"
             >
               Reset
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="primary"
+              size="lg"
               disabled={cart.length === 0}
-              onClick={() => {
-                if (!activeCashSession) {
-                  setShowCashSessionModal(true);
-                  return;
-                }
-                setShowPaymentModal(true);
-              }}
-              className="flex-1 py-3 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary-600/30 transition-all flex items-center justify-center gap-2"
+              onClick={handlePayClick}
+              icon={<CreditCard className="w-4 h-4" />}
+              className="flex-1"
             >
-              <CreditCard className="w-4 h-4" />
               Bayar Sekarang (F12)
-            </button>
+            </Button>
           </div>
         </div>
       </div>

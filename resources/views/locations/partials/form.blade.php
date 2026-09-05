@@ -68,7 +68,7 @@
 </div>
 
 <button type="submit" class="btn btn-primary"><i class="bx bx-save me-1"></i>Simpan</button>
-<a href="{{ route('locations.index') }}" class="btn btn-secondary"><i class="bx bx-x me-1"></i>Batal</a>
+<a href="{{ route('locations.index') }}" class="btn btn-outline-secondary"><i class="bx bx-x me-1"></i>Batal</a>
 
 <div class="modal fade" id="rackMasterModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -83,7 +83,7 @@
                 <input type="text" id="rack_master_name" class="form-control" placeholder="Contoh: Rak 1">
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" id="save-rack-master">Tambah Rak</button>
             </div>
         </div>

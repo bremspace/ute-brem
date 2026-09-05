@@ -1,19 +1,30 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
+import clsx from 'clsx';
 import {
   Globe,
   Package,
-  Search,
   Store,
   Eye,
-  ToggleLeft,
-  ToggleRight,
   ShoppingBag,
-  Filter,
   MapPin,
-  ExternalLink,
-  AlertTriangle,
 } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  Badge,
+  Button,
+  Select,
+  SearchInput,
+  StatCard,
+  TableContainer,
+  TableHeader,
+  TableBase,
+  TableRow,
+  TableEmpty,
+  Toggle,
+} from '../components/ui';
+import type { SelectOption } from '../components/ui';
 
 export const WebsiteCatalogView: React.FC = () => {
   const {
@@ -85,6 +96,41 @@ export const WebsiteCatalogView: React.FC = () => {
     });
   }, [products, previewSearch, previewCategory]);
 
+  const categoryOptions: SelectOption[] = [
+    { value: 'all', label: 'Semua Kategori' },
+    ...categories.map(c => ({ value: c.id, label: c.name })),
+  ];
+
+  const brandOptions: SelectOption[] = [
+    { value: 'all', label: 'Semua Merek' },
+    ...brands.map(b => ({ value: b.id, label: b.name })),
+  ];
+
+  const statusOptions: SelectOption[] = [
+    { value: 'all', label: 'Semua Status' },
+    { value: 'published', label: 'Terpublikasi' },
+    { value: 'unpublished', label: 'Tidak Terpublikasi' },
+  ];
+
+  const locationOptions: SelectOption[] = locations.map(l => ({
+    value: l.id,
+    label: l.name,
+  }));
+
+  const tableColumns = useMemo(
+    () => [
+      { header: 'Kode' },
+      { header: 'Nama' },
+      { header: 'Kategori' },
+      { header: 'Harga', align: 'right' as const },
+      { header: 'Stok', align: 'right' as const },
+      { header: 'Status' },
+      { header: 'Aktif', align: 'center' as const },
+      { header: 'Publish', align: 'center' as const },
+    ],
+    [],
+  );
+
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
       {/* Header */}
@@ -104,191 +150,151 @@ export const WebsiteCatalogView: React.FC = () => {
       <div className="flex flex-col xl:flex-row gap-6">
         {/* ─── Panel 1: Manajemen Katalog Publik ─── */}
         <div className="flex-1 min-w-0 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-              <Package className="w-4 h-4 text-primary-600" />
-              <span className="text-sm font-bold text-slate-800">Manajemen Katalog Publik</span>
-            </div>
+          <Card noPadding>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Package className="w-4 h-4 text-primary-600" />
+                <span className="text-sm font-bold text-slate-800">Manajemen Katalog Publik</span>
+              </div>
+            </CardHeader>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4">
-              <div className="bg-slate-50 rounded-xl border border-slate-200/80 p-3">
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Produk</div>
-                <div className="text-lg font-black text-slate-900 mt-1">{products.length}</div>
-              </div>
-              <div className="bg-emerald-50 rounded-xl border border-emerald-200/80 p-3">
-                <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Terpublikasi</div>
-                <div className="text-lg font-black text-emerald-700 mt-1">{totalPublished}</div>
-              </div>
-              <div className="bg-slate-50 rounded-xl border border-slate-200/80 p-3">
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tidak Terpublikasi</div>
-                <div className="text-lg font-black text-slate-600 mt-1">{totalUnpublished}</div>
-              </div>
-              <div className="bg-amber-50 rounded-xl border border-amber-200/80 p-3">
-                <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Stok Menipis (Published)</div>
-                <div className="text-lg font-black text-amber-700 mt-1">{lowStockPublished}</div>
-              </div>
+              <StatCard
+                value={products.length.toLocaleString('id-ID')}
+                label="Total Produk"
+                icon={<Package className="w-4 h-4" />}
+                color="primary"
+              />
+              <StatCard
+                value={totalPublished.toLocaleString('id-ID')}
+                label="Terpublikasi"
+                icon={<Globe className="w-4 h-4" />}
+                color="success"
+              />
+              <StatCard
+                value={totalUnpublished.toLocaleString('id-ID')}
+                label="Tidak Terpublikasi"
+                icon={<Package className="w-4 h-4" />}
+                color="info"
+              />
+              <StatCard
+                value={lowStockPublished.toLocaleString('id-ID')}
+                label="Stok Menipis"
+                description="Produk terpublikasi"
+                icon={<Package className="w-4 h-4" />}
+                color="warning"
+              />
             </div>
 
             {/* Filter Bar */}
             <div className="px-4 pb-4 space-y-3">
               <div className="flex flex-col sm:flex-row gap-3">
-                {/* Search */}
                 <div className="relative flex-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Search className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="text"
+                  <SearchInput
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     placeholder="Cari nama / kode produk..."
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
                   />
                 </div>
-
-                {/* Location selector */}
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <select
-                    value={selectedLocationId}
-                    onChange={e => setSelectedLocationId(Number(e.target.value))}
-                    className="pl-9 pr-8 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm appearance-none"
-                  >
-                    {locations.map(l => (
-                      <option key={l.id} value={l.id}>{l.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Category */}
-                <select
+                <Select
+                  options={locationOptions}
+                  value={selectedLocationId}
+                  onChange={e => setSelectedLocationId(Number(e.target.value))}
+                  wrapperClassName="w-auto"
+                />
+                <Select
+                  options={categoryOptions}
                   value={filterCategory}
                   onChange={e => setFilterCategory(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                  className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
-                >
-                  <option value="all">Semua Kategori</option>
-                  {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-
-                {/* Brand */}
-                <select
+                  wrapperClassName="w-auto"
+                />
+                <Select
+                  options={brandOptions}
                   value={filterBrand}
                   onChange={e => setFilterBrand(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                  className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
-                >
-                  <option value="all">Semua Merek</option>
-                  {brands.map(b => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
-                  ))}
-                </select>
-
-                {/* Status */}
-                <select
+                  wrapperClassName="w-auto"
+                />
+                <Select
+                  options={statusOptions}
                   value={filterStatus}
                   onChange={e => setFilterStatus(e.target.value as typeof filterStatus)}
-                  className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="published">Terpublikasi</option>
-                  <option value="unpublished">Tidak Terpublikasi</option>
-                </select>
+                  wrapperClassName="w-auto"
+                />
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Product Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-100">
-                  <tr>
-                    <th className="px-4 py-3">Kode</th>
-                    <th className="px-4 py-3">Nama</th>
-                    <th className="px-4 py-3">Kategori</th>
-                    <th className="px-4 py-3 text-right">Harga</th>
-                    <th className="px-4 py-3 text-right">Stok</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-center">Aktif</th>
-                    <th className="px-4 py-3 text-center">Publish</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {filteredProducts.map(p => {
-                    const stock = getStockQty(p);
-                    const isLowStock = p.is_published && p.is_active && stock <= p.stock_min;
-                    return (
-                      <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="px-4 py-3 font-mono font-bold text-slate-600">{p.product_code}</td>
-                        <td className="px-4 py-3">
-                          <div className="font-bold text-slate-800 line-clamp-1">{p.name}</div>
-                          <div className="text-[10px] text-slate-400">
-                            {p.brand?.name || ''}{p.brand && p.maker ? ' • ' : ''}{p.maker?.name || ''}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-slate-600">{p.category?.name || '-'}</td>
-                        <td className="px-4 py-3 text-right font-bold text-slate-800">
-                          Rp {p.selling_price.toLocaleString('id-ID')}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <span className={`font-bold ${isLowStock ? 'text-red-600' : stock > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
-                            {stock}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {!p.is_active ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">Nonaktif</span>
-                          ) : p.is_published ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Published</span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">Draft</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => toggleActive(p.id)}
-                            className="inline-flex"
-                            title={p.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                          >
-                            {p.is_active ? (
-                              <ToggleRight className="w-6 h-6 text-emerald-600" />
-                            ) : (
-                              <ToggleLeft className="w-6 h-6 text-slate-300" />
-                            )}
-                          </button>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => togglePublished(p.id)}
-                            className="inline-flex"
-                            title={p.is_published ? 'Unpublish' : 'Publish'}
-                          >
-                            {p.is_published ? (
-                              <ToggleRight className="w-6 h-6 text-primary-600" />
-                            ) : (
-                              <ToggleLeft className="w-6 h-6 text-slate-300" />
-                            )}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+          <TableContainer>
+            <TableHeader
+              icon={<Package className="w-4 h-4 text-primary-600" />}
+              count={filteredProducts.length}
+            >
+              Produk Katalog
+            </TableHeader>
 
-              {filteredProducts.length === 0 && (
-                <div className="h-48 flex flex-col items-center justify-center text-slate-400 text-center p-6">
-                  <Package className="w-10 h-10 stroke-[1.2] mb-2 text-slate-300" />
-                  <p className="text-sm font-semibold">Tidak ada produk ditemukan</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Ubah filter atau kata kunci pencarian</p>
-                </div>
+            <TableBase columns={tableColumns} colSpan={tableColumns.length}>
+              {filteredProducts.length === 0 ? (
+                <TableEmpty
+                  colSpan={tableColumns.length}
+                  message="Tidak ada produk ditemukan"
+                  icon={<Package className="w-10 h-10 mx-auto mb-2 text-slate-300" />}
+                />
+              ) : (
+                filteredProducts.map(p => {
+                  const stock = getStockQty(p);
+                  const isLowStock = p.is_published && p.is_active && stock <= p.stock_min;
+                  return (
+                    <TableRow key={p.id}>
+                      <td className="px-4 py-3 font-mono font-bold text-slate-600">{p.product_code}</td>
+                      <td className="px-4 py-3">
+                        <div className="font-bold text-slate-800 line-clamp-1">{p.name}</div>
+                        <div className="text-[10px] text-slate-400">
+                          {p.brand?.name || ''}{p.brand && p.maker ? ' • ' : ''}{p.maker?.name || ''}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">{p.category?.name || '-'}</td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-800">
+                        Rp {p.selling_price.toLocaleString('id-ID')}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className={clsx(
+                          'font-bold',
+                          isLowStock ? 'text-red-600' : stock > 0 ? 'text-emerald-600' : 'text-slate-400',
+                        )}>
+                          {stock}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {!p.is_active ? (
+                          <Badge variant="danger">Nonaktif</Badge>
+                        ) : p.is_published ? (
+                          <Badge variant="success">Published</Badge>
+                        ) : (
+                          <Badge variant="neutral">Draft</Badge>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <Toggle
+                          checked={p.is_active}
+                          onChange={() => toggleActive(p.id)}
+                          label={p.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <Toggle
+                          checked={p.is_published}
+                          onChange={() => togglePublished(p.id)}
+                          label={p.is_published ? 'Unpublish' : 'Publish'}
+                        />
+                      </td>
+                    </TableRow>
+                  );
+                })
               )}
-            </div>
-          </div>
+            </TableBase>
+          </TableContainer>
         </div>
 
         {/* ─── Panel 2: Pratinjau Situs Web ─── */}
@@ -308,13 +314,11 @@ export const WebsiteCatalogView: React.FC = () => {
                   <span className="text-xs font-black text-white tracking-wide">{storeName}</span>
                 </div>
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                  <input
-                    type="text"
+                  <SearchInput
                     value={previewSearch}
                     onChange={e => setPreviewSearch(e.target.value)}
                     placeholder="Cari produk..."
-                    className="w-full pl-7 pr-2.5 py-1.5 rounded-lg bg-white/95 text-[10px] text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                    className="!bg-white/95"
                   />
                 </div>
               </div>
@@ -323,11 +327,12 @@ export const WebsiteCatalogView: React.FC = () => {
               <div className="px-3 pt-2 pb-1 flex gap-1.5 overflow-x-auto no-scrollbar">
                 <button
                   onClick={() => setPreviewCategory('all')}
-                  className={`px-2 py-1 rounded text-[9px] font-bold whitespace-nowrap transition-all ${
+                  className={clsx(
+                    'px-2 py-1 rounded text-[9px] font-bold whitespace-nowrap transition-all',
                     previewCategory === 'all'
                       ? 'bg-primary-600 text-white'
-                      : 'bg-slate-100 text-slate-600'
-                  }`}
+                      : 'bg-slate-100 text-slate-600',
+                  )}
                 >
                   Semua
                 </button>
@@ -335,11 +340,12 @@ export const WebsiteCatalogView: React.FC = () => {
                   <button
                     key={c.id}
                     onClick={() => setPreviewCategory(c.id)}
-                    className={`px-2 py-1 rounded text-[9px] font-bold whitespace-nowrap transition-all ${
+                    className={clsx(
+                      'px-2 py-1 rounded text-[9px] font-bold whitespace-nowrap transition-all',
                       previewCategory === c.id
                         ? 'bg-primary-600 text-white'
-                        : 'bg-slate-100 text-slate-600'
-                    }`}
+                        : 'bg-slate-100 text-slate-600',
+                    )}
                   >
                     {c.name}
                   </button>
@@ -364,7 +370,10 @@ export const WebsiteCatalogView: React.FC = () => {
                             {p.category?.name || ''}{p.brand ? ` • ${p.brand.name}` : ''}
                           </div>
                         </div>
-                        <span className={`mt-0.5 flex-shrink-0 w-2 h-2 rounded-full ${avail ? 'bg-emerald-500' : 'bg-red-400'}`} title={avail ? 'Tersedia' : 'Habis'} />
+                        <span className={clsx(
+                          'mt-0.5 flex-shrink-0 w-2 h-2 rounded-full',
+                          avail ? 'bg-emerald-500' : 'bg-red-400',
+                        )} title={avail ? 'Tersedia' : 'Habis'} />
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-black text-primary-700">

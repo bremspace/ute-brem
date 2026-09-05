@@ -39,7 +39,7 @@
                                 <form method="POST" action="{{ route('stock-opname.complete', $op) }}" class="d-inline"
                                       onsubmit="return confirm('Proses selisih opname ini? Stok & pembukuan akan diperbarui.');">
                                     @csrf
-                                    <button class="btn btn-sm btn-success">Proses</button>
+                                    <button class="btn btn-sm btn-primary">Proses</button>
                                 </form>
                                 <form method="POST" action="{{ route('stock-opname.destroy', $op) }}" class="d-inline"
                                       onsubmit="return confirm('Hapus draft opname ini?');">
@@ -48,7 +48,7 @@
                                     <button class="btn btn-sm btn-outline-danger">Hapus</button>
                                 </form>
                             @endif
-                            <a href="{{ route('stock-opname.show', $op) }}" class="btn btn-sm btn-light">Detail</a>
+                            <a href="{{ route('stock-opname.show', $op) }}" class="btn btn-sm btn-outline-primary">Detail</a>
                         </td>
                     </tr>
                 @empty

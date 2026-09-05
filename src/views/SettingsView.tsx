@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { PrinterSetting } from '../types';
+import clsx from 'clsx';
 import {
   Building2,
   Printer,
@@ -12,8 +13,17 @@ import {
   Download,
   Upload,
   RotateCcw,
-  Save
+  Save,
 } from 'lucide-react';
+import {
+  Button,
+  Card,
+  CardHeader,
+  Input,
+  Select,
+  Alert,
+} from '../components/ui';
+import type { SelectOption } from '../components/ui';
 
 export const SettingsView: React.FC = () => {
   const {
@@ -77,8 +87,15 @@ export const SettingsView: React.FC = () => {
     setCurrentUser({ ...currentUser, role, role_display_name: displayName });
   };
 
-  const inputCls = 'w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm';
-  const labelCls = 'text-xs font-bold text-slate-700 mb-1 block';
+  const modeOptions: SelectOption[] = [
+    { value: 'browser', label: 'Browser Print (Web API)' },
+    { value: 'bridge', label: 'Bridge Server (Local)' },
+  ];
+
+  const paperWidthOptions: SelectOption[] = [
+    { value: 58, label: '58mm (Standard)' },
+    { value: 80, label: '80mm (Lebar)' },
+  ];
 
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
@@ -91,7 +108,10 @@ export const SettingsView: React.FC = () => {
       )}
 
       {importResult.show && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2.5 text-white text-xs font-bold rounded-xl shadow-lg ${importResult.success ? 'bg-emerald-600 shadow-emerald-600/30' : 'bg-red-600 shadow-red-600/30'}`}>
+        <div className={clsx(
+          'fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2.5 text-white text-xs font-bold rounded-xl shadow-lg',
+          importResult.success ? 'bg-emerald-600 shadow-emerald-600/30' : 'bg-red-600 shadow-red-600/30',
+        )}>
           {importResult.success ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
           {importResult.success ? 'Import berhasil!' : 'Import gagal. Format file tidak valid.'}
         </div>
@@ -106,133 +126,106 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Section 1: Identitas Toko */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-primary-600" />
-          <span className="font-bold text-slate-800 text-sm">Identitas Toko / Perusahaan</span>
-        </div>
+      <Card noPadding>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-primary-600" />
+            <span className="font-bold text-slate-800 text-sm">Identitas Toko / Perusahaan</span>
+          </div>
+        </CardHeader>
         <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
-            <label className={labelCls}>Nama Perusahaan / Toko</label>
-            <input
-              type="text"
+            <Input
+              label="Nama Perusahaan / Toko"
               value={form.company_name}
               onChange={e => handleChange('company_name', e.target.value)}
-              className={inputCls}
               placeholder="Nama toko Anda"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className={labelCls}>Alamat</label>
-            <input
-              type="text"
+            <Input
+              label="Alamat"
               value={form.company_address}
               onChange={e => handleChange('company_address', e.target.value)}
-              className={inputCls}
               placeholder="Jl. Contoh No. 123"
             />
           </div>
           <div>
-            <label className={labelCls}>Kota</label>
-            <input
-              type="text"
+            <Input
+              label="Kota"
               value={form.company_city}
               onChange={e => handleChange('company_city', e.target.value)}
-              className={inputCls}
               placeholder="Jakarta"
             />
           </div>
           <div>
-            <label className={labelCls}>Telepon</label>
-            <input
-              type="text"
+            <Input
+              label="Telepon"
               value={form.company_phone}
               onChange={e => handleChange('company_phone', e.target.value)}
-              className={inputCls}
               placeholder="0812xxxxxxx"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className={labelCls}>Slogan / Tagline</label>
-            <input
-              type="text"
+            <Input
+              label="Slogan / Tagline"
               value={form.company_slogan}
               onChange={e => handleChange('company_slogan', e.target.value)}
-              className={inputCls}
               placeholder="Slogan toko Anda"
             />
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Section 2: Pengaturan Printer */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-          <Printer className="w-4 h-4 text-primary-600" />
-          <span className="font-bold text-slate-800 text-sm">Pengaturan Printer Thermal</span>
-        </div>
+      <Card noPadding>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Printer className="w-4 h-4 text-primary-600" />
+            <span className="font-bold text-slate-800 text-sm">Pengaturan Printer Thermal</span>
+          </div>
+        </CardHeader>
         <div className="p-6 space-y-5">
           {/* Mode & Basic Settings */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Mode Cetak</label>
-              <select
-                value={form.mode}
-                onChange={e => handleChange('mode', e.target.value as 'browser' | 'bridge')}
-                className={inputCls}
-              >
-                <option value="browser">Browser Print (Web API)</option>
-                <option value="bridge">Bridge Server (Local)</option>
-              </select>
-            </div>
+            <Select
+              label="Mode Cetak"
+              options={modeOptions}
+              value={form.mode}
+              onChange={e => handleChange('mode', e.target.value as 'browser' | 'bridge')}
+            />
 
             {form.mode === 'bridge' && (
-              <div>
-                <label className={labelCls}>Bridge URL</label>
-                <input
-                  type="text"
-                  value={form.bridge_url}
-                  onChange={e => handleChange('bridge_url', e.target.value)}
-                  className={inputCls}
-                  placeholder="http://localhost:8080"
-                />
-              </div>
+              <Input
+                label="Bridge URL"
+                value={form.bridge_url}
+                onChange={e => handleChange('bridge_url', e.target.value)}
+                placeholder="http://localhost:8080"
+              />
             )}
 
-            <div>
-              <label className={labelCls}>Nama Printer</label>
-              <input
-                type="text"
-                value={form.printer_name}
-                onChange={e => handleChange('printer_name', e.target.value)}
-                className={inputCls}
-                placeholder="Printer name"
-              />
-            </div>
+            <Input
+              label="Nama Printer"
+              value={form.printer_name}
+              onChange={e => handleChange('printer_name', e.target.value)}
+              placeholder="Printer name"
+            />
 
-            <div>
-              <label className={labelCls}>Lebar Kertas</label>
-              <select
-                value={form.paper_width_mm}
-                onChange={e => handleChange('paper_width_mm', Number(e.target.value) as 58 | 80)}
-                className={inputCls}
-              >
-                <option value={58}>58mm (Standard)</option>
-                <option value={80}>80mm (Lebar)</option>
-              </select>
-            </div>
+            <Select
+              label="Lebar Kertas"
+              options={paperWidthOptions}
+              value={form.paper_width_mm}
+              onChange={e => handleChange('paper_width_mm', Number(e.target.value) as 58 | 80)}
+            />
 
-            <div>
-              <label className={labelCls}>Jumlah Salinan</label>
-              <input
-                type="number"
-                min={1}
-                max={5}
-                value={form.copies}
-                onChange={e => handleChange('copies', Math.min(5, Math.max(1, Number(e.target.value))))}
-                className={inputCls}
-              />
-            </div>
+            <Input
+              label="Jumlah Salinan"
+              type="number"
+              min={1}
+              max={5}
+              value={form.copies}
+              onChange={e => handleChange('copies', Math.min(5, Math.max(1, Number(e.target.value))))}
+            />
           </div>
 
           {/* Checkboxes */}
@@ -269,22 +262,26 @@ export const SettingsView: React.FC = () => {
           {/* Header & Footer */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Teks Header (di atas struk)</label>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Teks Header (di atas struk)
+              </label>
               <textarea
                 value={form.header_text}
                 onChange={e => handleChange('header_text', e.target.value)}
                 rows={3}
-                className={inputCls + ' resize-none'}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
                 placeholder="Contoh: Terima kasih telah berbelanja!"
               />
             </div>
             <div>
-              <label className={labelCls}>Teks Footer (di bawah struk)</label>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Teks Footer (di bawah struk)
+              </label>
               <textarea
                 value={form.footer_text}
                 onChange={e => handleChange('footer_text', e.target.value)}
                 rows={3}
-                className={inputCls + ' resize-none'}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
                 placeholder="Contoh: Barang yang sudah dibeli tidak dapat dikembalikan."
               />
             </div>
@@ -292,7 +289,9 @@ export const SettingsView: React.FC = () => {
 
           {/* Receipt Preview */}
           <div>
-            <label className={labelCls}>Preview Struk</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+              Preview Struk
+            </label>
             <div className="bg-white border-2 border-dashed border-slate-300 rounded-xl p-4 max-w-[260px] mx-auto shadow-inner">
               <div className="font-mono text-[10px] leading-relaxed text-slate-800 space-y-0.5">
                 {form.header_text && (
@@ -330,14 +329,16 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Section 3: Pengguna & Role */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-          <User className="w-4 h-4 text-primary-600" />
-          <span className="font-bold text-slate-800 text-sm">Pengguna & Role</span>
-        </div>
+      <Card noPadding>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-primary-600" />
+            <span className="font-bold text-slate-800 text-sm">Pengguna & Role</span>
+          </div>
+        </CardHeader>
         <div className="p-6 space-y-4">
           <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-black text-sm">
@@ -353,53 +354,53 @@ export const SettingsView: React.FC = () => {
             Beralih role hanya untuk keperluan demonstrasi. Role tidak mengubah hak akses aktual di localStorage.
           </p>
           <div>
-            <label className={labelCls}>Pilih Role (Demo)</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+              Pilih Role (Demo)
+            </label>
             <div className="flex flex-wrap gap-2 mt-1">
               {([
                 { role: 'super_admin' as const, label: 'Super Admin' },
                 { role: 'cashier' as const, label: 'Kasir POS' },
                 { role: 'technician' as const, label: 'Teknisi Servis' }
               ]).map(opt => (
-                <button
+                <Button
                   key={opt.role}
+                  variant={currentUser.role === opt.role ? 'primary' : 'outline'}
                   onClick={() => handleRoleSwitch(opt.role, opt.label)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                    currentUser.role === opt.role
-                      ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                      : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                  }`}
                 >
                   {opt.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Section 4: Backup & Restore */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-          <Database className="w-4 h-4 text-primary-600" />
-          <span className="font-bold text-slate-800 text-sm">Backup & Restore Data</span>
-        </div>
+      <Card noPadding>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Database className="w-4 h-4 text-primary-600" />
+            <span className="font-bold text-slate-800 text-sm">Backup & Restore Data</span>
+          </div>
+        </CardHeader>
         <div className="p-6 space-y-4">
           <div className="flex flex-wrap gap-3">
-            <button
+            <Button
+              variant="primary"
+              icon={<Download className="w-4 h-4" />}
               onClick={handleExport}
-              className="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-md shadow-primary-600/30 transition-all flex items-center gap-1.5"
             >
-              <Download className="w-4 h-4" />
               Export Backup (JSON)
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="secondary"
+              icon={<Upload className="w-4 h-4" />}
               onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5"
             >
-              <Upload className="w-4 h-4" />
               Import Backup
-            </button>
+            </Button>
             <input
               ref={fileInputRef}
               type="file"
@@ -408,32 +409,31 @@ export const SettingsView: React.FC = () => {
               className="hidden"
             />
 
-            <button
+            <Button
+              variant="danger"
+              icon={<RotateCcw className="w-4 h-4" />}
               onClick={handleReset}
-              className="px-4 py-2.5 bg-red-50 border border-red-300 hover:bg-red-100 text-red-700 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5"
             >
-              <RotateCcw className="w-4 h-4" />
               Reset ke Data Awal
-            </button>
+            </Button>
           </div>
 
-          <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-            <p className="text-[11px] text-amber-800 leading-relaxed">
-              Semua data disimpan di <strong>localStorage</strong> browser Anda.
-              Clearing cache / mengganti browser akan menghapus semua data.
-              Gunakan Export secara berkala untuk backup aman.
-            </p>
-          </div>
+          <Alert variant="warning" icon={<AlertTriangle className="w-4 h-4" />}>
+            Semua data disimpan di <strong>localStorage</strong> browser Anda.
+            Clearing cache / mengganti browser akan menghapus semua data.
+            Gunakan Export secara berkala untuk backup aman.
+          </Alert>
         </div>
-      </div>
+      </Card>
 
       {/* Section 5: Tentang Aplikasi */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-          <Info className="w-4 h-4 text-primary-600" />
-          <span className="font-bold text-slate-800 text-sm">Tentang Aplikasi</span>
-        </div>
+      <Card noPadding>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Info className="w-4 h-4 text-primary-600" />
+            <span className="font-bold text-slate-800 text-sm">Tentang Aplikasi</span>
+          </div>
+        </CardHeader>
         <div className="p-6 space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-primary-600 text-white flex items-center justify-center font-black text-lg">
@@ -457,17 +457,18 @@ export const SettingsView: React.FC = () => {
             ))}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Save Button (Fixed Bottom) */}
       <div className="flex justify-end pb-6">
-        <button
+        <Button
+          variant="primary"
+          size="lg"
+          icon={<Save className="w-4 h-4" />}
           onClick={handleSave}
-          className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-primary-600/30 transition-all flex items-center gap-1.5"
         >
-          <Save className="w-4 h-4" />
           Simpan Pengaturan
-        </button>
+        </Button>
       </div>
     </div>
   );

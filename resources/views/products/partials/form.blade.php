@@ -188,7 +188,7 @@
     <div class="tab-pane fade show active" id="tab-standard" role="tabpanel">
         <div class="row g-4">
             <div class="col-lg-7">
-                <div class="card border shadow-none">
+                <div class="card">
                     <div class="card-header">
                         <h6 class="mb-0">Identitas Barang</h6>
                     </div>
@@ -410,7 +410,7 @@
                     </div>
                 </div>
 
-                <div class="card border shadow-none mt-4">
+                <div class="card mt-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-0">Supplier Barang</h6>
@@ -450,7 +450,7 @@
             </div>
 
             <div class="col-lg-5">
-                <div class="card border shadow-none">
+                <div class="card">
                     <div class="card-header">
                         <h6 class="mb-0">Harga, Stok, dan Gambar</h6>
                     </div>
@@ -576,7 +576,7 @@
     </div>
 
     <div class="tab-pane fade" id="tab-advanced" role="tabpanel">
-        <div class="card border shadow-none mb-4">
+        <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="mb-0">Detail Harga Barang per Satuan</h6>
@@ -666,7 +666,7 @@
             </div>
         </div>
 
-        <div class="card border shadow-none">
+        <div class="card">
             <div class="card-header">
                 <h6 class="mb-0">Setting Tambahan</h6>
             </div>
@@ -714,7 +714,7 @@
     <div class="tab-pane fade" id="tab-member" role="tabpanel">
         <div class="row g-4">
             <div class="col-lg-4">
-                <div class="card border shadow-none">
+                <div class="card">
                     <div class="card-header">
                         <h6 class="mb-0">Diskon dan Point</h6>
                     </div>
@@ -735,7 +735,7 @@
                 </div>
             </div>
             <div class="col-lg-8">
-                <div class="card border shadow-none">
+                <div class="card">
                     <div class="card-header">
                         <h6 class="mb-0">Harga Jual Per Pelanggan</h6>
                     </div>
@@ -775,7 +775,7 @@
     </div>
 
     <div class="tab-pane fade" id="tab-tier" role="tabpanel">
-        <div class="card border shadow-none">
+        <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">Harga Bertingkat</h6>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-add-row="tier">Tambah Row</button>
@@ -808,7 +808,7 @@
     </div>
 
     <div class="tab-pane fade" id="tab-variant" role="tabpanel">
-        <div class="card border shadow-none">
+        <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">Stok Berdasarkan Ukuran dan Warna</h6>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-add-row="variant">Tambah
@@ -871,7 +871,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" id="save-location-master">Simpan Lokasi</button>
             </div>
         </div>
@@ -897,7 +897,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" id="save-quality-master">Simpan Quality</button>
             </div>
         </div>
@@ -984,7 +984,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" id="save-unit-row">Tambahkan</button>
             </div>
         </div>
@@ -1013,7 +1013,7 @@
                 <div class="alert alert-danger d-none mb-0" id="unit-master-error"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" id="save-unit-master">Simpan Satuan</button>
             </div>
         </div>
@@ -1065,7 +1065,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" id="save-supplier-master">Simpan Supplier</button>
             </div>
         </div>
@@ -1074,7 +1074,7 @@
 
 <div class="mt-4">
     <button type="submit" class="btn btn-primary"><i class="bx bx-save me-1"></i> Simpan</button>
-    <a href="{{ route('products.index') }}" class="btn btn-secondary"><i class="bx bx-x me-1"></i> Batal</a>
+    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary"><i class="bx bx-x me-1"></i> Batal</a>
 </div>
 
 @push('styles')

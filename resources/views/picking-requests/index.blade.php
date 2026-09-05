@@ -37,7 +37,7 @@
                                 <form method="POST" action="{{ route('picking-requests.fulfill', $r) }}" class="d-inline"
                                       onsubmit="return confirm('Proses picking ini? Stok gudang akan terpotong dan serial di-reserve.');">
                                     @csrf
-                                    <button class="btn btn-sm btn-success">Proses</button>
+                                    <button class="btn btn-sm btn-primary">Proses</button>
                                 </form>
                                 <form method="POST" action="{{ route('picking-requests.cancel', $r) }}" class="d-inline">
                                     @csrf
@@ -50,7 +50,7 @@
                                     <button class="btn btn-sm btn-outline-danger">Hapus</button>
                                 </form>
                             @endif
-                            <a href="{{ route('picking-requests.show', $r) }}" class="btn btn-sm btn-light">Detail</a>
+                            <a href="{{ route('picking-requests.show', $r) }}" class="btn btn-sm btn-outline-primary">Detail</a>
                         </td>
                     </tr>
                 @empty

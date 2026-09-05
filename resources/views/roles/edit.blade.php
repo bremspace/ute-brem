@@ -12,10 +12,10 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Edit Role: {{ $role->display_name }}</h5>
                         <div>
-                            <a href="{{ route('roles.show', $role) }}" class="btn btn-info me-2">
+                            <a href="{{ route('roles.show', $role) }}" class="btn btn-outline-primary me-2">
                                 <i class="bx bx-show me-1"></i> Lihat
                             </a>
-                            <a href="{{ route('roles.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary">
                                 <i class="bx bx-arrow-back me-1"></i> Kembali
                             </a>
                         </div>
@@ -91,7 +91,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bx bx-save me-1"></i> Update
                                 </button>
-                                <a href="{{ route('roles.index') }}" class="btn btn-secondary">
+                                <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary">
                                     <i class="bx bx-x me-1"></i> Batal
                                 </a>
                             </div>

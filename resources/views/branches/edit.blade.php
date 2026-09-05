@@ -7,7 +7,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Edit Cabang Toko</h5>
-            <a href="{{ route('branches.index') }}" class="btn btn-secondary"><i class="bx bx-arrow-back me-1"></i>Kembali</a>
+            <a href="{{ route('branches.index') }}" class="btn btn-outline-secondary"><i class="bx bx-arrow-back me-1"></i>Kembali</a>
         </div>
         <div class="card-body">
             <form action="{{ route('branches.update', $branch) }}" method="POST">
@@ -63,7 +63,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary"><i class="bx bx-save me-1"></i>Simpan Perubahan</button>
-                <a href="{{ route('branches.index') }}" class="btn btn-secondary"><i class="bx bx-x me-1"></i>Batal</a>
+                <a href="{{ route('branches.index') }}" class="btn btn-outline-secondary"><i class="bx bx-x me-1"></i>Batal</a>
             </form>
         </div>
     </div>

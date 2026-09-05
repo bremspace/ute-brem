@@ -118,12 +118,12 @@
                         <input type="hidden" name="custom_height_mm" id="barcode-print-custom-height" value="">
                         <div id="product-barcode-print-filters"></div>
                         <button type="button" id="open-barcode-print-modal"
-                            class="btn btn-dark btn-sm product-toolbar-btn">
+                            class="btn btn-outline-secondary btn-sm product-toolbar-btn">
                             <i class="bx bx-barcode me-1"></i> Cetak Barcode
                         </button>
                     </form>
                     <button type="button" id="share-selected-products"
-                        class="btn btn-info btn-sm product-toolbar-btn text-white">
+                        class="btn btn-outline-primary btn-sm product-toolbar-btn">
                         <i class="bx bx-share-alt me-1"></i> Share Produk
                     </button>
                     <form id="product-export-form" action="{{ route('products.export') }}" method="POST" class="d-inline">
@@ -132,10 +132,10 @@
                         <input type="hidden" name="selected_product_ids" id="selected-product-ids" value="">
                         <div id="product-export-filters"></div>
                         <div class="btn-group">
-                            <button type="button" class="btn btn-success btn-sm product-toolbar-btn dropdown-toggle"
+                            <button type="button" class="btn btn-outline-primary btn-sm product-toolbar-btn dropdown-toggle"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bx bx-download me-1"></i> Export Produk
-                                <span id="selected-products-count" class="badge bg-white text-success ms-1">0</span>
+                                <span id="selected-products-count" class="badge bg-white text-primary ms-1">0</span>
                             </button>
                             <div class="dropdown-menu">
                                 <button type="button" id="export-all-products" class="dropdown-item">
@@ -255,7 +255,7 @@
                         <button type="button" id="reset-product-table-settings" class="btn btn-outline-secondary">
                             Reset Tampilan
                         </button>
-                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="button" id="save-product-table-settings" class="btn btn-primary">
                             Simpan Pengaturan
                         </button>
@@ -303,7 +303,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
                         <a href="#" target="_blank" class="btn btn-primary" id="openShareProductsUrl">
                             <i class="bx bx-link-external me-1"></i> Buka Link
                         </a>
@@ -371,7 +371,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
                         <button type="button" class="btn btn-primary" id="submit-barcode-print">
                             <i class="bx bx-printer me-1"></i> Cetak
                         </button>

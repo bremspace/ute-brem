@@ -22,16 +22,16 @@
             color: #fff;
         }
 
-        .kpi-icon.blue {
-            background: linear-gradient(135deg, #2563eb, #60a5fa);
+        .kpi-icon.emerald {
+            background: linear-gradient(135deg, #059669, #34d399);
         }
 
-        .kpi-icon.green {
-            background: linear-gradient(135deg, #16a34a, #4ade80);
+        .kpi-icon.primary {
+            background: linear-gradient(135deg, var(--bs-primary), #818cf8);
         }
 
-        .kpi-icon.orange {
-            background: linear-gradient(135deg, #f97316, #fb923c);
+        .kpi-icon.amber {
+            background: linear-gradient(135deg, #d97706, #fbbf24);
         }
 
         .kpi-icon.purple {
@@ -93,7 +93,7 @@
 
         <div class="row g-4 dash-kpi mb-4">
             <div class="col-sm-6 col-lg-3">
-                <div class="card h-100">
+                <div class="card card-hover h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
@@ -101,7 +101,7 @@
                                 <div class="h4 mb-0">{{ $rp($todaySalesTotal) }}</div>
                                 <div class="text-muted small mt-1">{{ (int) $todaySalesCount }} transaksi</div>
                             </div>
-                            <div class="kpi-icon green">
+                            <div class="kpi-icon emerald">
                                 <i class="bx bx-trending-up fs-3"></i>
                             </div>
                         </div>
@@ -109,7 +109,7 @@
                 </div>
             </div>
             <div class="col-sm-6 col-lg-3">
-                <div class="card h-100">
+                <div class="card card-hover h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
@@ -117,7 +117,7 @@
                                 <div class="h4 mb-0">{{ number_format((int) $todayItemsCount, 0, ',', '.') }}</div>
                                 <div class="text-muted small mt-1">{{ $today }}</div>
                             </div>
-                            <div class="kpi-icon blue">
+                            <div class="kpi-icon primary">
                                 <i class="bx bx-basket fs-3"></i>
                             </div>
                         </div>
@@ -125,7 +125,7 @@
                 </div>
             </div>
             <div class="col-sm-6 col-lg-3">
-                <div class="card h-100">
+                <div class="card card-hover h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
@@ -141,7 +141,7 @@
                 </div>
             </div>
             <div class="col-sm-6 col-lg-3">
-                <div class="card h-100">
+                <div class="card card-hover h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
@@ -149,7 +149,7 @@
                                 <div class="h4 mb-0">{{ number_format((int) $lowStockCount, 0, ',', '.') }}</div>
                                 <div class="text-muted small mt-1">Produk perlu restock</div>
                             </div>
-                            <div class="kpi-icon orange">
+                            <div class="kpi-icon amber">
                                 <i class="bx bx-error-circle fs-3"></i>
                             </div>
                         </div>
@@ -160,7 +160,7 @@
 
         <div class="row g-4 mb-4">
             <div class="col-lg-8">
-                <div class="card h-100">
+                <div class="card card-hover h-100">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1">Penjualan 14 Hari Terakhir</h6>
@@ -174,7 +174,7 @@
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="card h-100">
+                <div class="card card-hover h-100">
                     <div class="card-header">
                         <h6 class="mb-1">Kas Awal Hari Ini</h6>
                         <div class="text-muted small">Session kas per lokasi (user login).</div>
@@ -216,7 +216,7 @@
 
         <div class="row g-4">
             <div class="col-lg-6">
-                <div class="card h-100">
+                <div class="card card-hover h-100">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1">Produk Stok Minim</h6>
@@ -231,7 +231,7 @@
                             <div class="text-muted">Tidak ada produk stok minim.</div>
                         @else
                             <div class="table-responsive">
-                                <table class="table table-sm dash-table">
+                                <table class="table table-sm table-striped dash-table">
                                     <thead>
                                         <tr>
                                             <th>Kode</th>
@@ -268,7 +268,7 @@
             </div>
 
             <div class="col-lg-6">
-                <div class="card h-100">
+                <div class="card card-hover h-100">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1">Transaksi Terakhir</h6>
@@ -285,7 +285,7 @@
                             <div class="text-muted">Belum ada transaksi.</div>
                         @else
                             <div class="table-responsive">
-                                <table class="table table-sm dash-table">
+                                <table class="table table-sm table-striped dash-table">
                                     <thead>
                                         <tr>
                                             <th>Kode</th>
@@ -320,7 +320,7 @@
         @if (($tables['purchase_orders'] ?? false) && auth()->user()->hasPermission('master.product_stocks.view'))
             <div class="row g-4 mt-1">
                 <div class="col-12">
-                    <div class="card">
+                    <div class="card card-hover">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1">Purchase Order Terakhir</h6>
@@ -333,7 +333,7 @@
                                 <div class="text-muted">Belum ada PO.</div>
                             @else
                                 <div class="table-responsive">
-                                    <table class="table table-sm dash-table">
+                                    <table class="table table-sm table-striped dash-table">
                                         <thead>
                                             <tr>
                                                 <th>PO</th>
@@ -422,11 +422,10 @@
                         }
                     }
                 },
-                colors: ['#2563eb']
+                colors: ['#5c73f8']
             };
 
             new ApexCharts(el, options).render();
         })();
     </script>
 @endpush
-

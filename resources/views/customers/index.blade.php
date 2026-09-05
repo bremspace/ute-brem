@@ -15,9 +15,9 @@
                     <input type="hidden" name="scope" id="customers-export-scope" value="all">
                     <input type="hidden" name="selected_ids" id="customers-selected-ids" value="">
                     <div class="btn-group">
-                        <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bx bx-download me-1"></i>Export
-                            <span id="customers-selected-count" class="badge bg-white text-success ms-1">0</span>
+                            <span id="customers-selected-count" class="badge bg-white text-primary ms-1">0</span>
                         </button>
                         <div class="dropdown-menu">
                             <button type="button" id="export-all-customers" class="dropdown-item">

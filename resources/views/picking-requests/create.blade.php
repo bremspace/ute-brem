@@ -8,7 +8,7 @@
         <h4 class="fw-semibold mb-0">Buat Picking Request</h4>
         <small class="text-muted">Pilih sparepart yang dibutuhkan meja servis.</small>
     </div>
-    <a href="{{ route('picking-requests.index') }}" class="btn btn-light btn-sm">Kembali</a>
+    <a href="{{ route('picking-requests.index') }}" class="btn btn-outline-secondary btn-sm">Kembali</a>
 </div>
 
 <form method="POST" action="{{ route('picking-requests.store') }}">

@@ -8,7 +8,7 @@
         <h4 class="fw-semibold mb-0">Input Serial / IMEI</h4>
         <small class="text-muted">Catat serial barang yang diterima — status otomatis <b>available</b> dan siap dipicking.</small>
     </div>
-    <a href="{{ route('item-serials.index') }}" class="btn btn-light btn-sm">Kembali</a>
+    <a href="{{ route('item-serials.index') }}" class="btn btn-outline-secondary btn-sm">Kembali</a>
 </div>
 
 @if ($products->isEmpty())

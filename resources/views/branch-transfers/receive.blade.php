@@ -102,7 +102,7 @@
                         </div>
 
                         <div class="text-end mt-4">
-                            <button type="submit" class="btn btn-success btn-lg" onclick="return confirm('Konfirmasi penerimaan barang? Stok cabang tujuan akan bertambah dan dokumen akan ditutup.')">
+                            <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('Konfirmasi penerimaan barang? Stok cabang tujuan akan bertambah dan dokumen akan ditutup.')">
                                 <i class="bx bx-check-double me-1"></i> Konfirmasi Penerimaan
                             </button>
                         </div>

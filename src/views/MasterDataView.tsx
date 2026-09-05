@@ -13,11 +13,10 @@ import {
   Plus,
   Pencil,
   Trash2,
-  X,
   ChevronDown,
   Search,
   Package,
-  Layers
+  Layers,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import {
@@ -30,57 +29,29 @@ import {
   ProductMaker,
   ProductType,
   Unit,
-  Supplier
+  Supplier,
 } from '../types';
+import {
+  Button,
+  Card,
+  CardHeader as UICardHeader,
+  Input,
+  Select,
+  SearchInput,
+  Toggle,
+  Badge,
+  Modal,
+  Tabs,
+} from '../components/ui';
+import type { SelectOption } from '../components/ui';
 
-// ---------- Shared UI helpers ----------
-
-const CardHeader: React.FC<{ icon: ReactNode; count: number; title: string; onPlus: () => void }> = ({ icon, count, title, onPlus }) => (
-  <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-    <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
-      <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">{icon}</span>
-      {title}
-      <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{count}</span>
-    </div>
-    <button
-      onClick={onPlus}
-      className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center gap-1 transition-colors"
-    >
-      <Plus className="w-3.5 h-3.5" />
-      Tambah
-    </button>
-  </div>
-);
-
-const SearchInput: React.FC<{ value: string; onChange: (v: string) => void; placeholder: string }> = ({ value, onChange, placeholder }) => (
-  <div className="px-6 py-3 border-b border-slate-100">
-    <div className="relative">
-      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-      <input
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
-      />
-    </div>
-  </div>
-);
+// ---------- Local UI helpers (not in shared library) ----------
 
 const EmptyState: React.FC<{ icon: ReactNode; text: string }> = ({ icon, text }) => (
   <div className="py-12 flex flex-col items-center justify-center text-center text-slate-400">
     {icon}
     <p className="text-xs font-semibold mt-2">{text}</p>
   </div>
-);
-
-const Toggle: React.FC<{ checked: boolean; onClick: () => void; title?: string }> = ({ checked, onClick, title }) => (
-  <button
-    onClick={e => { e.stopPropagation(); onClick(); }}
-    title={title}
-    className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 ${checked ? 'bg-emerald-500 justify-end' : 'bg-slate-300 justify-start'}`}
-  >
-    <span className="w-4 h-4 bg-white rounded-full shadow-sm" />
-  </button>
 );
 
 const ActionButtons: React.FC<{ onEdit: () => void; onDelete: () => void }> = ({ onEdit, onDelete }) => (
@@ -102,12 +73,6 @@ const ActionButtons: React.FC<{ onEdit: () => void; onDelete: () => void }> = ({
   </div>
 );
 
-const StatusBadge: React.FC<{ active: boolean }> = ({ active }) => (
-  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
-    {active ? 'Aktif' : 'Nonaktif'}
-  </span>
-);
-
 const Field: React.FC<{ label: string; children: ReactNode; className?: string }> = ({ label, children, className }) => (
   <label className={`block ${className || ''}`}>
     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{label}</span>
@@ -115,38 +80,20 @@ const Field: React.FC<{ label: string; children: ReactNode; className?: string }
   </label>
 );
 
-const inputCls = "w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all bg-white";
+const ListCardWrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
+  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">{children}</div>
+);
 
-interface ModalProps {
-  title: string;
-  onClose: () => void;
-  onSave: () => void;
-  children: ReactNode;
-}
-
-const Modal: React.FC<ModalProps> = ({ title, onClose, onSave, children }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={onClose}>
-    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 className="font-bold text-slate-800 text-sm">{title}</h3>
-        <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-      <div className="p-6 space-y-3">{children}</div>
-      <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-        <button onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-600 rounded-xl hover:bg-slate-100 transition-colors">
-          Batal
-        </button>
-        <button
-          onClick={onSave}
-          className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors"
-        >
-          Simpan
-        </button>
-      </div>
-    </div>
+const ListItem: React.FC<{ inactive?: boolean; children: ReactNode }> = ({ inactive, children }) => (
+  <div className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${inactive ? 'bg-slate-50 opacity-60' : ''}`}>
+    {children}
   </div>
+);
+
+const ActiveBadge: React.FC<{ active: boolean }> = ({ active }) => (
+  <Badge variant={active ? 'success' : 'neutral'}>
+    {active ? 'Aktif' : 'Nonaktif'}
+  </Badge>
 );
 
 // ---------- Entity CRUD components ----------
@@ -185,12 +132,35 @@ const BranchesTab: React.FC = () => {
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader icon={<Building className="w-4 h-4" />} count={branches.length} title="Cabang" onPlus={openAdd} />
-      <SearchInput value={search} onChange={setSearch} placeholder="Cari kode atau nama cabang..." />
+    <ListCardWrapper>
+      <UICardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <Building className="w-4 h-4" />
+            </span>
+            Cabang
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{branches.length}</span>
+          </div>
+          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAdd}>
+            Tambah
+          </Button>
+        </div>
+      </UICardHeader>
+      <div className="px-6 py-3 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari kode atau nama cabang..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+          />
+        </div>
+      </div>
       <div className="divide-y divide-slate-100">
         {list.map(b => (
-          <div key={b.id} className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${!b.is_active ? 'bg-slate-50 opacity-60' : ''}`}>
+          <ListItem key={b.id} inactive={!b.is_active}>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-[10px]">
                 {b.code}
@@ -206,38 +176,41 @@ const BranchesTab: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge active={b.is_active} />
-              <Toggle checked={b.is_active} onClick={() => toggle(b)} />
+              <ActiveBadge active={b.is_active} />
+              <Toggle checked={b.is_active} onChange={() => toggle(b)} />
               <ActionButtons onEdit={() => openEdit(b)} onDelete={() => del(b)} />
             </div>
-          </div>
+          </ListItem>
         ))}
         {list.length === 0 && <EmptyState icon={<Building className="w-8 h-8" />} text="Tidak ada cabang ditemukan" />}
       </div>
 
-      {modal.open && (
-        <Modal title={modal.editing ? 'Edit Cabang' : 'Tambah Cabang'} onClose={() => setModal({ open: false })} onSave={save}>
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title={modal.editing ? 'Edit Cabang' : 'Tambah Cabang'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal({ open: false })}>Batal</Button>
+            <Button onClick={save}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Kode">
-              <input className={inputCls} value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="CBG" />
-            </Field>
-            <Field label="Nama">
-              <input className={inputCls} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Cabang 1" />
-            </Field>
+            <Input label="Kode" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="CBG" />
+            <Input label="Nama" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Cabang 1" />
           </div>
-          <Field label="Alamat">
-            <input className={inputCls} value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Alamat" />
-          </Field>
-          <Field label="Telepon">
-            <input className={inputCls} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="08xx" />
-          </Field>
+          <Input label="Alamat" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Alamat" />
+          <Input label="Telepon" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="08xx" />
           <label className="flex items-center gap-2 pt-1">
             <input type="checkbox" checked={form.is_main} onChange={e => setForm({ ...form, is_main: e.target.checked })} className="w-4 h-4 accent-primary-600" />
             <span className="text-xs font-bold text-slate-700">Cabang Utama</span>
           </label>
-        </Modal>
-      )}
-    </div>
+        </div>
+      </Modal>
+    </ListCardWrapper>
   );
 };
 
@@ -280,17 +253,42 @@ const LocationsTab: React.FC = () => {
     (l.code + ' ' + l.name + ' ' + branchName(l.branch_id)).toLowerCase().includes(search.toLowerCase())
   );
 
+  const branchOptions: SelectOption[] = branches.map(b => ({ value: b.id, label: b.name }));
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader icon={<MapPin className="w-4 h-4" />} count={locations.length} title="Lokasi & Rak" onPlus={openAdd} />
-      <SearchInput value={search} onChange={setSearch} placeholder="Cari lokasi atau cabang..." />
+    <ListCardWrapper>
+      <UICardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <MapPin className="w-4 h-4" />
+            </span>
+            Lokasi & Rak
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{locations.length}</span>
+          </div>
+          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAdd}>
+            Tambah
+          </Button>
+        </div>
+      </UICardHeader>
+      <div className="px-6 py-3 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari lokasi atau cabang..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+          />
+        </div>
+      </div>
       <div className="divide-y divide-slate-100">
         {list.map(l => {
           const rks = locRacks(l.id);
           const isOpen = openRackId === l.id;
           return (
             <div key={l.id}>
-              <div className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${!l.is_active ? 'bg-slate-50 opacity-60' : ''}`}>
+              <ListItem inactive={!l.is_active}>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-[10px]">{l.code}</div>
                   <div>
@@ -307,11 +305,11 @@ const LocationsTab: React.FC = () => {
                     Rak ({rks.filter(r => r.is_active).length})
                     <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  <StatusBadge active={l.is_active} />
-                  <Toggle checked={l.is_active} onClick={() => toggle(l)} />
+                  <ActiveBadge active={l.is_active} />
+                  <Toggle checked={l.is_active} onChange={() => toggle(l)} />
                   <ActionButtons onEdit={() => openEdit(l)} onDelete={() => del(l)} />
                 </div>
-              </div>
+              </ListItem>
               {isOpen && <RackManager location={l} racks={rks} />}
             </div>
           );
@@ -319,27 +317,28 @@ const LocationsTab: React.FC = () => {
         {list.length === 0 && <EmptyState icon={<MapPin className="w-8 h-8" />} text="Tidak ada lokasi ditemukan" />}
       </div>
 
-      {modal.open && (
-        <Modal title={modal.editing ? 'Edit Lokasi' : 'Tambah Lokasi'} onClose={() => setModal({ open: false })} onSave={save}>
-          <Field label="Cabang">
-            <select className={inputCls} value={form.branch_id} onChange={e => setForm({ ...form, branch_id: Number(e.target.value) })}>
-              {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-          </Field>
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title={modal.editing ? 'Edit Lokasi' : 'Tambah Lokasi'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal({ open: false })}>Batal</Button>
+            <Button onClick={save}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Select label="Cabang" options={branchOptions} value={form.branch_id} onChange={e => setForm({ ...form, branch_id: Number(e.target.value) })} />
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Kode">
-              <input className={inputCls} value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="L01" />
-            </Field>
-            <Field label="Nama">
-              <input className={inputCls} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Gudang Utama" />
-            </Field>
+            <Input label="Kode" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="L01" />
+            <Input label="Nama" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Gudang Utama" />
           </div>
-          <Field label="Deskripsi">
-            <input className={inputCls} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
-          </Field>
-        </Modal>
-      )}
-    </div>
+          <Input label="Deskripsi" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
+        </div>
+      </Modal>
+    </ListCardWrapper>
   );
 };
 
@@ -368,8 +367,8 @@ const RackManager: React.FC<{ location: StoreLocation; racks: LocationRack[] }> 
               <span className="font-bold text-xs text-slate-700">{r.name}</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <StatusBadge active={r.is_active} />
-              <Toggle checked={r.is_active} onClick={() => toggleRack(r)} />
+              <ActiveBadge active={r.is_active} />
+              <Toggle checked={r.is_active} onChange={() => toggleRack(r)} />
               <ActionButtons onEdit={() => {}} onDelete={() => delRack(r)} />
             </div>
           </div>
@@ -377,18 +376,11 @@ const RackManager: React.FC<{ location: StoreLocation; racks: LocationRack[] }> 
         {racks.length === 0 && <p className="text-[10px] text-slate-400">Belum ada rak di lokasi ini.</p>}
       </div>
       <div className="flex items-end gap-2">
-        <Field label="Kode">
-          <input className={inputCls} value={rackForm.code} onChange={e => setRackForm({ ...rackForm, code: e.target.value })} placeholder="R01" />
-        </Field>
-        <Field label="Nama Rak">
-          <input className={inputCls} value={rackForm.name} onChange={e => setRackForm({ ...rackForm, name: e.target.value })} placeholder="Rak A" />
-        </Field>
-        <button
-          onClick={addRack}
-          className="px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl flex items-center gap-1 transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" /> Tambah Rak
-        </button>
+        <Input label="Kode" value={rackForm.code} onChange={e => setRackForm({ ...rackForm, code: e.target.value })} placeholder="R01" wrapperClassName="w-24" />
+        <Input label="Nama Rak" value={rackForm.name} onChange={e => setRackForm({ ...rackForm, name: e.target.value })} placeholder="Rak A" wrapperClassName="flex-1" />
+        <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={addRack}>
+          Tambah Rak
+        </Button>
       </div>
     </div>
   );
@@ -415,42 +407,70 @@ const CategoriesTab: React.FC = () => {
   const list = categories.filter(c => (c.name + ' ' + (c.code || '')).toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader icon={<Boxes className="w-4 h-4" />} count={categories.length} title="Kategori" onPlus={openAdd} />
-      <SearchInput value={search} onChange={setSearch} placeholder="Cari kategori..." />
+    <ListCardWrapper>
+      <UICardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <Boxes className="w-4 h-4" />
+            </span>
+            Kategori
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{categories.length}</span>
+          </div>
+          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAdd}>
+            Tambah
+          </Button>
+        </div>
+      </UICardHeader>
+      <div className="px-6 py-3 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari kategori..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+          />
+        </div>
+      </div>
       <div className="divide-y divide-slate-100">
         {list.map(c => (
-          <div key={c.id} className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${!c.is_active ? 'bg-slate-50 opacity-60' : ''}`}>
+          <ListItem key={c.id} inactive={!c.is_active}>
             <div>
               <div className="font-bold text-xs text-slate-800">{c.name}</div>
               <div className="text-[10px] text-slate-400 mt-0.5">{c.code ? `#${c.code} • ` : ''}{c.description || '—'}</div>
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge active={c.is_active} />
-              <Toggle checked={c.is_active} onClick={() => toggle(c)} />
+              <ActiveBadge active={c.is_active} />
+              <Toggle checked={c.is_active} onChange={() => toggle(c)} />
               <ActionButtons onEdit={() => openEdit(c)} onDelete={() => del(c)} />
             </div>
-          </div>
+          </ListItem>
         ))}
         {list.length === 0 && <EmptyState icon={<Boxes className="w-8 h-8" />} text="Tidak ada kategori ditemukan" />}
       </div>
 
-      {modal.open && (
-        <Modal title={modal.editing ? 'Edit Kategori' : 'Tambah Kategori'} onClose={() => setModal({ open: false })} onSave={save}>
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title={modal.editing ? 'Edit Kategori' : 'Tambah Kategori'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal({ open: false })}>Batal</Button>
+            <Button onClick={save}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Nama">
-              <input className={inputCls} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Sparepart Mesin" />
-            </Field>
-            <Field label="Kode">
-              <input className={inputCls} value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="KTG" />
-            </Field>
+            <Input label="Nama" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Sparepart Mesin" />
+            <Input label="Kode" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="KTG" />
           </div>
-          <Field label="Deskripsi">
-            <input className={inputCls} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
-          </Field>
-        </Modal>
-      )}
-    </div>
+          <Input label="Deskripsi" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
+        </div>
+      </Modal>
+    </ListCardWrapper>
   );
 };
 
@@ -477,13 +497,38 @@ const SubCategoriesTab: React.FC = () => {
     (s.name + ' ' + (s.code || '') + ' ' + catName(s.category_id)).toLowerCase().includes(search.toLowerCase())
   );
 
+  const categoryOptions: SelectOption[] = categories.map(c => ({ value: c.id, label: c.name }));
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader icon={<Layers className="w-4 h-4" />} count={subCategories.length} title="Sub Kategori" onPlus={openAdd} />
-      <SearchInput value={search} onChange={setSearch} placeholder="Cari sub kategori..." />
+    <ListCardWrapper>
+      <UICardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <Layers className="w-4 h-4" />
+            </span>
+            Sub Kategori
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{subCategories.length}</span>
+          </div>
+          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAdd}>
+            Tambah
+          </Button>
+        </div>
+      </UICardHeader>
+      <div className="px-6 py-3 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari sub kategori..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+          />
+        </div>
+      </div>
       <div className="divide-y divide-slate-100">
         {list.map(s => (
-          <div key={s.id} className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${!s.is_active ? 'bg-slate-50 opacity-60' : ''}`}>
+          <ListItem key={s.id} inactive={!s.is_active}>
             <div>
               <div className="font-bold text-xs text-slate-800">{s.name}</div>
               <div className="text-[10px] text-slate-400 mt-0.5">
@@ -492,36 +537,37 @@ const SubCategoriesTab: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge active={s.is_active} />
-              <Toggle checked={s.is_active} onClick={() => toggle(s)} />
+              <ActiveBadge active={s.is_active} />
+              <Toggle checked={s.is_active} onChange={() => toggle(s)} />
               <ActionButtons onEdit={() => openEdit(s)} onDelete={() => del(s)} />
             </div>
-          </div>
+          </ListItem>
         ))}
         {list.length === 0 && <EmptyState icon={<Layers className="w-8 h-8" />} text="Tidak ada sub kategori ditemukan" />}
       </div>
 
-      {modal.open && (
-        <Modal title={modal.editing ? 'Edit Sub Kategori' : 'Tambah Sub Kategori'} onClose={() => setModal({ open: false })} onSave={save}>
-          <Field label="Kategori">
-            <select className={inputCls} value={form.category_id} onChange={e => setForm({ ...form, category_id: Number(e.target.value) })}>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </Field>
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title={modal.editing ? 'Edit Sub Kategori' : 'Tambah Sub Kategori'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal({ open: false })}>Batal</Button>
+            <Button onClick={save}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Select label="Kategori" options={categoryOptions} value={form.category_id} onChange={e => setForm({ ...form, category_id: Number(e.target.value) })} />
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Nama">
-              <input className={inputCls} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Oli Mesin" />
-            </Field>
-            <Field label="Kode">
-              <input className={inputCls} value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="SBC" />
-            </Field>
+            <Input label="Nama" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Oli Mesin" />
+            <Input label="Kode" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="SBC" />
           </div>
-          <Field label="Deskripsi">
-            <input className={inputCls} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
-          </Field>
-        </Modal>
-      )}
-    </div>
+          <Input label="Deskripsi" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
+        </div>
+      </Modal>
+    </ListCardWrapper>
   );
 };
 
@@ -546,37 +592,67 @@ const BrandsTab: React.FC = () => {
   const list = brands.filter(b => b.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader icon={<Tag className="w-4 h-4" />} count={brands.length} title="Brand" onPlus={openAdd} />
-      <SearchInput value={search} onChange={setSearch} placeholder="Cari brand..." />
+    <ListCardWrapper>
+      <UICardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <Tag className="w-4 h-4" />
+            </span>
+            Brand
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{brands.length}</span>
+          </div>
+          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAdd}>
+            Tambah
+          </Button>
+        </div>
+      </UICardHeader>
+      <div className="px-6 py-3 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari brand..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+          />
+        </div>
+      </div>
       <div className="divide-y divide-slate-100">
         {list.map(b => (
-          <div key={b.id} className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${!b.is_active ? 'bg-slate-50 opacity-60' : ''}`}>
+          <ListItem key={b.id} inactive={!b.is_active}>
             <div>
               <div className="font-bold text-xs text-slate-800">{b.name}</div>
               <div className="text-[10px] text-slate-400 mt-0.5">{b.description || '—'}</div>
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge active={b.is_active} />
-              <Toggle checked={b.is_active} onClick={() => toggle(b)} />
+              <ActiveBadge active={b.is_active} />
+              <Toggle checked={b.is_active} onChange={() => toggle(b)} />
               <ActionButtons onEdit={() => openEdit(b)} onDelete={() => del(b)} />
             </div>
-          </div>
+          </ListItem>
         ))}
         {list.length === 0 && <EmptyState icon={<Tag className="w-8 h-8" />} text="Tidak ada brand ditemukan" />}
       </div>
 
-      {modal.open && (
-        <Modal title={modal.editing ? 'Edit Brand' : 'Tambah Brand'} onClose={() => setModal({ open: false })} onSave={save}>
-          <Field label="Nama">
-            <input className={inputCls} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Yamaha" />
-          </Field>
-          <Field label="Deskripsi">
-            <input className={inputCls} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
-          </Field>
-        </Modal>
-      )}
-    </div>
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title={modal.editing ? 'Edit Brand' : 'Tambah Brand'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal({ open: false })}>Batal</Button>
+            <Button onClick={save}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Input label="Nama" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Yamaha" />
+          <Input label="Deskripsi" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
+        </div>
+      </Modal>
+    </ListCardWrapper>
   );
 };
 
@@ -601,37 +677,67 @@ const MakersTab: React.FC = () => {
   const list = makers.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader icon={<Factory className="w-4 h-4" />} count={makers.length} title="Maker" onPlus={openAdd} />
-      <SearchInput value={search} onChange={setSearch} placeholder="Cari maker..." />
+    <ListCardWrapper>
+      <UICardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <Factory className="w-4 h-4" />
+            </span>
+            Maker
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{makers.length}</span>
+          </div>
+          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAdd}>
+            Tambah
+          </Button>
+        </div>
+      </UICardHeader>
+      <div className="px-6 py-3 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari maker..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+          />
+        </div>
+      </div>
       <div className="divide-y divide-slate-100">
         {list.map(m => (
-          <div key={m.id} className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${!m.is_active ? 'bg-slate-50 opacity-60' : ''}`}>
+          <ListItem key={m.id} inactive={!m.is_active}>
             <div>
               <div className="font-bold text-xs text-slate-800">{m.name}</div>
               <div className="text-[10px] text-slate-400 mt-0.5">{m.description || '—'}</div>
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge active={m.is_active} />
-              <Toggle checked={m.is_active} onClick={() => toggle(m)} />
+              <ActiveBadge active={m.is_active} />
+              <Toggle checked={m.is_active} onChange={() => toggle(m)} />
               <ActionButtons onEdit={() => openEdit(m)} onDelete={() => del(m)} />
             </div>
-          </div>
+          </ListItem>
         ))}
         {list.length === 0 && <EmptyState icon={<Factory className="w-8 h-8" />} text="Tidak ada maker ditemukan" />}
       </div>
 
-      {modal.open && (
-        <Modal title={modal.editing ? 'Edit Maker' : 'Tambah Maker'} onClose={() => setModal({ open: false })} onSave={save}>
-          <Field label="Nama">
-            <input className={inputCls} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="PT. Sparepart Indonesia" />
-          </Field>
-          <Field label="Deskripsi">
-            <input className={inputCls} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
-          </Field>
-        </Modal>
-      )}
-    </div>
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title={modal.editing ? 'Edit Maker' : 'Tambah Maker'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal({ open: false })}>Batal</Button>
+            <Button onClick={save}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Input label="Nama" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="PT. Sparepart Indonesia" />
+          <Input label="Deskripsi" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi" />
+        </div>
+      </Modal>
+    </ListCardWrapper>
   );
 };
 
@@ -658,13 +764,38 @@ const ProductTypesTab: React.FC = () => {
     (t.name + ' ' + (t.code || '') + ' ' + brandName(t.brand_id)).toLowerCase().includes(search.toLowerCase())
   );
 
+  const brandOptions: SelectOption[] = brands.map(b => ({ value: b.id, label: b.name }));
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader icon={<Component className="w-4 h-4" />} count={productTypes.length} title="Tipe Produk" onPlus={openAdd} />
-      <SearchInput value={search} onChange={setSearch} placeholder="Cari tipe produk..." />
+    <ListCardWrapper>
+      <UICardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <Component className="w-4 h-4" />
+            </span>
+            Tipe Produk
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{productTypes.length}</span>
+          </div>
+          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAdd}>
+            Tambah
+          </Button>
+        </div>
+      </UICardHeader>
+      <div className="px-6 py-3 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari tipe produk..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+          />
+        </div>
+      </div>
       <div className="divide-y divide-slate-100">
         {list.map(t => (
-          <div key={t.id} className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${!t.is_active ? 'bg-slate-50 opacity-60' : ''}`}>
+          <ListItem key={t.id} inactive={!t.is_active}>
             <div>
               <div className="font-bold text-xs text-slate-800">{t.name}</div>
               <div className="text-[10px] text-slate-400 mt-0.5">
@@ -673,33 +804,36 @@ const ProductTypesTab: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge active={t.is_active} />
-              <Toggle checked={t.is_active} onClick={() => toggle(t)} />
+              <ActiveBadge active={t.is_active} />
+              <Toggle checked={t.is_active} onChange={() => toggle(t)} />
               <ActionButtons onEdit={() => openEdit(t)} onDelete={() => del(t)} />
             </div>
-          </div>
+          </ListItem>
         ))}
         {list.length === 0 && <EmptyState icon={<Component className="w-8 h-8" />} text="Tidak ada tipe produk ditemukan" />}
       </div>
 
-      {modal.open && (
-        <Modal title={modal.editing ? 'Edit Tipe Produk' : 'Tambah Tipe Produk'} onClose={() => setModal({ open: false })} onSave={save}>
-          <Field label="Brand">
-            <select className={inputCls} value={form.brand_id} onChange={e => setForm({ ...form, brand_id: Number(e.target.value) })}>
-              {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-          </Field>
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title={modal.editing ? 'Edit Tipe Produk' : 'Tambah Tipe Produk'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal({ open: false })}>Batal</Button>
+            <Button onClick={save}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Select label="Brand" options={brandOptions} value={form.brand_id} onChange={e => setForm({ ...form, brand_id: Number(e.target.value) })} />
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Nama">
-              <input className={inputCls} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Filter Oli" />
-            </Field>
-            <Field label="Kode">
-              <input className={inputCls} value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="TPD" />
-            </Field>
+            <Input label="Nama" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Filter Oli" />
+            <Input label="Kode" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="TPD" />
           </div>
-        </Modal>
-      )}
-    </div>
+        </div>
+      </Modal>
+    </ListCardWrapper>
   );
 };
 
@@ -724,12 +858,35 @@ const UnitsTab: React.FC = () => {
   const list = units.filter(u => (u.name + ' ' + (u.short_name || '')).toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader icon={<Ruler className="w-4 h-4" />} count={units.length} title="Satuan" onPlus={openAdd} />
-      <SearchInput value={search} onChange={setSearch} placeholder="Cari satuan..." />
+    <ListCardWrapper>
+      <UICardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <Ruler className="w-4 h-4" />
+            </span>
+            Satuan
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{units.length}</span>
+          </div>
+          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAdd}>
+            Tambah
+          </Button>
+        </div>
+      </UICardHeader>
+      <div className="px-6 py-3 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari satuan..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+          />
+        </div>
+      </div>
       <div className="divide-y divide-slate-100">
         {list.map(u => (
-          <div key={u.id} className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${!u.is_active ? 'bg-slate-50 opacity-60' : ''}`}>
+          <ListItem key={u.id} inactive={!u.is_active}>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-[10px] uppercase">{u.short_name || u.name.slice(0, 3)}</div>
               <div>
@@ -738,28 +895,33 @@ const UnitsTab: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge active={u.is_active} />
-              <Toggle checked={u.is_active} onClick={() => toggle(u)} />
+              <ActiveBadge active={u.is_active} />
+              <Toggle checked={u.is_active} onChange={() => toggle(u)} />
               <ActionButtons onEdit={() => openEdit(u)} onDelete={() => del(u)} />
             </div>
-          </div>
+          </ListItem>
         ))}
         {list.length === 0 && <EmptyState icon={<Ruler className="w-8 h-8" />} text="Tidak ada satuan ditemukan" />}
       </div>
 
-      {modal.open && (
-        <Modal title={modal.editing ? 'Edit Satuan' : 'Tambah Satuan'} onClose={() => setModal({ open: false })} onSave={save}>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Nama">
-              <input className={inputCls} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Pieces" />
-            </Field>
-            <Field label="Singkatan">
-              <input className={inputCls} value={form.short_name} onChange={e => setForm({ ...form, short_name: e.target.value })} placeholder="pcs" />
-            </Field>
-          </div>
-        </Modal>
-      )}
-    </div>
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title={modal.editing ? 'Edit Satuan' : 'Tambah Satuan'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal({ open: false })}>Batal</Button>
+            <Button onClick={save}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <Input label="Nama" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Pieces" />
+          <Input label="Singkatan" value={form.short_name} onChange={e => setForm({ ...form, short_name: e.target.value })} placeholder="pcs" />
+        </div>
+      </Modal>
+    </ListCardWrapper>
   );
 };
 
@@ -789,12 +951,35 @@ const SuppliersTab: React.FC = () => {
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader icon={<Truck className="w-4 h-4" />} count={suppliers.length} title="Supplier" onPlus={openAdd} />
-      <SearchInput value={search} onChange={setSearch} placeholder="Cari kode, nama, atau kontak..." />
+    <ListCardWrapper>
+      <UICardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <span className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <Truck className="w-4 h-4" />
+            </span>
+            Supplier
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{suppliers.length}</span>
+          </div>
+          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAdd}>
+            Tambah
+          </Button>
+        </div>
+      </UICardHeader>
+      <div className="px-6 py-3 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari kode, nama, atau kontak..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+          />
+        </div>
+      </div>
       <div className="divide-y divide-slate-100">
         {list.map(s => (
-          <div key={s.id} className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50/70 transition-colors ${!s.is_active ? 'bg-slate-50 opacity-60' : ''}`}>
+          <ListItem key={s.id} inactive={!s.is_active}>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-[10px]">{s.code}</div>
               <div>
@@ -806,63 +991,60 @@ const SuppliersTab: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge active={s.is_active} />
-              <Toggle checked={s.is_active} onClick={() => toggle(s)} />
+              <ActiveBadge active={s.is_active} />
+              <Toggle checked={s.is_active} onChange={() => toggle(s)} />
               <ActionButtons onEdit={() => openEdit(s)} onDelete={() => del(s)} />
             </div>
-          </div>
+          </ListItem>
         ))}
         {list.length === 0 && <EmptyState icon={<Truck className="w-8 h-8" />} text="Tidak ada supplier ditemukan" />}
       </div>
 
-      {modal.open && (
-        <Modal title={modal.editing ? 'Edit Supplier' : 'Tambah Supplier'} onClose={() => setModal({ open: false })} onSave={save}>
+      <Modal
+        open={modal.open}
+        onClose={() => setModal({ open: false })}
+        title={modal.editing ? 'Edit Supplier' : 'Tambah Supplier'}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal({ open: false })}>Batal</Button>
+            <Button onClick={save}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Kode">
-              <input className={inputCls} value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="SUP" />
-            </Field>
-            <Field label="Nama">
-              <input className={inputCls} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="PT. Supplier" />
-            </Field>
+            <Input label="Kode" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="SUP" />
+            <Input label="Nama" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="PT. Supplier" />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Kontak">
-              <input className={inputCls} value={form.contact_person} onChange={e => setForm({ ...form, contact_person: e.target.value })} placeholder="Andi" />
-            </Field>
-            <Field label="Telepon">
-              <input className={inputCls} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="08xx" />
-            </Field>
+            <Input label="Kontak" value={form.contact_person} onChange={e => setForm({ ...form, contact_person: e.target.value })} placeholder="Andi" />
+            <Input label="Telepon" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="08xx" />
           </div>
-          <Field label="Email">
-            <input className={inputCls} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="email@example.com" />
-          </Field>
-          <Field label="Alamat">
-            <input className={inputCls} value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Alamat" />
-          </Field>
-        </Modal>
-      )}
-    </div>
+          <Input label="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="email@example.com" />
+          <Input label="Alamat" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Alamat" />
+        </div>
+      </Modal>
+    </ListCardWrapper>
   );
 };
 
 // ---------- Main View ----------
 
 const TABS = [
-  { key: 'cabang', label: 'Cabang', icon: Building },
-  { key: 'lokasi', label: 'Lokasi & Rak', icon: MapPin },
-  { key: 'kategori', label: 'Kategori', icon: Boxes },
-  { key: 'subkategori', label: 'Sub Kategori', icon: Layers },
-  { key: 'brand', label: 'Brand', icon: Tag },
-  { key: 'maker', label: 'Maker', icon: Factory },
-  { key: 'tipe', label: 'Tipe Produk', icon: Component },
-  { key: 'satuan', label: 'Satuan', icon: Ruler },
-  { key: 'supplier', label: 'Supplier', icon: Truck },
-] as const;
-
-type TabKey = typeof TABS[number]['key'];
+  { id: 'cabang', label: 'Cabang', icon: <Building className="w-3.5 h-3.5" /> },
+  { id: 'lokasi', label: 'Lokasi & Rak', icon: <MapPin className="w-3.5 h-3.5" /> },
+  { id: 'kategori', label: 'Kategori', icon: <Boxes className="w-3.5 h-3.5" /> },
+  { id: 'subkategori', label: 'Sub Kategori', icon: <Layers className="w-3.5 h-3.5" /> },
+  { id: 'brand', label: 'Brand', icon: <Tag className="w-3.5 h-3.5" /> },
+  { id: 'maker', label: 'Maker', icon: <Factory className="w-3.5 h-3.5" /> },
+  { id: 'tipe', label: 'Tipe Produk', icon: <Component className="w-3.5 h-3.5" /> },
+  { id: 'satuan', label: 'Satuan', icon: <Ruler className="w-3.5 h-3.5" /> },
+  { id: 'supplier', label: 'Supplier', icon: <Truck className="w-3.5 h-3.5" /> },
+];
 
 export const MasterDataView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabKey>('cabang');
+  const [activeTab, setActiveTab] = useState('cabang');
 
   const render = () => {
     switch (activeTab) {
@@ -890,26 +1072,11 @@ export const MasterDataView: React.FC = () => {
         Kelola referensi data master: cabang, lokasi & rak, kategori, brand, satuan, dan supplier.
       </p>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {TABS.map(t => {
-          const Icon = t.icon;
-          const active = activeTab === t.key;
-          return (
-            <button
-              key={t.key}
-              onClick={() => setActiveTab(t.key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border ${
-                active
-                  ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-600/30'
-                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
+      <Tabs
+        tabs={TABS}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+      />
 
       {render()}
       <p className="text-center text-[10px] text-slate-400">

@@ -13,7 +13,7 @@
     </div>
     <div class="d-flex gap-2">
         <a href="?recalculate=1" class="btn btn-outline-primary btn-sm">Hitung Ulang Proyeksi</a>
-        <a href="{{ route('purchase-orders.index') }}" class="btn btn-light btn-sm">Daftar PO</a>
+        <a href="{{ route('purchase-orders.index') }}" class="btn btn-outline-secondary btn-sm">Daftar PO</a>
     </div>
 </div>
 

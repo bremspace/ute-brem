@@ -139,7 +139,7 @@
                     <div class="d-flex justify-content-end mt-4">
                         <form action="{{ $storeRoute }}" method="POST">
                             @csrf
-                            <button type="submit" class="btn btn-success" {{ $preview['has_errors'] ? 'disabled' : '' }}
+                            <button type="submit" class="btn btn-primary" {{ $preview['has_errors'] ? 'disabled' : '' }}
                                 onclick="return confirm('Import {{ $preview['valid'] }} data sekarang?')">
                                 <i class="bx bx-check me-1"></i> Simpan Import
                             </button>

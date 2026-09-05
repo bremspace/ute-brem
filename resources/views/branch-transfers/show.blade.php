@@ -27,7 +27,7 @@
             <a href="{{ route('branch-transfers.index') }}" class="btn btn-outline-secondary">
                 <i class="bx bx-arrow-back me-1"></i> Kembali
             </a>
-            <a href="{{ route('branch-transfers.print', $branchTransfer) }}" target="_blank" class="btn btn-info">
+            <a href="{{ route('branch-transfers.print', $branchTransfer) }}" target="_blank" class="btn btn-outline-primary">
                 <i class="bx bx-printer me-1"></i> Cetak Surat Jalan
             </a>
         </div>
@@ -191,7 +191,7 @@
                                 </form>
 
                                 <!-- Receive Form -->
-                                <a href="{{ route('branch-transfers.receive.form', $branchTransfer) }}" class="btn btn-success">
+                                <a href="{{ route('branch-transfers.receive.form', $branchTransfer) }}" class="btn btn-primary">
                                     <i class="bx bx-package me-1"></i> Konfirmasi Penerimaan Barang
                                 </a>
                             @endif

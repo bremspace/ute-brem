@@ -16,9 +16,9 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">User Activity Logs</h5>
-                <a href="{{ route('users.index') }}" class="btn btn-secondary">
-                    <i class="bx bx-arrow-back me-1"></i> Kembali ke Daftar User
-                </a>
+<a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
+                     <i class="bx bx-arrow-back me-1"></i> Kembali ke Daftar User
+                 </a>
             </div>
             <div class="card-body">
                 <div class="table-responsive text-nowrap">

@@ -7,7 +7,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Edit Supplier</h5>
-            <a href="{{ route('suppliers.index') }}" class="btn btn-secondary"><i class="bx bx-arrow-back me-1"></i>Kembali</a>
+            <a href="{{ route('suppliers.index') }}" class="btn btn-outline-secondary"><i class="bx bx-arrow-back me-1"></i>Kembali</a>
         </div>
         <div class="card-body">
             <form action="{{ route('suppliers.update', $supplier) }}" method="POST">
