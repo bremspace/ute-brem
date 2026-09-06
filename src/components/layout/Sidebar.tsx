@@ -130,7 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         {/* Footer */}
         <div className="p-4 border-t border-slate-800 bg-slate-950/50">
           <div className="text-xs text-slate-400">
-            <span className="font-semibold text-slate-200">Google AI Studio Ready</span>
+            <span className="font-semibold text-slate-200">UTE Parts POS</span>
             <div className="text-[11px] text-slate-500 mt-0.5">Version 1.0.0 (Vite + React)</div>
           </div>
         </div>

@@ -1038,6 +1038,7 @@
                             <li><a href="{{ route('website.products.index') }}">Semua Produk</a></li>
                             <li><a href="{{ $cartUrl }}">Keranjang</a></li>
                             <li><a href="{{ route('website.member.login') }}">Masuk Member</a></li>
+                            <li><a href="{{ url('/login') }}">Admin Panel</a></li>
                         </ul>
                     </div>
 

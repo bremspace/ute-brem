@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'spa_url' => env('SPA_URL', 'http://localhost:3000'),
+
 ];
