@@ -52,10 +52,9 @@ const CASH_TYPE_LABELS: Record<string, string> = {
 };
 
 const SERVICE_STATUS_LABELS: Record<string, string> = {
-  pending: 'Antri',
-  in_progress: 'Dikerjakan',
-  completed: 'Selesai',
-  delivered: 'Diambil',
+  process: 'Dikerjakan',
+  done: 'Selesai',
+  taken: 'Diambil',
   cancelled: 'Batal',
 };
 
@@ -115,7 +114,7 @@ export const ReportsView: React.FC = () => {
   );
 
   const filteredServices = useMemo(
-    () => serviceTransactions.filter(s => inRange(s.service_at, dateFrom, dateTo)),
+    () => serviceTransactions.filter(s => inRange(s.created_at, dateFrom, dateTo)),
     [serviceTransactions, dateFrom, dateTo],
   );
 
@@ -218,10 +217,10 @@ export const ReportsView: React.FC = () => {
       }
       case 'servis': {
         const rows: string[][] = [
-          ['No', 'Pelanggan', 'Device', 'Status', 'Estimasi', 'Total', 'Bayar'],
+          ['No', 'Kode', 'Tipe Device', 'Status', 'Subtotal', 'Total', 'Pajak'],
           ...filteredServices.map((s, i) => [
-            String(i + 1), s.service_code, s.customer_name, `${s.device_brand} ${s.device_model}`,
-            s.status, String(s.estimated_cost), String(s.grand_total), String(s.paid_amount),
+            String(i + 1), s.service_code, `${s.device_brand} ${s.device_type}`,
+            s.status, String(s.subtotal), String(s.grand_total), String(s.tax_total),
           ]),
         ];
         downloadCsv(`servis_${dateLabel}.csv`, rows);
@@ -671,16 +670,15 @@ export const ReportsView: React.FC = () => {
               <TableRow key={s.id}>
                 <td className="px-5 py-2.5 font-bold text-slate-400">{i + 1}</td>
                 <td className="px-4 py-2.5 font-mono font-bold text-primary-700">{s.service_code}</td>
-                <td className="px-4 py-2.5 font-medium text-slate-800">{s.customer_name}</td>
-                <td className="px-4 py-2.5 text-slate-600">{s.device_brand} {s.device_model}</td>
+                <td className="px-4 py-2.5 text-slate-600">{s.device_brand} {s.device_type}</td>
                 <td className="px-4 py-2.5">
                   <StatusBadge status={s.status}>
                     {SERVICE_STATUS_LABELS[s.status] || s.status}
                   </StatusBadge>
                 </td>
-                <td className="px-4 py-2.5 text-right font-bold text-slate-600">{rp(s.estimated_cost)}</td>
+                <td className="px-4 py-2.5 text-right font-bold text-slate-600">{rp(s.subtotal)}</td>
                 <td className="px-4 py-2.5 text-right font-bold text-slate-900">{rp(s.grand_total)}</td>
-                <td className="px-4 py-2.5 text-right font-bold text-emerald-700">{rp(s.paid_amount)}</td>
+                <td className="px-4 py-2.5 text-right font-bold text-slate-600">{rp(s.tax_total)}</td>
               </TableRow>
             ))}
             {filteredServices.length === 0 && (

@@ -15,6 +15,10 @@ import { CustomersView } from './views/CustomersView';
 import { MasterDataView } from './views/MasterDataView';
 import { SettingsView } from './views/SettingsView';
 import { WebsiteCatalogView } from './views/WebsiteCatalogView';
+import { AccountingView } from './views/AccountingView';
+import { StockOpnameView } from './views/StockOpnameView';
+import { PickingRequestsView } from './views/PickingRequestsView';
+import { ItemSerialsView } from './views/ItemSerialsView';
 
 export const App: React.FC = () => {
   const { currentView } = useApp();
@@ -30,6 +34,12 @@ export const App: React.FC = () => {
         return <ProductsView />;
       case 'stock-movements':
         return <StockMovementsView />;
+      case 'stock-opname':
+        return <StockOpnameView />;
+      case 'picking-requests':
+        return <PickingRequestsView />;
+      case 'item-serials':
+        return <ItemSerialsView />;
       case 'branch-transfers':
         return <BranchTransfersView />;
       case 'purchase-orders':
@@ -40,6 +50,8 @@ export const App: React.FC = () => {
         return <BackOfficeView />;
       case 'reports':
         return <ReportsView />;
+      case 'accounting':
+        return <AccountingView />;
       case 'customers':
         return <CustomersView />;
       case 'master-data':

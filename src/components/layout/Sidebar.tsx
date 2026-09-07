@@ -15,7 +15,11 @@ import {
   Database,
   Printer,
   Globe,
-  Store
+  Store,
+  ClipboardCheck,
+  ListChecks,
+  Hash,
+  BookOpen,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,18 +31,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const { currentView, setCurrentView, cart, activeCashSession, serviceTransactions, products } = useApp();
 
   const lowStockCount = products.filter(p => (p.stock_global || 0) <= (p.stock_min || 0)).length;
-  const pendingServiceCount = serviceTransactions.filter(s => s.status === 'pending' || s.status === 'in_progress').length;
+  const pendingServiceCount = serviceTransactions.filter(s => s.status === 'process').length;
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'pos', label: 'POS Kasir', icon: ShoppingCart, badge: cart.length > 0 ? `${cart.length}` : (activeCashSession ? 'Open' : undefined), badgeVariant: activeCashSession ? 'success' as const : 'primary' as const },
     { id: 'products', label: 'Master Produk & Stok', icon: Package, badge: lowStockCount > 0 ? `${lowStockCount}` : undefined, badgeVariant: 'warning' as const },
     { id: 'stock-movements', label: 'Mutasi Stok Ledger', icon: ArrowLeftRight },
+    { id: 'stock-opname', label: 'Stock Opname', icon: ClipboardCheck },
+    { id: 'picking-requests', label: 'Picking Request', icon: ListChecks },
+    { id: 'item-serials', label: 'Serial Number', icon: Hash },
     { id: 'branch-transfers', label: 'Transfer Cabang', icon: Store },
     { id: 'purchase-orders', label: 'Purchase Order (PO)', icon: Truck },
     { id: 'services', label: 'Service Center HP', icon: Wrench, badge: pendingServiceCount > 0 ? `${pendingServiceCount}` : undefined, badgeVariant: 'info' as const },
     { id: 'back-office', label: 'Back Office & Kas', icon: Building2 },
     { id: 'reports', label: 'Laporan & Laba Rugi', icon: BarChart3 },
+    { id: 'accounting', label: 'Akuntansi', icon: BookOpen },
     { id: 'customers', label: 'Pelanggan & Poin', icon: Users },
     { id: 'master-data', label: 'Master Data', icon: Database },
     { id: 'settings', label: 'Pengaturan & Backup', icon: Printer },

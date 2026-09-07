@@ -157,12 +157,15 @@ interface AppContextType {
     customerName: string;
     customerPhone: string;
     deviceBrand: string;
-    deviceModel: string;
-    problemDescription: string;
-    deviceLockType?: 'pin' | 'pattern' | 'password' | 'none';
-    deviceLockCode?: string;
+    deviceType: string;
+    serialNumber?: string;
+    complaint: string;
+    checkNotes?: string;
+    accessories?: string;
+    deviceLockType?: string;
+    deviceLockValue?: string;
     technicianId?: number;
-    items?: { itemType: 'service' | 'product'; productId?: number; name: string; quantity: number; price: number; purchasePrice: number }[];
+    items?: { type: 'service' | 'product'; serviceId?: number; productId?: number; name: string; quantity: number; unitPrice: number; discountAmount?: number }[];
   }) => ServiceTransaction;
   updateServiceStatus: (serviceId: number, status: ServiceTransaction['status']) => void;
   completeServicePayment: (serviceId: number, paymentMethod: 'cash' | 'transfer' | 'qris' | 'tempo', paidAmount: number) => void;
@@ -1081,58 +1084,58 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     customerName: string;
     customerPhone: string;
     deviceBrand: string;
-    deviceModel: string;
-    problemDescription: string;
-    deviceLockType?: 'pin' | 'pattern' | 'password' | 'none';
-    deviceLockCode?: string;
+    deviceType: string;
+    serialNumber?: string;
+    complaint: string;
+    checkNotes?: string;
+    accessories?: string;
+    deviceLockType?: string;
+    deviceLockValue?: string;
     technicianId?: number;
-    items?: { itemType: 'service' | 'product'; productId?: number; name: string; quantity: number; price: number; purchasePrice: number }[];
+    items?: { type: 'service' | 'product'; serviceId?: number; productId?: number; name: string; quantity: number; unitPrice: number; discountAmount?: number }[];
   }): ServiceTransaction => {
     const code = `SRV-${new Date().getFullYear().toString().slice(-2)}${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const tech = initialUsers.find(u => u.id === payload.technicianId) || initialUsers[3];
 
-    const items: ServiceTransactionItem[] = (payload.items || []).map((it: { itemType: 'service' | 'product'; productId?: number; name: string; quantity: number; price: number; purchasePrice: number }, idx) => ({
+    const items: ServiceTransactionItem[] = (payload.items || []).map((it, idx) => ({
       id: Date.now() + idx,
       service_transaction_id: Date.now(),
-      item_type: it.itemType,
-      product_id: it.productId,
+      service_id: it.serviceId ?? null,
+      product_id: it.productId ?? null,
       name: it.name,
+      type: it.type,
+      unit_price: it.unitPrice,
       quantity: it.quantity,
-      purchase_price: it.purchasePrice || 0,
-      price: it.price,
-      subtotal: it.quantity * it.price
+      discount_amount: it.discountAmount ?? 0,
+      subtotal: it.quantity * it.unitPrice - (it.discountAmount ?? 0),
+      notes: null,
     }));
 
-    const sparepartTotal = items.filter(i => i.item_type === 'product').reduce((sum, i) => sum + i.subtotal, 0);
-    const serviceTotal = items.filter(i => i.item_type === 'service').reduce((sum, i) => sum + i.subtotal, 0);
-    const grandTotal = sparepartTotal + serviceTotal;
+    const subtotal = items.reduce((sum, i) => sum + i.subtotal, 0);
 
     const newService: ServiceTransaction = {
       id: Date.now(),
       service_code: code,
-      customer_name: payload.customerName,
-      customer_phone: payload.customerPhone,
+      customer_id: null,
+      cashier_id: currentUser.id,
+      technician_id: payload.technicianId ?? null,
+      location_id: selectedLocationId,
+      cash_session_id: null,
       device_brand: payload.deviceBrand,
-      device_model: payload.deviceModel,
-      device_imei: payload.device_imei,
-      device_color: payload.device_color,
-      device_lock_type: payload.deviceLockType || 'none',
-      device_lock_code: payload.deviceLockCode,
-      problem_description: payload.problemDescription,
-      condition_notes: payload.condition_notes,
-      completeness_notes: payload.completeness_notes,
-      technician_id: tech?.id,
-      technician_name: tech?.name,
-      cashier_name: currentUser.name,
-      status: 'pending',
-      warranty_days: payload.warranty_days || 7,
-      estimated_cost: payload.estimated_cost || grandTotal,
-      total_sparepart_cost: sparepartTotal,
-      total_service_cost: serviceTotal,
-      grand_total: grandTotal,
-      paid_amount: 0,
-      service_at: new Date().toISOString(),
-      items
+      device_type: payload.deviceType,
+      serial_number: payload.serialNumber ?? '',
+      device_lock_type: payload.deviceLockType ?? null,
+      device_lock_value: payload.deviceLockValue ?? null,
+      check_notes: payload.checkNotes ?? '',
+      complaint: payload.complaint,
+      accessories: payload.accessories ?? null,
+      subtotal,
+      discount_total: 0,
+      tax_total: 0,
+      grand_total: subtotal,
+      status: 'process',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      items,
     };
 
     setServiceTransactions(prev => [newService, ...prev]);
@@ -1145,8 +1148,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return {
           ...s,
           status,
-          completed_at: status === 'completed' ? new Date().toISOString() : s.completed_at,
-          delivered_at: status === 'delivered' ? new Date().toISOString() : s.delivered_at,
+          updated_at: new Date().toISOString(),
         };
       }
       return s;
@@ -1158,7 +1160,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!service) return;
 
     // Deduct used spareparts from stock if not deducted yet
-    service.items.filter(i => i.item_type === 'product' && i.product_id).forEach(sp => {
+    service.items.filter(i => i.type === 'product' && i.product_id).forEach(sp => {
       setProducts(prevProducts => prevProducts.map(p => {
         if (p.id === sp.product_id) {
           const newGlobal = Math.max(0, (p.stock_global || 0) - sp.quantity);
@@ -1178,11 +1180,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (s.id === serviceId) {
         return {
           ...s,
-          status: 'delivered',
-          delivered_at: new Date().toISOString(),
-          payment_method: paymentMethod,
-          paid_amount: paidAmount,
-          credit_status: paymentMethod === 'tempo' ? (paidAmount >= s.grand_total ? 'paid' : 'unpaid') : 'paid'
+          status: 'taken',
+          updated_at: new Date().toISOString(),
         };
       }
       return s;

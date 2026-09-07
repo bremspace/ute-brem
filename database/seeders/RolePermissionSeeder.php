@@ -35,6 +35,9 @@ class RolePermissionSeeder extends Seeder
 
         $permissions = [
 
+            // === DASHBOARD ===
+            ['name' => 'dashboard.view', 'display_name' => 'Dashboard - View', 'description' => 'Can view dashboard', 'module' => 'dashboard', 'parent' => null, 'sort_order' => 1],
+
             // === MANAGEMENT (Header) ===
             ['name' => 'management.access', 'display_name' => 'Management', 'description' => 'Can access Management section', 'module' => 'management', 'parent' => null, 'sort_order' => 2],
 
@@ -140,6 +143,15 @@ class RolePermissionSeeder extends Seeder
 
             // === AKUNTANSI (Pembukuan Double-Entry) ===
             ['name' => 'accounting.access', 'display_name' => 'Akuntansi - Akses', 'description' => 'Can access accounting / pembukuan module', 'module' => 'accounting', 'parent' => null, 'sort_order' => 8],
+
+            // === LAPORAN (Reports) ===
+            ['name' => 'reports.view', 'display_name' => 'Laporan - View', 'description' => 'Can view reports', 'module' => 'reports', 'parent' => null, 'sort_order' => 9],
+            ['name' => 'reports.purchases', 'display_name' => 'Laporan - Pembelian', 'description' => 'Can view purchase reports', 'module' => 'reports', 'parent' => 'reports.view', 'sort_order' => 1],
+            ['name' => 'reports.stocks', 'display_name' => 'Laporan - Stok', 'description' => 'Can view stock reports', 'module' => 'reports', 'parent' => 'reports.view', 'sort_order' => 2],
+            ['name' => 'reports.cash', 'display_name' => 'Laporan - Kas', 'description' => 'Can view cash reports', 'module' => 'reports', 'parent' => 'reports.view', 'sort_order' => 3],
+            ['name' => 'reports.receivables', 'display_name' => 'Laporan - Piutang', 'description' => 'Can view receivables reports', 'module' => 'reports', 'parent' => 'reports.view', 'sort_order' => 4],
+            ['name' => 'reports.services', 'display_name' => 'Laporan - Servis', 'description' => 'Can view service reports', 'module' => 'reports', 'parent' => 'reports.view', 'sort_order' => 5],
+            ['name' => 'reports.profit_loss', 'display_name' => 'Laporan - Laba Rugi', 'description' => 'Can view profit and loss reports', 'module' => 'reports', 'parent' => 'reports.view', 'sort_order' => 6],
 
         ];
 
@@ -266,7 +278,90 @@ class RolePermissionSeeder extends Seeder
                     'master.product_stocks.view',
                     'master.employees.view',
                 ]
-            ]
+            ],
+
+            // Cashier Template
+            [
+                'name' => 'cashier_template',
+                'display_name' => 'Kasir Template',
+                'description' => 'Template for POS cashier - can process transactions and view basic data',
+                'permissions' => [
+                    'dashboard.view',
+                    'transactions.create',
+                    'transactions.view',
+                    'master.products.view',
+                    'master.customer_groups.view',
+                    'master.customer_groups.create',
+                    'master.customer_groups.edit',
+                ]
+            ],
+
+            // Technician Template
+            [
+                'name' => 'technician_template',
+                'display_name' => 'Teknisi Template',
+                'description' => 'Template for service technician - can manage service transactions',
+                'permissions' => [
+                    'dashboard.view',
+                    'master.products.view',
+                    'master.product_stocks.view',
+                ]
+            ],
+
+            // WMS Operator Template
+            [
+                'name' => 'wms_operator_template',
+                'display_name' => 'Operator Gudang Template',
+                'description' => 'Template for warehouse operator - can manage stock, transfers, opname',
+                'permissions' => [
+                    'dashboard.view',
+                    'master.access',
+                    'master.products.view',
+                    'master.products.create',
+                    'master.products.edit',
+                    'master.product_stocks.view',
+                    'master.product_stocks.edit',
+                    'master.categories.view',
+                    'master.sub_categories.view',
+                    'master.brands.view',
+                    'master.locations.view',
+                    'master.branches.view',
+                    'master.suppliers.view',
+                ]
+            ],
+
+            // Accountant Template
+            [
+                'name' => 'accountant_template',
+                'display_name' => 'Akuntan Template',
+                'description' => 'Template for accountant - can access accounting and reports',
+                'permissions' => [
+                    'dashboard.view',
+                    'accounting.access',
+                    'master.access',
+                    'reports.view',
+                    'reports.purchases',
+                    'reports.stocks',
+                    'reports.cash',
+                    'reports.receivables',
+                    'reports.services',
+                    'reports.profit_loss',
+                ]
+            ],
+
+            // Viewer Template (basic)
+            [
+                'name' => 'readonly_template',
+                'display_name' => 'Read Only Template',
+                'description' => 'Template for read-only access to reports and data',
+                'permissions' => [
+                    'dashboard.view',
+                    'master.access',
+                    'master.products.view',
+                    'master.categories.view',
+                    'reports.view',
+                ]
+            ],
         ];
 
         foreach ($roles as $roleData) {

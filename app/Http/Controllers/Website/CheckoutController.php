@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Location;
 use App\Services\CartService;
+use App\Services\ShippingService;
 use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
@@ -73,12 +74,18 @@ class CheckoutController extends Controller
             'pickup_time' => 'nullable|date',
             'lat' => 'nullable|numeric',
             'lng' => 'nullable|numeric',
+            'shipping_provider' => 'nullable|string|max:50',
         ]);
 
         $shippingCost = match ($validated['delivery_method']) {
             'instant' => 15000,
-            'expedition' => 12000,
-            default => 0,
+            'pickup' => 0,
+            default => app(ShippingService::class)->calculateRate(
+                $validated['shipping_provider'] ?? 'jnt',
+                config('app.shipping_origin_city', 'Jakarta'),
+                $validated['city'] ?? '',
+                (float) $cart->items->sum('quantity') * 0.5
+            ),
         };
 
         $orderData = [

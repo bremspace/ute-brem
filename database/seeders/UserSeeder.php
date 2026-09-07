@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
                 'username' => 'kasir',
                 'email' => 'kasir@uteparts.test',
                 'password' => 'Kasir123!',
-                'role' => 'viewer_template',
+                'role' => 'cashier_template',
             ],
         ];
 

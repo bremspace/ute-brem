@@ -353,47 +353,40 @@ export interface ServiceItem {
 export interface ServiceTransactionItem {
   id: number;
   service_transaction_id: number;
-  item_type: 'service' | 'product';
-  product_id?: number;
+  service_id: number | null;
+  product_id: number | null;
   name: string;
+  type: 'service' | 'product';
+  unit_price: number;
   quantity: number;
-  purchase_price: number;
-  price: number;
+  discount_amount: number;
   subtotal: number;
+  notes: string | null;
 }
 
 export interface ServiceTransaction {
   id: number;
   service_code: string;
-  customer_id?: number;
-  customer_name: string;
-  customer_phone: string;
+  customer_id: number | null;
+  cashier_id: number;
+  technician_id: number | null;
+  location_id: number;
+  cash_session_id: number | null;
   device_brand: string;
-  device_model: string;
-  device_imei?: string;
-  device_color?: string;
-  device_lock_type?: 'pin' | 'pattern' | 'password' | 'none';
-  device_lock_code?: string; // e.g. "1-2-3-5-7" for pattern
-  problem_description: string;
-  condition_notes?: string;
-  completeness_notes?: string;
-  technician_id?: number;
-  technician_name?: string;
-  cashier_name: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'delivered' | 'cancelled';
-  warranty_days: number;
-  warranty_expires_at?: string;
-  estimated_cost: number;
-  total_sparepart_cost: number;
-  total_service_cost: number;
+  device_type: string;
+  serial_number: string;
+  device_lock_type: string | null;
+  device_lock_value: string | null;
+  check_notes: string;
+  complaint: string;
+  accessories: string | null;
+  subtotal: number;
+  discount_total: number;
+  tax_total: number;
   grand_total: number;
-  paid_amount: number;
-  payment_method?: 'cash' | 'transfer' | 'qris' | 'tempo';
-  credit_status?: 'unpaid' | 'partial' | 'paid';
-  credit_due_at?: string;
-  service_at: string;
-  completed_at?: string;
-  delivered_at?: string;
+  status: 'process' | 'done' | 'taken' | 'cancelled';
+  created_at: string;
+  updated_at: string;
   items: ServiceTransactionItem[];
 }
 

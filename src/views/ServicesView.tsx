@@ -31,19 +31,17 @@ import {
 import type { TabItem, SelectOption } from '../components/ui';
 
 const STATUS_META: Record<ServiceTransaction['status'], { label: string; badge: string; dot: string }> = {
-  pending: { label: 'Menunggu', badge: 'bg-amber-100 text-amber-800', dot: 'bg-amber-500' },
-  in_progress: { label: 'Dikerjakan', badge: 'bg-blue-100 text-blue-800', dot: 'bg-blue-500' },
-  completed: { label: 'Selesai', badge: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500' },
-  delivered: { label: 'Diambil', badge: 'bg-slate-200 text-slate-700', dot: 'bg-slate-500' },
+  process: { label: 'Dikerjakan', badge: 'bg-blue-100 text-blue-800', dot: 'bg-blue-500' },
+  done: { label: 'Selesai', badge: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500' },
+  taken: { label: 'Diambil', badge: 'bg-slate-200 text-slate-700', dot: 'bg-slate-500' },
   cancelled: { label: 'Dibatalkan', badge: 'bg-red-100 text-red-800', dot: 'bg-red-500' },
 };
 
 const FILTERS: { key: string; label: string; match: (s: ServiceTransaction) => boolean }[] = [
   { key: 'all', label: 'Semua', match: () => true },
-  { key: 'pending', label: 'Menunggu', match: s => s.status === 'pending' },
-  { key: 'in_progress', label: 'Dikerjakan', match: s => s.status === 'in_progress' },
-  { key: 'completed', label: 'Selesai', match: s => s.status === 'completed' },
-  { key: 'delivered', label: 'Diambil', match: s => s.status === 'delivered' },
+  { key: 'process', label: 'Dikerjakan', match: s => s.status === 'process' },
+  { key: 'done', label: 'Selesai', match: s => s.status === 'done' },
+  { key: 'taken', label: 'Diambil', match: s => s.status === 'taken' },
   { key: 'cancelled', label: 'Dibatalkan', match: s => s.status === 'cancelled' },
 ];
 
@@ -93,13 +91,11 @@ export const ServicesView: React.FC = () => {
     customerName: '',
     customerPhone: '',
     deviceBrand: '',
-    deviceModel: '',
-    deviceImei: '',
-    deviceColor: '',
-    problemDescription: '',
-    conditionNotes: '',
-    completenessNotes: '',
-    warrantyDays: 7,
+    deviceType: '',
+    serialNumber: '',
+    complaint: '',
+    checkNotes: '',
+    accessories: '',
     lockType: 'none' as 'none' | 'pin' | 'pattern' | 'password',
     lockCode: '',
   });
@@ -125,18 +121,17 @@ export const ServicesView: React.FC = () => {
   const counts = useMemo(() => {
     const by = (st: ServiceTransaction['status']) => serviceTransactions.filter(s => s.status === st).length;
     return {
-      antrean: by('pending') + by('in_progress'),
-      dikerjakan: by('in_progress'),
-      selesai: by('completed'),
-      diambil: by('delivered'),
+      antrean: by('process'),
+      dikerjakan: by('process'),
+      selesai: by('done'),
+      diambil: by('taken'),
     };
   }, [serviceTransactions]);
 
   const resetForm = () => {
     setForm({
-      customerName: '', customerPhone: '', deviceBrand: '', deviceModel: '',
-      deviceImei: '', deviceColor: '', problemDescription: '',
-      conditionNotes: '', completenessNotes: '', warrantyDays: 7,
+      customerName: '', customerPhone: '', deviceBrand: '', deviceType: '',
+      serialNumber: '', complaint: '', checkNotes: '', accessories: '',
       lockType: 'none', lockCode: '',
     });
     setDraftType('service');
@@ -213,8 +208,8 @@ export const ServicesView: React.FC = () => {
   const estimatedTotal = draftItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   const handleSubmit = () => {
-    if (!form.customerName.trim() || !form.deviceBrand.trim() || !form.deviceModel.trim() || !form.problemDescription.trim()) {
-      alert('Lengkapi nama pelanggan, brand, model, dan deskripsi masalah.');
+    if (!form.customerName.trim() || !form.deviceBrand.trim() || !form.deviceType.trim() || !form.complaint.trim()) {
+      alert('Lengkapi nama pelanggan, brand, tipe, dan deskripsi masalah.');
       return;
     }
     if (draftItems.length === 0) {
@@ -230,24 +225,20 @@ export const ServicesView: React.FC = () => {
       customerName: form.customerName,
       customerPhone: form.customerPhone,
       deviceBrand: form.deviceBrand,
-      deviceModel: form.deviceModel,
-      problemDescription: form.problemDescription,
+      deviceType: form.deviceType,
+      serialNumber: form.serialNumber || undefined,
+      complaint: form.complaint,
+      checkNotes: form.checkNotes || undefined,
+      accessories: form.accessories || undefined,
       deviceLockType: form.lockType,
-      deviceLockCode: form.lockType === 'none' ? undefined : form.lockCode,
+      deviceLockValue: form.lockType === 'none' ? undefined : form.lockCode,
       technicianId: currentUser.id,
-      warranty_days: form.warrantyDays,
-      condition_notes: form.conditionNotes || undefined,
-      completeness_notes: form.completenessNotes || undefined,
-      device_imei: form.deviceImei || undefined,
-      device_color: form.deviceColor || undefined,
-      estimated_cost: estimatedTotal,
       items: draftItems.map(i => ({
-        itemType: i.itemType,
+        type: i.itemType,
         productId: i.productId,
         name: i.name,
         quantity: i.quantity,
-        price: i.price,
-        purchasePrice: i.purchasePrice,
+        unitPrice: i.price,
       })),
     });
 
@@ -363,10 +354,10 @@ export const ServicesView: React.FC = () => {
               order={s}
               expanded={expandedId === s.id}
               onToggle={() => setExpandedId(expandedId === s.id ? null : s.id)}
-              onStart={() => updateServiceStatus(s.id, 'in_progress')}
+              onStart={() => updateServiceStatus(s.id, 'process')}
               onCancel={() => updateServiceStatus(s.id, 'cancelled')}
-              onMarkComplete={() => updateServiceStatus(s.id, 'completed')}
-              onPay={() => { setPayingOrder(s); setPayMethod('cash'); setPaidAmount(s.grand_total - s.paid_amount); }}
+              onMarkComplete={() => updateServiceStatus(s.id, 'done')}
+              onPay={() => { setPayingOrder(s); setPayMethod('cash'); setPaidAmount(s.grand_total); }}
             />
           ))}
         </div>
@@ -398,55 +389,36 @@ export const ServicesView: React.FC = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Input label="Brand Device" required value={form.deviceBrand} onChange={e => setField('deviceBrand', e.target.value)} placeholder="Samsung" />
-            <Input label="Model" required value={form.deviceModel} onChange={e => setField('deviceModel', e.target.value)} placeholder="A52" />
-            <Input label="IMEI (opsional)" value={form.deviceImei} onChange={e => setField('deviceImei', e.target.value)} placeholder="IMEI" />
-            <Input label="Warna (opsional)" value={form.deviceColor} onChange={e => setField('deviceColor', e.target.value)} placeholder="Hitam" />
+            <Input label="Tipe" required value={form.deviceType} onChange={e => setField('deviceType', e.target.value)} placeholder="A52" />
+            <Input label="Serial Number (opsional)" value={form.serialNumber} onChange={e => setField('serialNumber', e.target.value)} placeholder="SN / IMEI" />
+            <Input label="Kelengkapan (opsional)" value={form.accessories} onChange={e => setField('accessories', e.target.value)} placeholder="Jok, sim card, dsb" />
           </div>
 
           <div>
             <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">
-              Deskripsi Masalah <span className="text-red-500">*</span>
+              Keluhan <span className="text-red-500">*</span>
             </label>
             <textarea
-              value={form.problemDescription}
-              onChange={e => setField('problemDescription', e.target.value)}
+              value={form.complaint}
+              onChange={e => setField('complaint', e.target.value)}
               rows={3}
               placeholder="Jelaskan kerusakan/keluhan..."
               className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Catatan Kondisi (opsional)</label>
-              <textarea
-                value={form.conditionNotes}
-                onChange={e => setField('conditionNotes', e.target.value)}
-                rows={2}
-                placeholder="Kondisi fisik device saat diterima"
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Catatan Kelengkapan (opsional)</label>
-              <textarea
-                value={form.completenessNotes}
-                onChange={e => setField('completenessNotes', e.target.value)}
-                rows={2}
-                placeholder="Kelengkapan saat diterima (jok, sim card, dsb)"
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
-              />
-            </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Catatan Pemeriksaan (opsional)</label>
+            <textarea
+              value={form.checkNotes}
+              onChange={e => setField('checkNotes', e.target.value)}
+              rows={2}
+              placeholder="Kondisi fisik device saat diterima"
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Masa Garansi (hari)"
-              type="number"
-              min="0"
-              value={form.warrantyDays}
-              onChange={e => setField('warrantyDays', Number(e.target.value))}
-            />
             <Select
               label="Jenis Kunci Device"
               value={form.lockType}
@@ -606,7 +578,7 @@ const OrderCard: React.FC<{
   onPay: () => void;
 }> = ({ order, expanded, onToggle, onStart, onCancel, onMarkComplete, onPay }) => {
   const meta = STATUS_META[order.status];
-  const tech = order.technician_name || '-';
+  const tech = order.technician_id ? `#${order.technician_id}` : '-';
 
   return (
     <div className={clsx(
@@ -623,24 +595,17 @@ const OrderCard: React.FC<{
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono font-bold text-primary-700 text-xs">{order.service_code}</span>
             <StatusBadge status={order.status}>{meta.label}</StatusBadge>
-            {order.credit_status === 'unpaid' && (
-              <StatusBadge status="unpaid">Belum Lunas</StatusBadge>
-            )}
-            {order.credit_status === 'partial' && (
-              <StatusBadge status="partial">Cicil</StatusBadge>
-            )}
-            <span className="text-[10px] text-slate-400 font-mono">{fmtDate(order.service_at)}</span>
+            <span className="text-[10px] text-slate-400 font-mono">{fmtDate(order.created_at)}</span>
           </div>
 
-          <div className="mt-1.5 text-sm font-black text-slate-900 truncate">{order.customer_name}</div>
+          <div className="mt-1.5 text-sm font-black text-slate-900 truncate">{order.customer_id ?? '-'}</div>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-[11px] text-slate-500">
-            <span className="inline-flex items-center gap-1"><Smartphone className="w-3 h-3" /> {order.device_brand} {order.device_model}</span>
-            {order.device_imei && <span className="inline-flex items-center gap-1 font-mono"><ScanLine className="w-3 h-3" /> {order.device_imei}</span>}
-            <span className="inline-flex items-center gap-1"><Phone className="w-3 h-3" /> {order.customer_phone || '-'}</span>
+            <span className="inline-flex items-center gap-1"><Smartphone className="w-3 h-3" /> {order.device_brand} {order.device_type}</span>
+            {order.serial_number && <span className="inline-flex items-center gap-1 font-mono"><ScanLine className="w-3 h-3" /> {order.serial_number}</span>}
           </div>
 
-          <div className="text-[11px] text-slate-600 mt-1 line-clamp-1">{order.problem_description}</div>
+          <div className="text-[11px] text-slate-600 mt-1 line-clamp-1">{order.complaint}</div>
         </div>
 
         <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -652,7 +617,7 @@ const OrderCard: React.FC<{
 
       {/* Action bar */}
       <div className="px-4 pb-4 flex items-center gap-2">
-        {order.status === 'pending' && (
+        {order.status === 'process' && (
           <>
             <Button
               size="sm"
@@ -674,7 +639,7 @@ const OrderCard: React.FC<{
           </>
         )}
 
-        {order.status === 'in_progress' && (
+        {order.status === 'process' && (
           <Button
             size="sm"
             variant="success"
@@ -685,7 +650,7 @@ const OrderCard: React.FC<{
           </Button>
         )}
 
-        {order.status === 'completed' && (
+        {order.status === 'done' && (
           <Button
             size="sm"
             onClick={e => { e.stopPropagation(); onPay(); }}
@@ -712,10 +677,10 @@ const OrderCard: React.FC<{
                 <div key={idx} className="flex items-center justify-between bg-slate-50 rounded-xl px-3 py-2 border border-slate-100">
                   <div className="min-w-0">
                     <div className="text-xs font-bold text-slate-800">
-                      {it.item_type === 'product' ? '🔧 ' : '⚙ '}{it.name}
+                      {it.type === 'product' ? '🔧 ' : '⚙ '}{it.name}
                     </div>
                     <div className="text-[10px] text-slate-500">
-                      {it.item_type === 'product' ? 'Sparepart' : 'Servis'} × {it.quantity} • {fmt(it.price)}/unit
+                      {it.type === 'product' ? 'Sparepart' : 'Servis'} × {it.quantity} • {fmt(it.unit_price)}/unit
                     </div>
                   </div>
                   <span className="text-xs font-black text-primary-700">{fmt(it.subtotal)}</span>
@@ -726,46 +691,32 @@ const OrderCard: React.FC<{
           </div>
 
           {/* Notes */}
-          {(order.condition_notes || order.completeness_notes) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {order.condition_notes && (
-                <div className="rounded-xl bg-amber-50/60 border border-amber-100 p-3">
-                  <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1">Catatan Kondisi</div>
-                  <div className="text-xs text-slate-700">{order.condition_notes}</div>
-                </div>
-              )}
-              {order.completeness_notes && (
-                <div className="rounded-xl bg-blue-50/60 border border-blue-100 p-3">
-                  <div className="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-1">Catatan Kelengkapan</div>
-                  <div className="text-xs text-slate-700">{order.completeness_notes}</div>
-                </div>
-              )}
+          {order.check_notes && (
+            <div className="rounded-xl bg-amber-50/60 border border-amber-100 p-3">
+              <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1">Catatan Pemeriksaan</div>
+              <div className="text-xs text-slate-700">{order.check_notes}</div>
             </div>
           )}
 
-          {/* Warranty & Lock */}
+          {/* Lock */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <ShieldQuestion className="w-4 h-4 text-emerald-600" />
-              <span>Garansi: <span className="font-bold text-slate-800">{order.warranty_days} hari</span></span>
-            </div>
             {order.device_lock_type && order.device_lock_type !== 'none' && (
               <div className="flex items-center gap-2 text-xs text-slate-600">
                 <ShieldQuestion className="w-4 h-4 text-slate-400" />
-                <span>Kunci: <span className="font-bold text-slate-800">{LOCK_META[order.device_lock_type]}</span></span>
+                <span>Kunci: <span className="font-bold text-slate-800">{LOCK_META[order.device_lock_type] ?? order.device_lock_type}</span></span>
               </div>
             )}
           </div>
 
           {/* Totals */}
           <div className="rounded-xl border border-slate-200 p-3 space-y-1.5 text-xs">
-            <div className="flex justify-between text-slate-600"><span>Biaya Sparepart</span><span className="font-semibold">{fmt(order.total_sparepart_cost)}</span></div>
-            <div className="flex justify-between text-slate-600"><span>Biaya Servis</span><span className="font-semibold">{fmt(order.total_service_cost)}</span></div>
+            <div className="flex justify-between text-slate-600"><span>Subtotal</span><span className="font-semibold">{fmt(order.subtotal)}</span></div>
+            <div className="flex justify-between text-slate-600"><span>Diskon</span><span className="font-semibold">{fmt(order.discount_total)}</span></div>
+            <div className="flex justify-between text-slate-600"><span>Pajak</span><span className="font-semibold">{fmt(order.tax_total)}</span></div>
             <div className="pt-2 border-t border-slate-100 flex justify-between font-black text-slate-900">
               <span>Grand Total</span>
               <span className="text-primary-700">{fmt(order.grand_total)}</span>
             </div>
-            <div className="flex justify-between text-emerald-700 font-semibold"><span>Dibayar</span><span>{fmt(order.paid_amount)}</span></div>
           </div>
         </div>
       )}
@@ -782,7 +733,7 @@ const PayModal: React.FC<{
   onConfirm: () => void;
   onClose: () => void;
 }> = ({ order, method, setMethod, amount, setAmount, onConfirm, onClose }) => {
-  const remaining = order.grand_total - order.paid_amount;
+  const remaining = order.grand_total;
   const methods: { key: 'cash' | 'transfer' | 'qris' | 'tempo'; label: string }[] = [
     { key: 'cash', label: 'Tunai' },
     { key: 'transfer', label: 'Transfer' },
@@ -815,13 +766,12 @@ const PayModal: React.FC<{
             <span className="font-bold text-slate-500">{order.service_code}</span>
             <StatusBadge status={order.status}>{STATUS_META[order.status].label}</StatusBadge>
           </div>
-          <div className="flex justify-between text-slate-600"><span>Pelanggan</span><span className="font-semibold text-slate-800">{order.customer_name}</span></div>
-          <div className="flex justify-between text-slate-600"><span>Device</span><span className="font-semibold text-slate-800">{order.device_brand} {order.device_model}</span></div>
+          <div className="flex justify-between text-slate-600"><span>Pelanggan</span><span className="font-semibold text-slate-800">{order.customer_id ?? '-'}</span></div>
+          <div className="flex justify-between text-slate-600"><span>Device</span><span className="font-semibold text-slate-800">{order.device_brand} {order.device_type}</span></div>
           <div className="pt-2 border-t border-slate-100 flex justify-between items-baseline text-slate-600">
             <span>Grand Total</span>
             <span className="text-lg font-black text-slate-900">{fmt(order.grand_total)}</span>
           </div>
-          <div className="flex justify-between text-emerald-700 font-semibold"><span>Sudah Dibayar</span><span>{fmt(order.paid_amount)}</span></div>
           <div className="flex justify-between text-red-600 font-bold"><span>Sisa Tagihan</span><span>{fmt(remaining)}</span></div>
         </div>
 

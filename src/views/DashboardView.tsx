@@ -36,7 +36,7 @@ export const DashboardView: React.FC = () => {
   const grossProfitToday = totalOmsetToday - totalHppToday;
 
   const lowStockProducts = products.filter(p => (p.stock_global || 0) <= (p.stock_min || 0));
-  const activeServices = serviceTransactions.filter(s => s.status === 'pending' || s.status === 'in_progress');
+  const activeServices = serviceTransactions.filter(s => s.status === 'process');
 
   const transactionColumns = [
     { header: 'No. Nota', className: 'px-5' },
@@ -94,7 +94,7 @@ export const DashboardView: React.FC = () => {
         <StatCard
           label="Antrean Servis HP"
           value={`${activeServices.length} Unit`}
-          description={`${serviceTransactions.filter(s => s.status === 'completed').length} unit selesai siap ambil`}
+          description={`${serviceTransactions.filter(s => s.status === 'done').length} unit selesai siap ambil`}
           icon={<Wrench className="w-4 h-4" />}
           color="info"
         />
