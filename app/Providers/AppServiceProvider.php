@@ -30,7 +30,12 @@ class AppServiceProvider extends ServiceProvider
         }
 
         View::composer('*', function ($view) {
-            $company = PrinterSettingController::companySettings();
+            $company = [];
+            try {
+                $company = \App\Http\Controllers\PrinterSettingController::companySettings();
+            } catch (\Throwable $e) {
+                // Ignore
+            }
             $view->with('appCompanyName', trim((string) ($company['name'] ?? '')) ?: 'UTE Parts');
         });
 

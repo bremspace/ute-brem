@@ -3,6 +3,9 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./resources/**/*.blade.php",
+    "./resources/**/*.js",
+    "./app/Livewire/**/*.php",
   ],
   darkMode: 'class',
   theme: {

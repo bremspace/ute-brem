@@ -38,22 +38,27 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\PickingRequestController;
+use App\Http\Controllers\SidRetail\SidRetailImportController;
 use App\Http\Controllers\ItemSerialController;
 
 Route::get('/', [WebsiteProductController::class, 'index'])->name('website.products.index');
 Route::get('/products/{slug}', [WebsiteProductController::class, 'show'])->name('website.products.show');
-Route::get('/member/login', [WebsiteCustomerAuthController::class, 'loginForm'])->name('website.member.login');
+Route::get('/member/login', fn () => view('website.auth.livewire-login'))->name('website.member.login');
 Route::post('/member/login', [WebsiteCustomerAuthController::class, 'login'])->name('website.member.login.submit');
-Route::get('/member/register', [WebsiteCustomerAuthController::class, 'registerForm'])->name('website.member.register');
+Route::get('/member/register', fn () => view('website.auth.livewire-register'))->name('website.member.register');
 Route::post('/member/register', [WebsiteCustomerAuthController::class, 'register'])->name('website.member.register.submit');
-Route::get('/member/orders', [WebsiteCustomerAuthController::class, 'orders'])->name('website.member.orders');
-Route::get('/member/points', [WebsiteCustomerAuthController::class, 'points'])->name('website.member.points');
-Route::get('/member/password', [WebsiteCustomerAuthController::class, 'passwordForm'])->name('website.member.password.edit');
+Route::get('/member/orders', fn () => view('website.member.livewire-orders'))->name('website.member.orders');
+Route::get('/member/points', fn () => view('website.member.livewire-points'))->name('website.member.points');
+Route::get('/member/password', fn () => view('website.auth.livewire-password'))->name('website.member.password.edit');
 Route::post('/member/password', [WebsiteCustomerAuthController::class, 'updatePassword'])->name('website.member.password.update');
 Route::post('/member/logout', [WebsiteCustomerAuthController::class, 'logout'])->name('website.member.logout');
 
 // Cart routes (guest cart, no auth middleware)
-Route::get('/cart', [CartController::class, 'index'])->name('website.cart');
+// GET /cart renders the Livewire CartComponent via a wrapper view.
+// The add/update/remove/clear AJAX endpoints are preserved (controllers kept)
+// so the route names still resolve; the Livewire component handles these
+// operations client-side via component methods.
+Route::get('/cart', fn () => view('website.cart.livewire'))->name('website.cart');
 Route::post('/cart/add', [CartController::class, 'add'])->name('website.cart.add');
 Route::put('/cart/{item}', [CartController::class, 'update'])->name('website.cart.update');
 Route::patch('/cart/{item}', [CartController::class, 'update']);
@@ -61,12 +66,15 @@ Route::delete('/cart/{item}', [CartController::class, 'remove'])->name('website.
 Route::post('/cart/clear', [CartController::class, 'clear'])->name('website.cart.clear');
 
 // Checkout routes
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('website.checkout');
+// GET /checkout renders the Livewire CheckoutComponent via a wrapper view.
+// POST /checkout is preserved (controller kept) so the route name still resolves;
+// the Livewire component submits orders via CartService::convertToOrder().
+Route::get('/checkout', fn () => view('website.checkout.livewire'))->name('website.checkout');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('website.checkout.store');
 
-// Order routes
-Route::get('/orders/{code}', [OrderController::class, 'show'])->name('website.order.show');
-Route::get('/orders/{code}/track', [OrderController::class, 'track'])->name('website.order.track');
+// Order routes - rendering Livewire wrapper views
+Route::get('/orders/{code}', fn ($code) => view('website.orders.livewire-show', ['code' => $code]))->name('website.order.show');
+Route::get('/orders/{code}/track', fn ($code) => view('website.orders.livewire-track', ['code' => $code]))->name('website.order.track');
 
 // Payment routes (Phase 2 - DuitKu integration)
 Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('website.payment.callback');
@@ -79,7 +87,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 // Route group middleware for authenticated users
 Route::middleware(['auth'])->group(function () {
-    Route::get('/profile/password', [ProfileController::class, 'editPassword'])->name('profile.password.edit');
+    Route::get('/profile/password', fn () => view('profile.livewire-password'))->name('profile.password.edit');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
     // User management routes with permissions
@@ -121,7 +129,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['permission:management.settings.printer'])->group(function () {
-        Route::get('/settings', [PrinterSettingController::class, 'edit'])->name('settings.index');
+        Route::get('/settings', fn () => view('settings.livewire-settings'))->name('settings.index');
         Route::post('/settings', [PrinterSettingController::class, 'update'])->name('settings.update');
         Route::get('/settings/printer', fn () => redirect()->route('settings.index', ['tab' => 'printer']))->name('settings.printer.edit');
         Route::post('/settings/printer', [PrinterSettingController::class, 'update'])->name('settings.printer.update');
@@ -168,17 +176,17 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['permission:master.categories.view'])->group(function () {
-        Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+        Route::get('/categories', function () { return view('categories.livewire-index'); })->name('categories.index');
         Route::get('/categories/data', [CategoryController::class, 'getData'])->name('categories.data');
     });
 
     Route::middleware(['permission:master.categories.create'])->group(function () {
-        Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+        Route::get('/categories/create', function () { return view('categories.livewire-create'); })->name('categories.create');
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
     });
 
     Route::middleware(['permission:master.categories.edit'])->group(function () {
-        Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+        Route::get('/categories/{category}/edit', function (\App\Models\Category $category) { return view('categories.livewire-edit', ['category' => $category]); })->name('categories.edit');
         Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::patch('/categories/{category}', [CategoryController::class, 'update']);
     });
@@ -291,7 +299,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['permission:master.brands.view'])->group(function () {
-        Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+        Route::get('/brands', function () { return view('brands.livewire-index'); })->name('brands.index');
         Route::get('/brands/data', [BrandController::class, 'getData'])->name('brands.data');
     });
 
@@ -329,17 +337,17 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['permission:master.locations.view'])->group(function () {
-        Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
+        Route::get('/locations', fn () => view('locations.livewire-index'))->name('locations.index');
         Route::get('/locations/data', [LocationController::class, 'getData'])->name('locations.data');
     });
 
     Route::middleware(['permission:master.locations.create'])->group(function () {
-        Route::get('/locations/create', [LocationController::class, 'create'])->name('locations.create');
+        Route::get('/locations/create', fn () => view('locations.livewire-create'))->name('locations.create');
         Route::post('/locations', [LocationController::class, 'store'])->name('locations.store');
     });
 
     Route::middleware(['permission:master.locations.edit'])->group(function () {
-        Route::get('/locations/{location}/edit', [LocationController::class, 'edit'])->name('locations.edit');
+        Route::get('/locations/{location}/edit', function (\App\Models\Location $location) { return view('locations.livewire-edit', ['location' => $location]); })->name('locations.edit');
         Route::put('/locations/{location}', [LocationController::class, 'update'])->name('locations.update');
     });
 
@@ -405,7 +413,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['permission:transactions.view'])->group(function () {
-        Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+        Route::get('/transactions', fn () => view('transactions.livewire-index'))->name('transactions.index');
         Route::get('/transactions/data', [TransactionController::class, 'getData'])->name('transactions.data');
         Route::get('/transactions/{saleChannel}', [TransactionController::class, 'index'])
             ->whereIn('saleChannel', ['toko', 'cabang', 'partai'])
@@ -485,6 +493,15 @@ Route::middleware(['auth'])->group(function () {
             ->whereIn('type', ['correction', 'usage'])
             ->name('back-office.stock-documents.store');
 
+        // SID Retail Migration Routes
+        Route::prefix('sid-retail')->name('sid-retail.')->group(function () {
+            Route::get('/', [SidRetailImportController::class, 'index'])->name('index');
+            Route::post('/migrate', [SidRetailImportController::class, 'migrateNow'])->name('migrate');
+            Route::get('/status', [SidRetailImportController::class, 'status'])->name('status');
+            Route::get('/config', [SidRetailImportController::class, 'config'])->name('config');
+            Route::post('/config', [SidRetailImportController::class, 'saveConfig'])->name('config.save');
+        });
+
         // Laporan Routes
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
@@ -549,22 +566,37 @@ Route::middleware(['auth'])->group(function () {
 
 
     Route::middleware(['permission:master.products.view'])->group(function () {
-        Route::get('/units', [UnitController::class, 'index'])->name('units.index');
+        Route::get('/units', fn () => view('units.livewire-index'))->name('units.index');
         Route::get('/units/data', [UnitController::class, 'getData'])->name('units.data');
     });
 
     Route::middleware(['permission:master.products.create'])->group(function () {
-        Route::get('/units/create', [UnitController::class, 'create'])->name('units.create');
+        Route::get('/units/create', fn () => view('units.livewire-create'))->name('units.create');
         Route::post('/units', [UnitController::class, 'store'])->name('units.store');
     });
 
     Route::middleware(['permission:master.products.edit'])->group(function () {
-        Route::get('/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
+        Route::get('/units/{unit}/edit', fn ($unit) => view('units.livewire-edit', ['unit' => $unit]))->name('units.edit');
         Route::put('/units/{unit}', [UnitController::class, 'update'])->name('units.update');
     });
 
     Route::middleware(['permission:master.products.delete'])->group(function () {
         Route::delete('/units/{unit}', [UnitController::class, 'destroy'])->name('units.destroy');
+    });
+
+    // Modern Livewire Routes - using view wrapper pattern
+    Route::middleware(['permission:master.products.view'])->group(function () {
+        Route::get('/livewire/products', function () {
+            return view('livewire-page.products');
+        })->name('livewire.products.index');
+
+        Route::get('/livewire/customers', function () {
+            return view('livewire-page.customers');
+        })->name('livewire.customers.index');
+
+        Route::get('/livewire/suppliers', function () {
+            return view('livewire-page.suppliers');
+        })->name('livewire.suppliers.index');
     });
 
 });

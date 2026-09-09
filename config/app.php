@@ -153,20 +153,20 @@ return [
         /*
          * Package Service Providers...
          */
-        Spatie\Permission\PermissionServiceProvider::class,
-        Yajra\DataTables\DataTablesServiceProvider::class,
-        Yajra\DataTables\HtmlServiceProvider::class,
-        Intervention\Image\ImageServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
-        Laravel\Sanctum\SanctumServiceProvider::class,
-        Laravel\Telescope\TelescopeServiceProvider::class,
+        Livewire\LivewireServiceProvider::class,
+        // Spatie\Permission\PermissionServiceProvider::class,
+        // Yajra\DataTables\DataTablesServiceProvider::class,
+        // Yajra\DataTables\HtmlServiceProvider::class,
+        // Intervention\Image\ImageServiceProvider::class,
+        // Maatwebsite\Excel\ExcelServiceProvider::class,
+        // Laravel\Sanctum\SanctumServiceProvider::class,
+        // Laravel\Telescope\TelescopeServiceProvider::class,
 
         /*
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
     ],

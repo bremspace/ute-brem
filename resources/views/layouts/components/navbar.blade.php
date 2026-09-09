@@ -79,19 +79,19 @@
          {{-- Right Actions --}}
          <ul class="navbar-nav flex-row align-items-center ms-md-auto">
             {{-- Home --}}
-            <li class="nav-item me-2">
-                <a class="nav-link px-2" href="{{ route('home') }}" title="Dashboard">
-                    <i class="icon-base bx bx-home icon-md"></i>
-                </a>
-            </li>
+             <li class="nav-item me-2">
+                 <a class="nav-link px-2" href="{{ route('home') }}" title="Dashboard" wire:navigate>
+                     <i class="icon-base bx bx-home icon-md"></i>
+                 </a>
+             </li>
 
             {{-- Quick Add Product (contextual) --}}
             @if (request()->routeIs('products.*') && !request()->routeIs('products.create') && auth()->user()->hasPermission('master.products.create'))
-                <li class="nav-item me-2">
-                    <a class="nav-link px-2" href="{{ route('products.create') }}" title="Tambah Produk">
-                        <i class="icon-base bx bx-plus icon-md"></i>
-                    </a>
-                </li>
+                 <li class="nav-item me-2">
+                     <a class="nav-link px-2" href="{{ route('products.create') }}" title="Tambah Produk" wire:navigate>
+                         <i class="icon-base bx bx-plus icon-md"></i>
+                     </a>
+                 </li>
             @endif
 
             {{-- Stock Notifications --}}
@@ -114,7 +114,7 @@
                          </li>
                          @foreach($lowStockLocations as $lowStockLocation)
                              <li>
-                                 <a class="dropdown-item py-3" href="{{ auth()->user()->hasPermission('master.product_stocks.edit') ? route('purchase-orders.create', ['product_id' => $lowStockLocation->product_id, 'location_id' => $lowStockLocation->location_id]) : route('products.stocks.index', $lowStockLocation->product_id) }}">
+                                      <a class="dropdown-item py-3" href="{{ auth()->user()->hasPermission('master.product_stocks.edit') ? route('purchase-orders.create', ['product_id' => $lowStockLocation->product_id, 'location_id' => $lowStockLocation->location_id]) : route('products.stocks.index', $lowStockLocation->product_id) }}" wire:navigate>
                                      <div class="d-flex align-items-start gap-3">
                                          <div class="avatar flex-shrink-0">
                                              <span class="avatar-initial rounded bg-label-warning"><i class="bx bx-map"></i></span>
@@ -134,7 +134,7 @@
                          @endforeach
                          @foreach($lowStockProducts as $lowStockProduct)
                              <li>
-                                 <a class="dropdown-item py-3" href="{{ auth()->user()->hasPermission('master.product_stocks.edit') ? route('purchase-orders.create', ['product_id' => $lowStockProduct->id]) : route('products.stocks.index', $lowStockProduct->id) }}">
+                                      <a class="dropdown-item py-3" href="{{ auth()->user()->hasPermission('master.product_stocks.edit') ? route('purchase-orders.create', ['product_id' => $lowStockProduct->id]) : route('products.stocks.index', $lowStockProduct->id) }}" wire:navigate>
                                      <div class="d-flex align-items-start gap-3">
                                          <div class="avatar flex-shrink-0">
                                              <span class="avatar-initial rounded bg-label-warning"><i class="bx bx-package"></i></span>
@@ -162,7 +162,7 @@
                          @if($lowStockCount > 0)
                              <li><div class="dropdown-divider my-1"></div></li>
                              <li>
-                                 <a class="dropdown-item text-center" href="{{ route('products.index') }}">Lihat produk</a>
+                                 <a class="dropdown-item text-center" href="{{ route('livewire.products.index') }}" wire:navigate>Lihat produk</a>
                              </li>
                          @endif
                      </ul>
@@ -212,7 +212,7 @@
                          <div class="dropdown-divider my-1"></div>
                      </li>
                      <li>
-                         <a class="dropdown-item" href="{{ route('profile.password.edit') }}">
+                         <a class="dropdown-item" href="{{ route('profile.password.edit') }}" wire:navigate>
                              <i class="icon-base bx bx-key icon-md me-3"></i><span>Ganti Password</span>
                          </a>
                      </li>

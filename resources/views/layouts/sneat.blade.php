@@ -355,8 +355,7 @@
     </style>
 
     @stack('styles')
-
-
+    @livewireStyles
 </head>
 
 @php
@@ -814,6 +813,9 @@
     </script>
 
     @stack('scripts')
+
+    <!-- Livewire Scripts (includes Alpine.js - do NOT load Alpine separately) -->
+    @livewireScripts
 </body>
 
 </html>

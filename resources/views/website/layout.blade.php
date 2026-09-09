@@ -947,6 +947,15 @@
                                 </svg>
                             </button>
                             <div class="consumer-dropdown">
+                                <a href="{{ route('website.member.orders') }}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#c-icon-package"/></svg>
+                                    Pesanan Saya
+                                </a>
+                                <a href="{{ route('website.member.points') }}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#c-icon-clock"/></svg>
+                                    Poin Saya
+                                </a>
+                                <div class="consumer-dropdown-divider"></div>
                                 <a href="{{ route('website.member.password.edit', ['return' => request()->fullUrl()]) }}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#c-icon-key"/></svg>
                                     Ganti Password
@@ -1106,11 +1115,17 @@
                 @endif
             </a>
             @if (!empty($customer))
-                <a href="{{ route('website.member.password.edit', ['return' => request()->fullUrl()]) }}" class="">
+                <a href="{{ route('website.member.orders') }}" class="{{ request()->routeIs('website.member.orders') ? 'is-active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <use href="#c-icon-user"/>
+                        <use href="#c-icon-package"/>
                     </svg>
-                    Akun
+                    Pesanan
+                </a>
+                <a href="{{ route('website.member.points') }}" class="{{ request()->routeIs('website.member.points') ? 'is-active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <use href="#c-icon-clock"/>
+                    </svg>
+                    Poin
                 </a>
             @else
                 <a href="{{ route('website.member.login', ['return' => request()->fullUrl()]) }}" class="">
