@@ -232,7 +232,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['permission:master.product_stocks.view'])->group(function () {
         Route::get('/products/{product}/stocks', [ProductStockController::class, 'index'])->name('products.stocks.index');
-        Route::get('/purchase-orders', [PurchaseOrderController::class, 'index'])->name('purchase-orders.index');
+        Route::get('/purchase-orders', fn () => view('purchase-orders.livewire-index'))->name('purchase-orders.index');
         Route::get('/purchase-orders/data', [PurchaseOrderController::class, 'getData'])->name('purchase-orders.data');
         Route::get('/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('purchase-orders.show')->whereNumber('purchaseOrder');
         Route::get('/branch-transfers', [BranchTransferController::class, 'index'])->name('branch-transfers.index');
@@ -244,7 +244,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/products/{product}/stocks', [ProductStockController::class, 'update'])->name('products.stocks.update');
         Route::post('/products/{product}/stock-movements', [ProductStockController::class, 'storeMovement'])->name('products.stock-movements.store');
         Route::post('/products/{product}/stock-transfers', [ProductStockController::class, 'storeTransfer'])->name('products.stock-transfers.store');
-        Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase-orders.create');
+        Route::get('/purchase-orders/create', fn () => view('purchase-orders.livewire-create'))->name('purchase-orders.create');
         Route::post('/purchase-orders', [PurchaseOrderController::class, 'store'])->name('purchase-orders.store');
         Route::post('/purchase-orders/{purchaseOrder}/payment', [PurchaseOrderController::class, 'storePayment'])->name('purchase-orders.payment')->whereNumber('purchaseOrder');
         Route::get('/branch-transfers/create', [BranchTransferController::class, 'create'])->name('branch-transfers.create');
