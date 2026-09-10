@@ -394,11 +394,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['permission:transactions.create'])->group(function () {
-        Route::get('/transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
-        Route::get('/transactions/{saleChannel}/create', [TransactionController::class, 'create'])
+        Route::get('/transactions/create', fn () => view('transactions.livewire-create'))->name('transactions.create');
+        Route::get('/transactions/{saleChannel}/create', fn ($saleChannel) => view('transactions.livewire-create', ['saleChannel' => $saleChannel]))
             ->whereIn('saleChannel', ['toko', 'cabang', 'partai'])
             ->name('transactions.create.channel');
-        Route::get('/transactions/create/{saleChannel}', [TransactionController::class, 'create'])
+        Route::get('/transactions/create/{saleChannel}', fn ($saleChannel) => view('transactions.livewire-create', ['saleChannel' => $saleChannel]))
             ->whereIn('saleChannel', ['cabang', 'partai']);
         Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
         Route::get('/transactions/lookup/product', [TransactionController::class, 'lookupProduct'])->name('transactions.lookup.product');
@@ -408,7 +408,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/transactions/cash/open', [TransactionController::class, 'openCashSession'])->name('transactions.cash.open');
         Route::get('/transactions/cash/summary', [TransactionController::class, 'cashSessionSummary'])->name('transactions.cash.summary');
         Route::post('/transactions/cash/close', [TransactionController::class, 'closeCashSession'])->name('transactions.cash.close');
-        Route::get('/service-transactions/create', [ServiceTransactionController::class, 'create'])->name('service-transactions.create');
+        Route::get('/service-transactions/create', fn () => view('service-transactions.livewire-create'))->name('service-transactions.create');
         Route::post('/service-transactions', [ServiceTransactionController::class, 'store'])->name('service-transactions.store');
     });
 
@@ -422,11 +422,11 @@ Route::middleware(['auth'])->group(function () {
             ->whereIn('saleChannel', ['toko', 'cabang', 'partai'])
             ->name('transactions.data.channel');
         Route::get('/transactions/{sale}', [TransactionController::class, 'show'])->whereNumber('sale')->name('transactions.show');
-        Route::get('/transactions/{sale}/receipt', [TransactionController::class, 'receipt'])->whereNumber('sale')->name('transactions.receipt');
+        Route::get('/transactions/{sale}/receipt', fn (\App\Models\Sale $sale) => view('transactions.livewire-receipt', ['sale' => $sale]))->whereNumber('sale')->name('transactions.receipt');
         Route::post('/transactions/{sale}/serial-numbers', [TransactionController::class, 'updateSerialNumbers'])->whereNumber('sale')->name('transactions.serial-numbers.update');
         Route::post('/transactions/{sale}/payments', [TransactionController::class, 'storePayment'])->whereNumber('sale')->name('transactions.payments.store');
         Route::post('/transactions/{sale}/void', [TransactionController::class, 'void'])->whereNumber('sale')->name('transactions.void');
-        Route::get('/service-transactions', [ServiceTransactionController::class, 'index'])->name('service-transactions.index');
+        Route::get('/service-transactions', fn () => view('service-transactions.livewire-index'))->name('service-transactions.index');
         Route::get('/service-transactions/data', [ServiceTransactionController::class, 'getData'])->name('service-transactions.data');
         Route::get('/service-transactions/{serviceTransaction}', [ServiceTransactionController::class, 'show'])->whereNumber('serviceTransaction')->name('service-transactions.show');
         Route::post('/service-transactions/{serviceTransaction}/payments', [ServiceTransactionController::class, 'storePayment'])->whereNumber('serviceTransaction')->name('service-transactions.payments.store');
