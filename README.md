@@ -1,6 +1,6 @@
 # UTE Parts POS (Uteparts)
 
-POS/Kasir application for UTE Parts (HP sparepart retail) built with Laravel 12 + TALL Stack (Tailwind CSS + Alpine.js + Laravel Livewire v3).
+POS/Kasir application for UTE Parts (HP sparepart retail) built with Laravel 12 + TALL Stack (Tailwind CSS + Alpine.js + Laravel Livewire v3).!
 
 ## Tech Stack
 
