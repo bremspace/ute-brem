@@ -119,7 +119,7 @@ class StockOpnameFormComponent extends Component
         }
     }
 
-    public function store(): void
+    public function store()
     {
         $validated = $this->validate([
             'locationId' => 'required|exists:locations,id',

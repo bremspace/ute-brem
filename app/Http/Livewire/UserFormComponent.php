@@ -80,7 +80,7 @@ class UserFormComponent extends Component
         ]);
     }
 
-    public function store(): void
+    public function store()
     {
         $validated = $this->validate([
             'name' => 'required|string|max:255',
@@ -113,7 +113,7 @@ class UserFormComponent extends Component
         return redirect()->route('users.index');
     }
 
-    public function update(): void
+    public function update()
     {
         if (! $this->user) {
             return;

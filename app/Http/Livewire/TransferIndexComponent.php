@@ -87,10 +87,6 @@ class TransferIndexComponent extends Component
 
         return $query->latest()->paginate($this->perPage);
     }
-        }
-
-        return $query->latest()->paginate($this->perPage);
-    }
 
     public function getBranchesProperty(): \Illuminate\Support\Collection
     {

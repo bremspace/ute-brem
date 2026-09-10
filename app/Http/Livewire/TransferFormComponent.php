@@ -219,7 +219,7 @@ class TransferFormComponent extends Component
         $this->items[$productId][$field] = $value;
     }
 
-    public function store(): void
+    public function store()
     {
         $validated = $this->validate();
 

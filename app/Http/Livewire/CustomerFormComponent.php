@@ -67,7 +67,7 @@ class CustomerFormComponent extends Component
         }
     }
 
-    public function store(): void
+    public function store()
     {
         $validated = $this->validate();
 
@@ -91,7 +91,7 @@ class CustomerFormComponent extends Component
         return redirect()->route('customers.index');
     }
 
-    public function update(): void
+    public function update()
     {
         if (! $this->customer) {
             return;

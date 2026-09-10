@@ -15,7 +15,7 @@ class CustomerExportComponent extends Component
         'scope' => 'required|in:all,selected',
     ];
 
-    public function export(): void
+    public function export()
     {
         $this->validate();
 

@@ -59,7 +59,7 @@ class RoleFormComponent extends Component
         }
     }
 
-    public function store(): void
+    public function store()
     {
         $validated = $this->validate([
             'name' => 'required|string|max:255|unique:roles',
@@ -85,7 +85,7 @@ class RoleFormComponent extends Component
         return redirect()->route('roles.index');
     }
 
-    public function update(): void
+    public function update()
     {
         if (! $this->role) {
             return;
