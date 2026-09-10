@@ -477,14 +477,20 @@
              </li>
          @endif
 
-         @if (auth()->user()->hasPermission('management.settings.printer'))
-             <li class="menu-item {{ request()->routeIs('settings.*') ? 'active' : '' }}">
-                 <a href="{{ route('settings.printer.edit') }}" wire:navigate class="menu-link">
-                     <i class="menu-icon tf-icons bx bx-cog"></i>
-                     <div class="text-truncate">Pengaturan</div>
-                 </a>
-             </li>
-         @endif
+          @if (auth()->user()->hasPermission('management.settings.printer'))
+              <li class="menu-item {{ request()->routeIs('settings.*') && !request()->routeIs('settings.website') ? 'active' : '' }}">
+                  <a href="{{ route('settings.printer.edit') }}" wire:navigate class="menu-link">
+                      <i class="menu-icon tf-icons bx bx-cog"></i>
+                      <div class="text-truncate">Pengaturan</div>
+                  </a>
+              </li>
+              <li class="menu-item {{ request()->routeIs('settings.website') ? 'active' : '' }}">
+                  <a href="{{ route('settings.website') }}" wire:navigate class="menu-link">
+                      <i class="menu-icon tf-icons bx bx-globe"></i>
+                      <div class="text-truncate">Pengaturan Website</div>
+                  </a>
+              </li>
+          @endif
 
          @if (auth()->user()->hasPermission('master.access'))
              <li class="menu-item {{ request()->routeIs('sid-retail.*') ? 'active' : '' }}">

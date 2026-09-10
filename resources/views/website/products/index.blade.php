@@ -14,49 +14,29 @@
         $baseResetParams['view'] = $viewMode;
     }
     $activeCategoryId = request('category_id');
+    $wsHero = \App\Models\WebsiteSetting::getGroup('hero');
 @endphp
 
 @push('styles')
     <style>
         /* ================================================================
-           Consumer Catalog — Hero, Category Nav, Modern Product Grid
-           Uses the layout design tokens (--c-*). Mobile-first.
+           Consumer Catalog — Hero, Category Nav, Product Grid + Hover Popup
+           Uses layout design tokens (--c-*). Mobile-first.
            ================================================================ */
+
+        [x-cloak] { display: none !important; }
 
         /* --- Hero Banner ------------------------------------------------ */
         .catalog-hero {
             position: relative;
             overflow: hidden;
             border-radius: var(--c-radius-xl);
-            background: linear-gradient(135deg, #4a5fd4 0%, var(--c-primary) 55%, #7c8cff 100%);
+            background-color: var(--c-primary);
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+            background-size: 24px 24px;
             color: #fff;
-            padding: 2.25rem 1.5rem 2.5rem;
+            padding: 2.5rem 1.5rem 2.75rem;
             margin: 0.75rem 0 1.5rem;
-            box-shadow: var(--c-shadow-lg);
-        }
-
-        .catalog-hero::before {
-            content: "";
-            position: absolute;
-            top: -40%;
-            right: -10%;
-            width: 340px;
-            height: 340px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 70%);
-            pointer-events: none;
-        }
-
-        .catalog-hero::after {
-            content: "";
-            position: absolute;
-            bottom: -55%;
-            left: -8%;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
-            pointer-events: none;
         }
 
         .catalog-hero-inner {
@@ -65,35 +45,41 @@
             max-width: 560px;
         }
 
-        .catalog-hero-eyebrow {
+        .catalog-hero-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            font-size: 0.6875rem;
+            gap: 0.5rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            background: rgba(255, 255, 255, 0.16);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            padding: 0.3rem 0.7rem;
-            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 0.35rem 0.875rem;
+            border-radius: var(--c-radius-md);
             margin-bottom: 1rem;
         }
 
+        .catalog-hero-badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+        }
+
         .catalog-hero-title {
-            font-size: 1.625rem;
+            font-size: 1.75rem;
             font-weight: 700;
             line-height: 1.2;
             margin: 0 0 0.75rem;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.015em;
         }
 
         .catalog-hero-sub {
             font-size: 0.875rem;
             line-height: 1.6;
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.82);
             margin: 0 0 1.5rem;
-            max-width: 46ch;
+            max-width: 44ch;
         }
 
         .catalog-hero-cta {
@@ -110,17 +96,16 @@
             font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-            transition: transform var(--c-transition), box-shadow var(--c-transition);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            transition: box-shadow var(--c-transition);
         }
 
         .catalog-hero-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
         }
 
         .catalog-hero-cta:active {
-            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
         }
 
         .catalog-hero-cta svg {
@@ -239,7 +224,7 @@
             white-space: nowrap;
         }
 
-        /* --- Modern Product Card ---------------------------------------- */
+        /* --- Product Card ----------------------------------------------- */
         .product-card {
             position: relative;
             display: flex;
@@ -249,12 +234,11 @@
             background: var(--c-surface-0);
             overflow: hidden;
             box-shadow: var(--c-shadow-sm);
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            transition: box-shadow var(--c-transition);
             height: 100%;
         }
 
         .product-card:hover {
-            transform: translateY(-3px);
             box-shadow: var(--c-shadow-md);
         }
 
@@ -270,11 +254,6 @@
             height: 100%;
             object-fit: cover;
             display: block;
-            transition: transform 0.3s ease;
-        }
-
-        .product-card:hover .product-card-media img {
-            transform: scale(1.04);
         }
 
         .product-card-media .no-photo {
@@ -331,8 +310,6 @@
         .product-card-maker {
             font-size: 0.6875rem;
             color: var(--c-surface-400);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -348,6 +325,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             min-height: 2.2em;
+            margin: 0;
         }
 
         .product-card-meta {
@@ -396,13 +374,12 @@
             font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all var(--c-transition);
+            transition: background var(--c-transition);
             -webkit-tap-highlight-color: transparent;
         }
 
         .product-card-add:hover {
             background: var(--c-primary-hover);
-            box-shadow: 0 4px 12px rgba(var(--c-primary-rgb), 0.3);
         }
 
         .product-card-add:active {
@@ -418,7 +395,197 @@
             background: var(--c-surface-200);
             color: var(--c-surface-500);
             cursor: not-allowed;
-            box-shadow: none;
+        }
+
+        /* --- Product Hover Popup ---------------------------------------- */
+        .product-popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 1099;
+        }
+
+        .product-popup {
+            position: fixed;
+            z-index: 1100;
+            width: 420px;
+            max-width: calc(100vw - 2rem);
+            background: var(--c-surface-0);
+            border: 1px solid var(--c-surface-200);
+            border-radius: var(--c-radius-lg);
+            box-shadow: var(--c-shadow-lg);
+            overflow: hidden;
+        }
+
+        .product-popup-close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: var(--c-radius-sm);
+            background: var(--c-surface-100);
+            color: var(--c-surface-500);
+            cursor: pointer;
+            transition: background var(--c-transition);
+        }
+
+        .product-popup-close:hover {
+            background: var(--c-surface-200);
+            color: var(--c-surface-700);
+        }
+
+        .product-popup-inner {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .product-popup-image {
+            flex: 0 0 140px;
+            aspect-ratio: 1 / 1;
+            border-radius: var(--c-radius-md);
+            overflow: hidden;
+            background: var(--c-surface-100);
+        }
+
+        .product-popup-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .product-popup-noimg {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--c-surface-400);
+            font-size: 0.75rem;
+        }
+
+        .product-popup-details {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            padding-right: 1.5rem;
+        }
+
+        .product-popup-maker {
+            font-size: 0.6875rem;
+            color: var(--c-surface-400);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-popup-name {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            line-height: 1.3;
+            color: var(--c-surface-800);
+            margin: 0;
+        }
+
+        .product-popup-meta {
+            font-size: 0.75rem;
+            color: var(--c-surface-500);
+        }
+
+        .product-popup-brand {
+            font-size: 0.75rem;
+            color: var(--c-surface-500);
+        }
+
+        .product-popup-stock {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            margin-top: 0.125rem;
+        }
+
+        .product-popup-stock.is-ready {
+            color: #10b981;
+        }
+
+        .product-popup-stock.is-empty {
+            color: var(--c-surface-400);
+        }
+
+        .product-popup-stock .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .product-popup-footer {
+            margin-top: auto;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--c-surface-100);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .product-popup-price-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--c-primary);
+        }
+
+        .product-popup-price-login {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--c-primary);
+            text-decoration: underline;
+            text-decoration-color: rgba(var(--c-primary-rgb), 0.3);
+        }
+
+        .product-popup-add {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            flex: 1;
+            min-height: 40px;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--c-radius-md);
+            background: var(--c-primary);
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--c-transition);
+        }
+
+        .product-popup-add:hover {
+            background: var(--c-primary-hover);
+        }
+
+        .product-popup-add:disabled {
+            background: var(--c-surface-200);
+            color: var(--c-surface-500);
+            cursor: not-allowed;
+        }
+
+        .product-popup-add svg {
+            width: 16px;
+            height: 16px;
         }
 
         /* --- Skeleton loading ------------------------------------------- */
@@ -439,9 +606,7 @@
         }
 
         @keyframes skeletonShimmer {
-            100% {
-                transform: translateX(100%);
-            }
+            100% { transform: translateX(100%); }
         }
 
         .skeleton-card {
@@ -453,7 +618,6 @@
 
         .skeleton-card .sk-media {
             aspect-ratio: 1 / 1;
-            border-radius: 0;
         }
 
         .skeleton-card .sk-body {
@@ -467,63 +631,21 @@
             height: 0.75rem;
         }
 
-        .skeleton-card .sk-line.short {
-            width: 45%;
-        }
+        .skeleton-card .sk-line.short { width: 45%; }
+        .skeleton-card .sk-line.medium { width: 70%; }
 
-        .skeleton-card .sk-line.medium {
-            width: 70%;
-        }
+        .skeleton-col { display: none; }
+        .js .skeleton-col { display: block; }
 
-        /* Skeleton cards show only when JS is available; real cards are
-           hidden until revealed. Without JS, real cards render directly. */
-        .skeleton-col {
-            display: none;
-        }
-
-        .js .skeleton-col {
-            display: block;
-        }
-
-        .product-card-real {
-            opacity: 1;
-            transform: none;
-        }
-
-        .js .product-card-real {
-            opacity: 0;
-            transform: translateY(14px);
-        }
-
+        .product-card-real { opacity: 1; transform: none; }
+        .js .product-card-real { opacity: 0; transform: translateY(14px); }
         .js .product-card-real.is-revealed {
             opacity: 1;
             transform: translateY(0);
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
 
-        /* --- Entrance animations ---------------------------------------- */
-        .reveal {
-            opacity: 0;
-            transform: translateY(14px);
-            animation: revealUp 0.5s ease-out forwards;
-        }
-
-        @keyframes revealUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .reveal-hero {
-            animation-delay: 0.05s;
-        }
-
-        .reveal-cats {
-            animation-delay: 0.15s;
-        }
-
-        /* --- Preserve existing filter/list styles ----------------------- */
+        /* --- Filter / List preserved styles ----------------------------- */
         .catalog-toolbar {
             display: flex;
             align-items: center;
@@ -616,6 +738,7 @@
             white-space: normal;
         }
 
+        /* --- Responsive ------------------------------------------------- */
         @media (max-width: 575.98px) {
             .container-xxl {
                 padding-left: .75rem;
@@ -636,13 +759,42 @@
             }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            .reveal {
-                opacity: 1;
-                transform: none;
-                animation: none;
+        @media (max-width: 1023.98px) {
+            .product-popup-overlay {
+                display: block;
             }
 
+            .product-popup {
+                width: calc(100vw - 2rem) !important;
+                left: 1rem !important;
+                right: 1rem;
+                top: 50% !important;
+                transform: translateY(-50%);
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+
+            .product-popup-inner {
+                flex-direction: column;
+            }
+
+            .product-popup-image {
+                flex: 0 0 auto;
+                max-height: 200px;
+            }
+
+            .product-popup-details {
+                padding-right: 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .product-popup-overlay {
+                display: none;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
             .js .product-card-real {
                 opacity: 1;
                 transform: none;
@@ -661,21 +813,19 @@
         {{-- ============================================================
              Hero Banner
              ============================================================ --}}
-        <section class="catalog-hero reveal reveal-hero" aria-label="Promo {{ $appCompanyName ?? 'UTE Parts' }}">
+        <section class="catalog-hero" aria-label="Promo {{ $wsStoreName ?? 'UTE Parts' }}">
             <div class="catalog-hero-inner">
-                <span class="catalog-hero-eyebrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
-                        <use href="#c-icon-package"/>
-                    </svg>
-                    Sparepart HP Terlengkap
-                </span>
-                <h1 class="catalog-hero-title">Semua Kebutuhan HP Anda, Satu Tempat</h1>
+                <div class="catalog-hero-badge">
+                    <span class="catalog-hero-badge-dot"></span>
+                    {{ number_format($products->total(), 0, ',', '.') }}+ Produk Tersedia
+                </div>
+                <h1 class="catalog-hero-title">{{ $wsHero['title'] ?? 'Semua Kebutuhan HP Anda, Satu Tempat' }}</h1>
                 <p class="catalog-hero-sub">
-                    LCD, baterai, charger, casing, dan aksesoris HP berkualitas dengan harga terbaik.
+                    {{ $wsHero['subtitle'] ?? 'LCD, baterai, charger, casing, dan aksesoris HP berkualitas dengan harga terbaik.' }}
                     Cari berdasarkan kategori, brand, tipe HP, dan merek produksi.
                 </p>
-                <a href="#catalogProducts" class="catalog-hero-cta">
-                    Lihat Produk
+                <a href="{{ $wsHero['cta_link'] ?? '#catalogProducts' }}" class="catalog-hero-cta">
+                    {{ $wsHero['cta_text'] ?? 'Lihat Produk' }}
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <use href="#c-icon-chevron"/>
                     </svg>
@@ -687,7 +837,7 @@
              Category Navigation (horizontal scroll)
              ============================================================ --}}
         @if (count($categories) > 0)
-            <nav class="category-nav reveal reveal-cats" aria-label="Kategori produk">
+            <nav class="category-nav" aria-label="Kategori produk">
                 <a href="{{ route('website.products.index', array_merge($baseResetParams, ['category_id' => ''])) }}"
                     class="category-chip {{ $activeCategoryId === null || $activeCategoryId === '' ? 'is-active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -725,9 +875,9 @@
         {{-- ============================================================
              Section heading + Filter toggle
              ============================================================ --}}
-        <div class="catalog-section-head scroll-reveal">
+        <div class="catalog-section-head">
             <div>
-                <h2 class="catalog-section-title">Data Barang {{ $appCompanyName ?? 'UTE Parts' }}</h2>
+                <h2 class="catalog-section-title">Data Barang {{ $wsStoreName ?? 'UTE Parts' }}</h2>
                 <p class="text-muted mb-0 small">
                     Cari sparepart HP berdasarkan kategori, brand, tipe HP, dan merek produksi.
                     @if ($isSharedCatalog)
@@ -738,7 +888,7 @@
             <span class="catalog-section-count">{{ $products->total() }} produk</span>
         </div>
 
-        {{-- Filter card (collapsible on mobile) --}}
+        {{-- Filter card --}}
         <div class="card filter-card mb-4">
             <div class="card-body">
                 <form method="GET" id="catalogFilterForm" action="{{ route('website.products.index') }}" class="row g-2 align-items-end">
@@ -831,7 +981,7 @@
         {{-- ============================================================
              Product listing
              ============================================================ --}}
-        <div id="catalogProducts" class="scroll-reveal">
+        <div id="catalogProducts">
             @if ($viewMode === 'list')
                 <div class="card">
                     <div class="table-responsive">
@@ -927,9 +1077,28 @@
                             $shouldExpandTypes = $searchTerm !== '';
                             $shownTypes = $shouldExpandTypes ? $typeItems : array_slice($typeItems, 0, $typeLimit);
                             $hiddenTypes = $shouldExpandTypes ? [] : array_slice($typeItems, $typeLimit);
+
+                            $popupData = [
+                                'id' => $product->id,
+                                'name' => $product->name,
+                                'image' => $product->primaryImageUrl(),
+                                'category' => $product->category?->name,
+                                'subcategory' => $product->subCategory?->name,
+                                'brand' => $product->brand?->name,
+                                'types' => $typeItems,
+                                'maker' => $product->maker?->name,
+                                'quality' => $product->quality,
+                                'stock' => $ready,
+                                'price' => (float) $product->selling_price,
+                                'canSeePrice' => $canSeePrice,
+                                'loginUrl' => route('website.member.login', ['return' => request()->fullUrl()])
+                            ];
                         @endphp
-                        <div class="col-6 col-lg-4 col-xl-3">
-                            <article class="product-card product-card-real">
+                        <div class="col-6 col-lg-4 col-xl-3" x-data="productPopup(@js($popupData))">
+                            <article class="product-card product-card-real" x-ref="card"
+                                @mouseenter="showPopup()"
+                                @mouseleave="hidePopup()"
+                                @click="toggleMobile($event)">
                                 <div class="product-card-media">
                                     @if ($product->primaryImageUrl())
                                         <img src="{{ $product->primaryImageUrl() }}" alt="{{ $product->name }}" loading="lazy">
@@ -994,6 +1163,56 @@
                                     </div>
                                 </div>
                             </article>
+
+                            {{-- Hover / Tap Popup --}}
+                            <div x-show="show" x-cloak class="product-popup-overlay"
+                                @click="closePopup()"></div>
+                            <div x-ref="popup" x-show="show" x-cloak class="product-popup"
+                                :style="popupStyle" role="dialog" aria-label="Detail produk"
+                                @mouseenter="onPopupEnter()" @mouseleave="onPopupLeave()">
+                                <button type="button" class="product-popup-close" @click="closePopup()" aria-label="Tutup">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+                                        <path d="M18 6L6 18M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                                <div class="product-popup-inner">
+                                    <div class="product-popup-image">
+                                        <template x-if="product.image">
+                                            <img :src="product.image" :alt="product.name">
+                                        </template>
+                                        <template x-if="!product.image">
+                                            <div class="product-popup-noimg">No Photo</div>
+                                        </template>
+                                    </div>
+                                    <div class="product-popup-details">
+                                        <div class="product-popup-maker" x-text="(product.maker || 'Tanpa merek') + (product.quality ? ' · ' + product.quality : '')"></div>
+                                        <h3 class="product-popup-name" x-text="product.name"></h3>
+                                        <div class="product-popup-meta" x-text="(product.category || '-') + (product.subcategory ? ' / ' + product.subcategory : '')"></div>
+                                        <div class="product-popup-brand" x-text="(product.brand || '') + (product.types && product.types.length ? ' · ' + product.types.join(', ') : '')"></div>
+                                        <div class="product-popup-stock" :class="product.stock ? 'is-ready' : 'is-empty'">
+                                            <span class="dot"></span>
+                                            <span x-text="product.stock ? 'Ready' : 'Kosong'"></span>
+                                        </div>
+                                        <div class="product-popup-footer">
+                                            <template x-if="product.canSeePrice">
+                                                <span class="product-popup-price-value">Rp <span x-text="new Intl.NumberFormat('id-ID').format(product.price)"></span></span>
+                                            </template>
+                                            <template x-if="!product.canSeePrice">
+                                                <a :href="product.loginUrl" class="product-popup-price-login">Lihat Harga</a>
+                                            </template>
+                                            <template x-if="product.stock">
+                                                <button type="button" class="product-popup-add"
+                                                    @click="addToCart($event)">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <use href="#c-icon-cart"/>
+                                                    </svg>
+                                                    Tambah ke Keranjang
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     @empty
                         <div class="col-12">
@@ -1030,10 +1249,177 @@
 
 @push('scripts')
     <script>
+        /* --- Alpine.js Product Popup Component --------------------------- */
+        document.addEventListener('alpine:init', function() {
+            Alpine.data('productPopup', function(product) {
+                return {
+                    show: false,
+                    product: product,
+                    popupStyle: '',
+                    _hideTimer: null,
+                    _onScroll: null,
+                    _onResize: null,
+
+                    get isDesktop() {
+                        return window.innerWidth >= 1024;
+                    },
+
+                    showPopup: function() {
+                        if (!this.isDesktop) return;
+                        clearTimeout(this._hideTimer);
+                        this.show = true;
+                        this.$nextTick(function() {
+                            requestAnimationFrame(this._position.bind(this));
+                        }.bind(this));
+                    },
+
+                    hidePopup: function() {
+                        if (!this.isDesktop) return;
+                        var self = this;
+                        this._hideTimer = setTimeout(function() {
+                            self.show = false;
+                        }, 120);
+                    },
+
+                    onPopupEnter: function() {
+                        clearTimeout(this._hideTimer);
+                    },
+
+                    onPopupLeave: function() {
+                        if (!this.isDesktop) return;
+                        this.show = false;
+                    },
+
+                    toggleMobile: function($event) {
+                        if (this.isDesktop) return;
+                        if ($event.target.closest('.product-card-add') ||
+                            $event.target.closest('.product-popup-add') ||
+                            $event.target.closest('.product-popup-close')) return;
+                        this.show = !this.show;
+                        document.body.classList.toggle('popup-open', this.show);
+                        if (this.show) {
+                            var self = this;
+                            this.$nextTick(function() {
+                                requestAnimationFrame(self._position.bind(self));
+                            });
+                        }
+                    },
+
+                    closePopup: function() {
+                        this.show = false;
+                        document.body.classList.remove('popup-open');
+                    },
+
+                    _position: function() {
+                        if (!this.isDesktop) return;
+                        var card = this.$refs.card;
+                        var popup = this.$refs.popup;
+                        if (!card || !popup) return;
+
+                        var rect = card.getBoundingClientRect();
+                        var gap = 12;
+                        var vw = window.innerWidth;
+                        var vh = window.innerHeight;
+                        var popW = Math.min(popup.offsetWidth || 420, vw - 16);
+                        var popH = popup.offsetHeight || 340;
+
+                        var left, top;
+
+                        if (rect.right + gap + popW <= vw - 8) {
+                            left = rect.right + gap;
+                        } else if (rect.left - gap - popW >= 8) {
+                            left = rect.left - gap - popW;
+                        } else {
+                            left = Math.max(8, (vw - popW) / 2);
+                        }
+
+                        top = rect.top;
+                        if (top + popH > vh - 8) {
+                            top = Math.max(8, vh - popH - 8);
+                        }
+                        if (top < 8) top = 8;
+
+                        this.popupStyle = 'left:' + left + 'px;top:' + top + 'px;';
+                    },
+
+                    addToCart: function($event) {
+                        $event.preventDefault();
+                        $event.stopPropagation();
+
+                        var self = this;
+                        var btn = $event.currentTarget;
+                        btn.disabled = true;
+
+                        var csrfToken = document.querySelector('meta[name="csrf-token"]');
+
+                        fetch({!! json_encode(route('website.cart.add')) !!}, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken ? csrfToken.content : ''
+                            },
+                            body: JSON.stringify({ product_id: self.product.id, quantity: 1 })
+                        })
+                        .then(function(res) {
+                            return res.json().then(function(data) {
+                                return { ok: res.ok, data: data };
+                            });
+                        })
+                        .then(function(result) {
+                            if (result.ok && result.data.success) {
+                                if (window.UTEParts && window.UTEParts.updateCartCount) {
+                                    window.UTEParts.updateCartCount(result.data.cart_count);
+                                }
+                                self._toast(result.data.message || (self.product.name + ' ditambahkan ke keranjang'));
+                            } else {
+                                self._toast(result.data.message || 'Gagal menambahkan produk.', true);
+                            }
+                        })
+                        .catch(function() {
+                            self._toast('Gagal menambahkan produk. Coba lagi.', true);
+                        })
+                        .finally(function() {
+                            btn.disabled = false;
+                        });
+                    },
+
+                    _toast: function(message, isError) {
+                        var existing = document.querySelector('.consumer-toast');
+                        if (existing) existing.remove();
+                        var toast = document.createElement('div');
+                        toast.className = 'consumer-toast';
+                        if (isError) toast.style.background = 'var(--c-danger)';
+                        toast.textContent = message;
+                        document.body.appendChild(toast);
+                        setTimeout(function() {
+                            toast.classList.add('is-hidden');
+                            setTimeout(function() { toast.remove(); }, 250);
+                        }, 2200);
+                    },
+
+                    init: function() {
+                        var self = this;
+                        this._onScroll = function() { if (self.show) self.closePopup(); };
+                        this._onResize = function() { if (self.show) self._position(); };
+                        window.addEventListener('scroll', this._onScroll, { passive: true });
+                        window.addEventListener('resize', this._onResize);
+                    },
+
+                    destroy: function() {
+                        if (this._onScroll) window.removeEventListener('scroll', this._onScroll);
+                        if (this._onResize) window.removeEventListener('resize', this._onResize);
+                        document.body.classList.remove('popup-open');
+                    }
+                };
+            });
+        });
+
+        /* --- Existing functionality (filters, view toggle, add-to-cart) --- */
         (function() {
-            const form = document.getElementById('catalogFilterForm');
+            var form = document.getElementById('catalogFilterForm');
             if (!form) return;
-            let submitTimer = null;
+            var submitTimer = null;
 
             if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
                 $(form).find('.js-catalog-select-single').select2({
@@ -1053,17 +1439,17 @@
                 });
             }
 
-            const viewInput = document.getElementById('viewModeInput');
-            const gridBtn = document.getElementById('viewGridBtn');
-            const listBtn = document.getElementById('viewListBtn');
+            var viewInput = document.getElementById('viewModeInput');
+            var gridBtn = document.getElementById('viewGridBtn');
+            var listBtn = document.getElementById('viewListBtn');
 
             function submitForm() {
                 form.submit();
             }
 
-            function queueSubmit(delay = 0) {
+            function queueSubmit(delay) {
                 clearTimeout(submitTimer);
-                submitTimer = setTimeout(submitForm, delay);
+                submitTimer = setTimeout(submitForm, delay || 0);
             }
 
             function setView(mode) {
@@ -1072,20 +1458,20 @@
                 submitForm();
             }
 
-            if (gridBtn) gridBtn.addEventListener('click', () => setView('grid'));
-            if (listBtn) listBtn.addEventListener('click', () => setView('list'));
+            if (gridBtn) gridBtn.addEventListener('click', function() { setView('grid'); });
+            if (listBtn) listBtn.addEventListener('click', function() { setView('list'); });
 
-            const searchInput = form.querySelector('input[name="q"]');
-            let searchTimer = null;
+            var searchInput = form.querySelector('input[name="q"]');
+            var searchTimer = null;
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
                     clearTimeout(searchTimer);
-                    searchTimer = setTimeout(() => queueSubmit(), 450);
+                    searchTimer = setTimeout(function() { queueSubmit(); }, 450);
                 });
             }
 
-            form.querySelectorAll('select').forEach((selectEl) => {
-                selectEl.addEventListener('change', () => queueSubmit());
+            form.querySelectorAll('select').forEach(function(selectEl) {
+                selectEl.addEventListener('change', function() { queueSubmit(); });
             });
 
             if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
@@ -1094,9 +1480,9 @@
                 });
             }
 
-            /* --- Skeleton → real card reveal ----------------------------- */
-            const skeletonCols = document.querySelectorAll('.skeleton-col');
-            const realCards = document.querySelectorAll('.product-card-real');
+            /* --- Skeleton to real card reveal ----------------------------- */
+            var skeletonCols = document.querySelectorAll('.skeleton-col');
+            var realCards = document.querySelectorAll('.product-card-real');
 
             if (realCards.length > 0) {
                 requestAnimationFrame(function() {
@@ -1113,15 +1499,15 @@
                 skeletonCols.forEach(function(col) { col.remove(); });
             }
 
-            /* --- Add-to-cart --------------------------------------------- */
-            const addButtons = document.querySelectorAll('.product-card-add:not(.is-out)');
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            const cartUrl = @json(route('website.cart.add'));
+            /* --- Add-to-cart (card buttons) -------------------------------- */
+            var addButtons = document.querySelectorAll('.product-card-add:not(.is-out)');
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            var cartUrl = {!! json_encode(route('website.cart.add')) !!};
 
             addButtons.forEach(function(btn) {
                 btn.addEventListener('click', function() {
-                    const id = btn.dataset.productId;
-                    const name = btn.dataset.productName || 'produk';
+                    var id = btn.dataset.productId;
+                    var name = btn.dataset.productName || 'produk';
                     btn.disabled = true;
 
                     fetch(cartUrl, {

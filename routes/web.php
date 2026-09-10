@@ -139,6 +139,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/backup/restore/{filename}', [PrinterSettingController::class, 'restoreBackup'])->name('settings.backup.restore');
         Route::get('/settings/backup/download/{filename}', [PrinterSettingController::class, 'downloadBackup'])->name('settings.backup.download');
         Route::delete('/settings/backup/delete/{filename}', [PrinterSettingController::class, 'deleteBackup'])->name('settings.backup.delete');
+        Route::get('/settings/website', fn () => view('settings.livewire-website-settings'))->name('settings.website');
     });
 
     Route::middleware(['permission:management.users.restore'])->group(function () {

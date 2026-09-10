@@ -27,6 +27,7 @@ Thumbs.db
 *.Md
 *.mD
 
-# Keep README in git
+# Keep README and DESIGN in git
 !README.md
 !readme.md
+!DESIGN.md
