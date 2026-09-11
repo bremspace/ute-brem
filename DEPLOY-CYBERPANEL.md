@@ -273,10 +273,10 @@ npm -v
 ### 5.3 — Install PHP Dependencies
 
 ```bash
-composer install --no-dev --optimize-autoloader --no-scripts
+rm -rf vendor                           # paksa fresh download (hindari vendor corrupt)
+composer clear-cache
+composer install --no-dev --optimize-autoloader 2>&1 | tail -10
 ```
-
-> Pakai `--no-scripts` agar hook `php artisan config:clear` (yang error `make() on null` bila cache corrupt) tidak dijalankan sebelum vendor siap.
 
 ### 5.4 — Install Node & Build Assets
 
@@ -309,7 +309,15 @@ php artisan config:cache && \
 php artisan route:cache
 ```
 
-> Bila `key:generate` masih error `make() on null`, artinya `vendor/` belum lengkap. Ulangi `composer install --no-dev --optimize-autoloader --no-scripts` dan pastikan tidak ada error.
+> **Bila `key:generate` masih error `make() on null`** meskipun sudah `rm -f bootstrap/cache/*.php`:
+> berarti `vendor/` corrupt (framework class lengkap tapi autoload broken). Fix paksa:
+> ```bash
+> cd /home/sp.uteparts.id/public_html
+> rm -rf vendor
+> composer clear-cache
+> composer install --no-dev --optimize-autoloader
+> php artisan key:generate --force
+> ```
 
 ### 5.7 — Edit .env
 
