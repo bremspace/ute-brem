@@ -47,17 +47,17 @@
     },
     "scripts": {
         "post-autoload-dump": [
-            "@php -r \"file_exists('bootstrap/app.php') && passthru('php artisan config:clear') || true\"",
-            "@php -r \"file_exists('bootstrap/app.php') && passthru('php artisan clear-compiled') || true\"",
-            "@php -r \"file_exists('bootstrap/app.php') && passthru('php artisan package:discover --ansi') || true\""
+            "test -f bootstrap/app.php && php artisan config:clear || true",
+            "test -f bootstrap/app.php && php artisan clear-compiled || true",
+            "test -f bootstrap/app.php && php artisan package:discover --ansi || true"
         ],
         "post-update-cmd": [
-            "@php -r \"file_exists('bootstrap/app.php') && passthru('php artisan vendor:publish --tag=laravel-assets --ansi --force') || true\""
+            "test -f bootstrap/app.php && php artisan vendor:publish --tag=laravel-assets --ansi --force || true"
         ],
         "post-create-project-cmd": [
-            "@php -r \"file_exists('bootstrap/app.php') && passthru('php artisan key:generate --ansi') || true\"",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php -r \"file_exists('bootstrap/app.php') && passthru('php artisan migrate --graceful --ansi') || true\""
+            "test -f bootstrap/app.php && php artisan key:generate --ansi || true",
+            "test -f database/database.sqlite || touch database/database.sqlite",
+            "test -f bootstrap/app.php && php artisan migrate --graceful --ansi || true"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
