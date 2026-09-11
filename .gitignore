@@ -27,8 +27,9 @@ Thumbs.db
 *.Md
 *.mD
 
-# Keep README and DESIGN in git
+# Keep README, DESIGN, and DEPLOY instructions in git
 !README.md
 !readme.md
 !DESIGN.md
+!DEPLOY-CYBERPANEL.md
 .omo/
