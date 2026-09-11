@@ -174,12 +174,49 @@ scp -r /path/to/project/* root@YOUR_SERVER_IP:/home/103.57.200.1/public_html/
 
 ### 4.4 — Upload via Git (Alternatif)
 
-SSH ke server:
+#### 4.4.1 — Setup SSH Key agar `git pull` tidak perlu credential
+
+Jika pake HTTPS, `git pull` akan nanyak username/password. Solusi pakai SSH key (recommended):
+
+```bash
+# Di VPS — generate SSH key (tanpa passphrase biar auto-login)
+ssh-keygen -t ed25519 -C "deploy@vps" -f ~/.ssh/id_ed25519_deploy -N ""
+cat ~/.ssh/id_ed25519_deploy.pub
+```
+
+Salin output (public key). Di GitHub repo → Settings → Deploy Keys → **Add deploy key**:
+- Title: `vps-deploy`
+- Key: tempel public key di atas
+- **Berikan centang "Allow write access"** (agar `git pull` & `git push` bisa)
+
+Setelah itu konversi remote URL dari HTTPS ke SSH:
 
 ```bash
 cd /home/103.57.200.1/public_html/
-git clone <url-repo-kamu> .
+git config --global --add safe.directory '*'
+git remote set-url origin git@github.com:bremspace/ute-brem.git
+ssh -T git@github.com     # akan muncul: "Hi bremspace! You've successfully authenticated..."
 ```
+
+Testing pull:
+
+```bash
+git pull origin main
+```
+
+Jika muncul error `Host key verification failed` atau `Permission denied (publickey)`, pastikan:
+```bash
+ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+```
+
+#### 4.4.2 — Git clone pertama kali
+
+```bash
+cd /home/103.57.200.1/public_html/
+git clone git@github.com:bremspace/ute-brem.git .
+```
+
+> **Jika tetap pakai HTTPS**: buat Personal Access Token (GitHub → Settings → Developer settings → Personal access tokens → Generate new token, beri scope `repo` & `workflow`), lalu gunakan sebagai password saat diminta. Tapi ini perlu refresh tiap 30-90 hari.
 
 ### 4.5 — Pastikan struktur benar
 
