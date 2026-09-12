@@ -310,7 +310,7 @@ php artisan route:cache
 ```
 
 > **Bila `key:generate` masih error `make() on null`** meskipun sudah `rm -f bootstrap/cache/*.php`:
-> berarti `vendor/` corrupt (framework class lengkap tapi autoload broken). Fix paksa:
+> berarti `vendor/` corrupt atau PHP extension konflik. Fix paksa:
 > ```bash
 > cd /home/sp.uteparts.id/public_html
 > rm -rf vendor
@@ -318,6 +318,15 @@ php artisan route:cache
 > composer install --no-dev --optimize-autoloader
 > php artisan key:generate --force
 > ```
+
+> **Still error & melihat `ionCube PHP Loader` di `php -v`:** ionCube Loader bisa corrupt Laravel bootstrap. Non-aktifkan sementara via SSH:
+> ```bash
+> php -n -d extension=openssl -d extension=pdo_mysql -d extension=mbstring \
+>   -d extension=ctype -d extension=json -d extension=tokenizer -d extension=xml \
+>   -d extension=curl -d extension=gd -d extension=zip -d extension=fileinfo \
+>   artisan key:generate --force
+> ```
+> Jika berhasil, kontak host untuk disable ionCube permanen untuk PHP CLI.
 
 ### 5.7 — Edit .env
 
