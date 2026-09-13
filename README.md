@@ -184,6 +184,11 @@ Open: http://localhost:8000
 cd /path/to/project
 
 # 3. Install PHP dependencies (production mode)
+
+# Fix for known Laravel <=12.37 + Symfony Console 7.4+ incompatibility
+# See: https://github.com/laravel/framework/issues/57955
+rm -rf vendor
+composer clear-cache
 composer install --no-dev --optimize-autoloader
 
 # 4. Install Node dependencies

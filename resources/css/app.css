@@ -1,3 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Sidebar collapsed state */
+.sidebar.collapsed {
+    width: 70px !important;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .nav-link {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+}
+
+.sidebar.collapsed .nav-link .bi {
+    margin-right: 0 !important;
+}
+
+.sidebar.collapsed .fw-bold,
+.sidebar.collapsed .text-muted {
+    display: none;
+}
+
+/* Internal layout */
+.body-internal {
+    background-color: #f8f9fc;
+}
+
+/* Main content area */
+main.min-h-screen {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 992px) {
+    main.min-h-screen {
+        margin-left: 250px;
+    }
+}
+
+@media (min-width: 992px) {
+    .sidebar.collapsed ~ main.min-h-screen {
+        margin-left: 70px;
+    }
+}
+
+/* Navbar adjustments */
+.navbar-brand {
+    font-size: 1.1rem;
+}
+
+/* Bootstrap overrides for cleaner look */
+.btn {
+    transition: all 0.15s ease;
+}
+
+.card {
+    border: 1px solid #e5e8f0;
+}
+
+.table th {
+    font-weight: 600;
+    color: #4b5569;
+}
+
+/* Badge styles */
+.badge {
+    font-weight: 500;
+}

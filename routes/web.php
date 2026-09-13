@@ -83,7 +83,9 @@ Route::get('/payment/{code}/status', [PaymentController::class, 'status'])->name
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', fn () => view('home.dashboard'))->name('home');
+
+Route::get('/stocks', fn () => view('livewire-page.stocks'))->name('livewire.stocks.index');
 
 // Route group middleware for authenticated users
 Route::middleware(['auth'])->group(function () {
@@ -257,22 +259,19 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['permission:master.branches.view'])->group(function () {
-        Route::get('/branches', [BranchController::class, 'index'])->name('branches.index');
-        Route::get('/branches/data', [BranchController::class, 'getData'])->name('branches.data');
+        Route::get('/branches', fn () => view('branches.livewire-index'))->name('branches.index');
     });
 
     Route::middleware(['permission:master.branches.create'])->group(function () {
-        Route::get('/branches/create', [BranchController::class, 'create'])->name('branches.create');
-        Route::post('/branches', [BranchController::class, 'store'])->name('branches.store');
+        Route::get('/branches/create', fn () => view('branches.livewire-index'))->name('branches.create');
     });
 
     Route::middleware(['permission:master.branches.edit'])->group(function () {
-        Route::get('/branches/{branch}/edit', [BranchController::class, 'edit'])->name('branches.edit');
-        Route::put('/branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
+        Route::get('/branches/{branch}/edit', fn () => view('branches.livewire-index'))->name('branches.edit');
     });
 
     Route::middleware(['permission:master.branches.delete'])->group(function () {
-        Route::delete('/branches/{branch}', [BranchController::class, 'destroy'])->name('branches.destroy');
+        Route::delete('/branches/{branch}', fn () => redirect()->route('branches.index'))->name('branches.destroy');
     });
 
     Route::middleware(['permission:master.products.delete'])->group(function () {
@@ -338,22 +337,19 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['permission:master.locations.view'])->group(function () {
-        Route::get('/locations', fn () => view('locations.livewire-index'))->name('locations.index');
-        Route::get('/locations/data', [LocationController::class, 'getData'])->name('locations.data');
+        Route::get('/locations', fn () => view('livewire.locations.location-index-component'))->name('locations.index');
     });
 
     Route::middleware(['permission:master.locations.create'])->group(function () {
-        Route::get('/locations/create', fn () => view('locations.livewire-create'))->name('locations.create');
-        Route::post('/locations', [LocationController::class, 'store'])->name('locations.store');
+        Route::get('/locations/create', fn () => view('livewire.locations.location-form-component'))->name('locations.create');
     });
 
     Route::middleware(['permission:master.locations.edit'])->group(function () {
-        Route::get('/locations/{location}/edit', function (\App\Models\Location $location) { return view('locations.livewire-edit', ['location' => $location]); })->name('locations.edit');
-        Route::put('/locations/{location}', [LocationController::class, 'update'])->name('locations.update');
+        Route::get('/locations/{location}/edit', fn () => view('livewire.locations.location-form-component'))->name('locations.edit');
     });
 
     Route::middleware(['permission:master.locations.delete'])->group(function () {
-        Route::delete('/locations/{location}', [LocationController::class, 'destroy'])->name('locations.destroy');
+        Route::delete('/locations/{location}', fn () => redirect()->route('locations.index'))->name('locations.destroy');
     });
 
     Route::middleware(['permission:master.customer_groups.view'])->group(function () {
@@ -440,12 +436,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['permission:master.products.view'])->group(function () {
-        Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
-        Route::get('/suppliers/data', [SupplierController::class, 'getData'])->name('suppliers.data');
+        Route::get('/suppliers', fn () => view('suppliers.livewire-index'))->name('suppliers.index');
         Route::match(['get', 'post'], '/suppliers/export', [SupplierController::class, 'export'])->name('suppliers.export');
-        Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
-        Route::get('/services/data', [ServiceController::class, 'getData'])->name('services.data');
-        Route::get('/services/search', [ServiceController::class, 'search'])->name('services.search');
+        Route::get('/services', fn () => view('services.livewire-index'))->name('services.index');
     });
 
     Route::middleware(['permission:master.products.create'])->group(function () {
@@ -473,16 +466,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['permission:master.access'])->group(function () {
         Route::get('/back-office', [BackOfficeController::class, 'dashboard'])->name('back-office.dashboard');
-        Route::get('/back-office/cash-accounts', [BackOfficeController::class, 'cashAccounts'])->name('back-office.cash-accounts.index');
-        Route::post('/back-office/cash-accounts', [BackOfficeController::class, 'storeCashAccount'])->name('back-office.cash-accounts.store');
+        Route::get('/back-office/cash-accounts', fn () => view('livewire.back-office.cash-accounts-component'))->name('back-office.cash-accounts.index');
         Route::get('/back-office/cost-categories', [BackOfficeController::class, 'costCategories'])->name('back-office.cost-categories.index');
         Route::post('/back-office/cost-categories', [BackOfficeController::class, 'storeCostCategory'])->name('back-office.cost-categories.store');
-        Route::get('/back-office/cash-transactions/{type}', [BackOfficeController::class, 'cashTransactions'])
+        Route::get('/back-office/cash-transactions/{type}', fn ($type) => view('livewire.back-office.cash-transaction-component', ['type' => $type]))
             ->whereIn('type', ['income', 'expense'])
             ->name('back-office.cash-transactions.index');
-        Route::post('/back-office/cash-transactions/{type}', [BackOfficeController::class, 'storeCashTransaction'])
-            ->whereIn('type', ['income', 'expense'])
-            ->name('back-office.cash-transactions.store');
         Route::get('/back-office/cash-mutations', [BackOfficeController::class, 'cashMutations'])->name('back-office.cash-mutations.index');
         Route::post('/back-office/cash-mutations', [BackOfficeController::class, 'storeCashMutation'])->name('back-office.cash-mutations.store');
         Route::get('/back-office/employee-advances', [BackOfficeController::class, 'employeeAdvances'])->name('back-office.employee-advances.index');

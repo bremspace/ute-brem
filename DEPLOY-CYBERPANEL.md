@@ -310,23 +310,37 @@ php artisan route:cache
 ```
 
 > **Bila `key:generate` masih error `make() on null`** meskipun sudah `rm -f bootstrap/cache/*.php`:
-> berarti `vendor/` corrupt atau PHP extension konflik. Fix paksa:
+> kemungkinan besar karena incompatibilitas Laravel <=12.37 dengan Symfony Console 7.4+ (known bug: laravel/framework#57955).
+> 
+> **Langkah deteksi:**
 > ```bash
 > cd /home/sp.uteparts.id/public_html
+> php -r '$j=json_decode(file_get_contents("vendor/composer/installed.json"),true); foreach($j["packages"]??[] as $p){ if(in_array($p["name"],["symfony/console","laravel/framework"])){ echo $p["name"]." ".$p["version"]."\n"; } }' 2>/dev/null
+> ```
+> 
+> Jika output menunjukkan:
+> - `laravel/framework 12.23.1` (atau <=12.37)
+> - `symfony/console 7.4.*`
+> 
+> maka ini adalah penyebabnya.
+> 
+> **Solusi:** Kita sudah memperbaiki di `composer.json` dengan mem-pin `symfony/console: "7.3.*"` (commit `27dd7aa`). Pastikan Anda menjalankan:
+> ```bash
+> git pull origin main
 > rm -rf vendor
 > composer clear-cache
 > composer install --no-dev --optimize-autoloader
 > php artisan key:generate --force
 > ```
-
-> **Still error & melihat `ionCube PHP Loader` di `php -v`:** ionCube Loader bisa corrupt Laravel bootstrap. Non-aktifkan sementara via SSH:
+>
+> **Alternatif manual (jika belum pull):** Ubah di `composer.json` baris `"symfony/console": "^7.0"` menjadi `"symfony/console": "7.3.*"` lalu jalankan:
 > ```bash
-> php -n -d extension=openssl -d extension=pdo_mysql -d extension=mbstring \
->   -d extension=ctype -d extension=json -d extension=tokenizer -d extension=xml \
->   -d extension=curl -d extension=gd -d extension=zip -d extension=fileinfo \
->   artisan key:generate --force
+> composer update symfony/console --with-all-dependencies --no-scripts
+> composer dump-autoload -o
+> php artisan key:generate --force
 > ```
-> Jika berhasil, kontak host untuk disable ionCube permanen untuk PHP CLI.
+>
+> Setelah ini, `key:generate` harusnya sukses.
 
 ### 5.7 — Edit .env
 
