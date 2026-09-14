@@ -124,7 +124,7 @@ Route::post('/password/email', [\App\Http\Controllers\Auth\ForgotPasswordControl
 Route::get('/password/reset/{token}', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/password/reset', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
 Route::get('/password/confirm', [\App\Http\Controllers\Auth\ConfirmPasswordController::class, 'showConfirmForm'])->name('password.confirm');
-Route::post('/password/confirm', [\App\Http\Controllers\Auth\ConfirmPasswordController::class, 'confirm'])->name('password.confirm');
+Route::post('/password/confirm', [\App\Http\Controllers\Auth\ConfirmPasswordController::class, 'confirm'])->name('password.confirm.post');
 Route::get('/email/verify', [\App\Http\Controllers\Auth\VerificationController::class, 'show'])->name('verification.notice');
 Route::get('/verify/email/{id}/{hash}', [\App\Http\Controllers\Auth\VerificationController::class, 'verify'])->name('verification.verify');
 Route::post('/verification/resend', [\App\Http\Controllers\Auth\VerificationController::class, 'resend'])->name('verification.resend');
