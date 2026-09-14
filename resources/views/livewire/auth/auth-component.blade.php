@@ -7,7 +7,6 @@
         justify-content: center;
         padding: 2rem 1rem;
     }
-
     .auth-card {
         width: 100%;
         max-width: 420px;
@@ -17,12 +16,10 @@
         box-shadow: var(--c-shadow-lg, 0 4px 24px rgba(0,0,0,0.06));
         padding: 2.5rem 2rem;
     }
-
     .auth-header {
         text-align: center;
         margin-bottom: 2rem;
     }
-
     .auth-logo {
         display: inline-flex;
         align-items: center;
@@ -36,31 +33,26 @@
         font-weight: 700;
         margin-bottom: 1rem;
     }
-
     .auth-title {
         font-size: 1.375rem;
         font-weight: 700;
         color: var(--c-surface-800, #1a1d2e);
         margin: 0 0 0.375rem;
     }
-
     .auth-subtitle {
         font-size: 0.875rem;
         color: var(--c-surface-500, #6b7280);
         margin: 0;
     }
-
     .auth-form {
         display: flex;
         flex-direction: column;
         gap: 1rem;
     }
-
     .auth-field {
         display: flex;
         flex-direction: column;
     }
-
     .auth-field label {
         display: block;
         font-size: 0.8125rem;
@@ -68,7 +60,6 @@
         color: var(--c-surface-700, #374151);
         margin-bottom: 0.375rem;
     }
-
     .auth-input {
         width: 100%;
         height: 2.75rem;
@@ -82,29 +73,23 @@
         transition: all 0.2s ease;
         outline: none;
     }
-
     .auth-input::placeholder {
         color: var(--c-surface-400, #9ca3af);
     }
-
     .auth-input:focus {
         border-color: var(--c-primary, #5c73f8);
         box-shadow: 0 0 0 3px rgba(92, 115, 248, 0.12);
     }
-
     .auth-input.is-invalid {
         border-color: var(--c-danger, #ef4444);
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
     }
-
     .auth-input-wrap {
         position: relative;
     }
-
     .auth-input-wrap .auth-input {
         padding-right: 2.75rem;
     }
-
     .auth-eye-btn {
         position: absolute;
         right: 0.5rem;
@@ -121,24 +106,20 @@
         border-radius: var(--c-radius-md, 0.5rem);
         transition: color 0.2s ease;
     }
-
     .auth-eye-btn:hover {
         color: var(--c-surface-600, #4b5563);
     }
-
     .auth-error {
         font-size: 0.8125rem;
         color: var(--c-danger, #ef4444);
         margin-top: 0.25rem;
     }
-
     .auth-error-box {
         background: rgba(239, 68, 68, 0.08);
         padding: 0.75rem 1rem;
         border-radius: var(--c-radius-md, 0.5rem);
         margin-bottom: 0.5rem;
     }
-
     .auth-success-box {
         background: rgba(34, 197, 94, 0.08);
         padding: 0.75rem 1rem;
@@ -146,7 +127,6 @@
         margin-bottom: 0.5rem;
         color: var(--c-success, #16a34a);
     }
-
     .auth-submit {
         width: 100%;
         height: 2.75rem;
@@ -165,33 +145,27 @@
         gap: 0.5rem;
         margin-top: 0.5rem;
     }
-
     .auth-submit:hover {
         background: var(--c-primary-hover, #4a5fd4);
         box-shadow: 0 4px 12px rgba(92, 115, 248, 0.3);
     }
-
     .auth-submit:active {
         transform: scale(0.98);
     }
-
     .auth-footer {
         text-align: center;
         margin-top: 1.5rem;
         font-size: 0.8125rem;
         color: var(--c-surface-500, #6b7280);
     }
-
     .auth-footer a {
         color: var(--c-primary, #5c73f8);
         font-weight: 600;
         text-decoration: none;
     }
-
     .auth-footer a:hover {
         text-decoration: underline;
     }
-
     .auth-divider {
         display: flex;
         align-items: center;
@@ -200,7 +174,6 @@
         font-size: 0.75rem;
         margin: 0.5rem 0;
     }
-
     .auth-divider::before,
     .auth-divider::after {
         content: '';
@@ -209,7 +182,6 @@
         background: var(--c-surface-200, #e5e8f0);
     }
 </style>
-
 <div class="auth-page">
     <div class="auth-card">
         <div class="auth-header">
@@ -230,14 +202,12 @@
                 <p class="auth-subtitle">Perbarui password akun Anda</p>
             @endif
         </div>
-
         @if($errorMessage)
             <div class="auth-error auth-error-box">{{ $errorMessage }}</div>
         @endif
         @if($successMessage)
             <div class="auth-success-box">{{ $successMessage }}</div>
         @endif
-
         <form wire:submit.prevent="submit" class="auth-form">
             {{-- LOGIN MODE --}}
             @if($mode === 'login')
@@ -251,7 +221,6 @@
                         <div class="auth-error">{{ $message }}</div>
                     @enderror
                 </div>
-
                 <div class="auth-field" x-data="{ show: false }">
                     <label for="auth-password">Password</label>
                     <div class="auth-input-wrap">
@@ -274,7 +243,6 @@
                         <div class="auth-error">{{ $message }}</div>
                     @enderror
                 </div>
-
             {{-- REGISTER MODE --}}
             @elseif($mode === 'register')
                 <div class="auth-field">
@@ -287,7 +255,6 @@
                         <div class="auth-error">{{ $message }}</div>
                     @enderror
                 </div>
-
                 <div class="auth-field">
                     <label for="auth-email">Email</label>
                     <input type="email" id="auth-email" wire:model.defer="email"
@@ -298,7 +265,6 @@
                         <div class="auth-error">{{ $message }}</div>
                     @enderror
                 </div>
-
                 <div class="auth-field">
                     <label for="auth-phone">Nomor HP</label>
                     <input type="tel" id="auth-phone" wire:model.defer="phone"
@@ -309,7 +275,6 @@
                         <div class="auth-error">{{ $message }}</div>
                     @enderror
                 </div>
-
                 <div class="auth-field" x-data="{ show: false }">
                     <label for="auth-password">Password</label>
                     <div class="auth-input-wrap">
@@ -332,7 +297,6 @@
                         <div class="auth-error">{{ $message }}</div>
                     @enderror
                 </div>
-
                 <div class="auth-field" x-data="{ show: false }">
                     <label for="auth-password-confirmation">Konfirmasi Password</label>
                     <div class="auth-input-wrap">
@@ -355,7 +319,6 @@
                         <div class="auth-error">{{ $message }}</div>
                     @enderror
                 </div>
-
             {{-- PASSWORD MODE --}}
             @elseif($mode === 'password')
                 <div class="auth-field" x-data="{ show: false }">
@@ -380,7 +343,6 @@
                         <div class="auth-error">{{ $message }}</div>
                     @enderror
                 </div>
-
                 <div class="auth-field" x-data="{ show: false }">
                     <label for="auth-new-password">Password Baru</label>
                     <div class="auth-input-wrap">
@@ -403,7 +365,6 @@
                         <div class="auth-error">{{ $message }}</div>
                     @enderror
                 </div>
-
                 <div class="auth-field" x-data="{ show: false }">
                     <label for="auth-password-confirmation">Konfirmasi Password Baru</label>
                     <div class="auth-input-wrap">
@@ -427,7 +388,6 @@
                     @enderror
                 </div>
             @endif
-
             <button type="submit" class="auth-submit">
                 @if($mode === 'login')
                     Masuk
@@ -441,7 +401,6 @@
                 @endif
             </button>
         </form>
-
         <div class="auth-footer">
             @if($mode === 'login')
                 Belum punya akun? <a href="{{ route('website.member.register') }}">Daftar sekarang</a>
@@ -451,7 +410,6 @@
                 <a href="{{ route('website.member.login') }}">Kembali ke Login</a>
             @endif
         </div>
-
         @if($mode === 'login')
             <div class="auth-divider">atau</div>
             <div class="auth-footer">

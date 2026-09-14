@@ -5,7 +5,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3 py-3">
             <div class="d-flex align-items-center gap-2">
@@ -22,7 +21,6 @@
                 </select>
             </div>
         </div>
-
         <div class="table-responsive text-nowrap">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -85,7 +83,6 @@
                 </tbody>
             </table>
         </div>
-
         <div class="card-footer border-top py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <span class="small text-muted">Total {{ number_format($suppliers->total()) }} supplier</span>
@@ -93,7 +90,6 @@
             </div>
         </div>
     </div>
-
     <!-- Delete Confirmation Modal -->
     <div x-show="showDeleteModal" x-cloak class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);" @click.self="showDeleteModal = false; $wire.set('showDeleteModal', false);">
         <div class="modal-dialog modal-dialog-centered">

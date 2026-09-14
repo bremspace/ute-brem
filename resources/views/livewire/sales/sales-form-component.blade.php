@@ -1,7 +1,6 @@
 @php
     $formatRupiah = fn($value) => 'Rp ' . number_format((float) $value, 0, ',', '.');
 @endphp
-
 <div class="container-fluid py-3">
     @if (session('success'))
         <div class="alert alert-success alert-dismissible" role="alert">
@@ -15,7 +14,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
     {{-- Top Bar / Controls --}}
     <div class="card border-0 shadow-sm rounded-3 mb-3">
         <div class="card-body p-3">
@@ -57,7 +55,6 @@
             </div>
         </div>
     </div>
-
     {{-- POS Work Area --}}
     <div class="row g-3">
         {{-- Left: Scanner, Search & Cart --}}
@@ -100,7 +97,6 @@
                     </div>
                 </div>
             </div>
-
             {{-- Cart Table --}}
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
@@ -161,7 +157,6 @@
                 </div>
             </div>
         </div>
-
         {{-- Right: Checkout & Payment --}}
         <div class="col-12 col-lg-4">
             {{-- Big Total Banner --}}
@@ -171,7 +166,6 @@
                     {{ $formatRupiah($this->grandTotal) }}
                 </div>
             </div>
-
             <div class="card border-0 shadow-sm rounded-3 p-3">
                 <form wire:submit.prevent="submitSale">
                     {{-- Customer Selector --}}
@@ -186,25 +180,20 @@
                             @endforeach
                         </select>
                     </div>
-
                     {{-- Payment Method --}}
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Metode Pembayaran:</label>
                         <div class="btn-group w-100" role="group">
                             <input type="radio" wire:model.live="payment_method" value="cash" class="btn-check" id="pay_cash" autocomplete="off" checked>
                             <label class="btn btn-outline-primary btn-sm" for="pay_cash">Tunai</label>
-
                             <input type="radio" wire:model.live="payment_method" value="transfer" class="btn-check" id="pay_transfer" autocomplete="off">
                             <label class="btn btn-outline-primary btn-sm" for="pay_transfer">Transfer</label>
-
                             <input type="radio" wire:model.live="payment_method" value="qris" class="btn-check" id="pay_qris" autocomplete="off">
                             <label class="btn btn-outline-primary btn-sm" for="pay_qris">QRIS</label>
-
                             <input type="radio" wire:model.live="payment_method" value="tempo" class="btn-check" id="pay_tempo" autocomplete="off">
                             <label class="btn btn-outline-primary btn-sm" for="pay_tempo">Tempo</label>
                         </div>
                     </div>
-
                     {{-- Cash Input & Change --}}
                     @if ($payment_method === 'cash')
                         <div class="mb-3">
@@ -224,13 +213,11 @@
                             <input type="text" wire:model="payment_reference" class="form-control form-control-sm" placeholder="Nomor resi / ref transfer" />
                         </div>
                     @endif
-
                     {{-- Notes --}}
                     <div class="mb-3">
                         <label class="form-label small text-muted">Catatan (opsional):</label>
                         <textarea wire:model="notes" class="form-control form-control-sm" rows="2" placeholder="Catatan transaksi..."></textarea>
                     </div>
-
                     {{-- Submit Button --}}
                     <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold shadow"
                         style="background: #5c73f8; border-color: #5c73f8;"
@@ -241,7 +228,6 @@
             </div>
         </div>
     </div>
-
     {{-- Open Cash Session Modal --}}
     <div x-data="{ open: @entangle('showCashSessionModal') }" x-show="open" class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" x-cloak>
         <div class="modal-dialog modal-dialog-centered">

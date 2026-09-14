@@ -9,7 +9,6 @@
         </div>
         <@error('current_password')><div class="invalid-feedback">{{ $message }}</div></@error>
     </div>
-
     <div class="mb-3">
         <label class="form-label" for="password">Password Baru <span class="text-danger">*</span></label>
         <div class="input-group">
@@ -20,7 +19,6 @@
         </div>
         <@error('password')><div class="invalid-feedback">{{ $message }}</div></@error>
     </div>
-
     <div class="mb-4">
         <label class="form-label" for="password_confirmation">Konfirmasi Password Baru <span class="text-danger">*</span></label>
         <div class="input-group">
@@ -31,7 +29,6 @@
         </div>
         <@error('password_confirmation')><div class="invalid-feedback">{{ $message }}</div></@error>
     </div>
-
     <div class="text-end">
         <button type="submit" class="btn btn-primary">
             <i class="bx bx-key me-1"></i> Simpan Password

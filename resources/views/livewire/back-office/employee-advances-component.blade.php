@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Kasbon Karyawan')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div><h4 class="mb-1">Kasbon Karyawan</h4><div class="text-muted">Kelola kasbon/advance karyawan.</div></div>
         <button wire:click="openFormModal" class="btn btn-primary"><i class="bx bx-plus me-1"></i> Tambah Kasbon</button>
@@ -40,5 +39,4 @@
         <button type="submit" class="btn btn-primary"><i class="bx bx-save me-1"></i> Simpan</button>
     </form>
 </div></div></div></div>
-@livewireScripts
 @endsection

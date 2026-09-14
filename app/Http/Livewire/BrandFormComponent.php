@@ -24,11 +24,11 @@ class BrandFormComponent extends Component
         ];
     }
 
-    public function mount($brandId = null)
+    public function mount($brand = null)
     {
-        $this->brandId = $brandId;
-        if ($brandId) {
-            $brand = Brand::findOrFail($brandId);
+        $this->brandId = $brand instanceof \App\Models\Brand ? $brand->id : $brand;
+        if ($this->brandId) {
+            $brand = Brand::findOrFail($this->brandId);
             $this->name = $brand->name;
             $this->slug = $brand->slug;
             $this->is_active = (bool) $brand->is_active;

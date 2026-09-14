@@ -1,7 +1,6 @@
 @php
     $formatRupiah = fn($value) => 'Rp ' . number_format((float) $value, 0, ',', '.');
 @endphp
-
 <div class="container-xxl flex-grow-1 container-p-y">
     @if (session('success'))
         <div class="alert alert-success alert-dismissible" role="alert">
@@ -15,7 +14,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
     {{-- Header --}}
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
@@ -30,7 +28,6 @@
             @endcan
         </div>
     </div>
-
     {{-- Daily Summary Metrics --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
@@ -66,7 +63,6 @@
             </div>
         </div>
     </div>
-
     {{-- Controls: Channel Tabs & Filter --}}
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-3">
@@ -93,7 +89,6 @@
             </div>
         </div>
     </div>
-
     {{-- Transactions Table --}}
     <div class="card border-0 shadow-sm rounded-3">
         <div class="table-responsive text-nowrap">
@@ -165,7 +160,6 @@
             </div>
         @endif
     </div>
-
     {{-- Void Modal --}}
     <div x-data="{ open: @entangle('showVoidModal') }" x-show="open" class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" x-cloak>
         <div class="modal-dialog modal-dialog-centered">

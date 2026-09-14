@@ -11,7 +11,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
         <div>
             <h4 class="mb-1">Pengaturan Website</h4>
@@ -26,7 +25,6 @@
             </a>
         </div>
     </div>
-
     <div class="card">
         <div class="card-header pb-0">
             <ul class="nav nav-pills settings-tabs gap-2" role="tablist">
@@ -76,7 +74,6 @@
                         </div>
                     </div>
                 @endif
-
                 {{-- Hero Tab --}}
                 @if ($activeTab === 'hero')
                     <div class="row g-3">
@@ -116,7 +113,6 @@
                         </div>
                     </div>
                 @endif
-
                 {{-- Footer & Contact Tab --}}
                 @if ($activeTab === 'footer')
                     <div class="row g-3">
@@ -148,7 +144,6 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
                         <div class="col-12">
                             <div class="border rounded-3 p-3 mt-2">
                                 <div class="settings-section-title mb-3">Media Sosial (URL)</div>
@@ -177,7 +172,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-12 d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bx bx-save me-1"></i> Simpan

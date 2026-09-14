@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Laba Rugi')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="mb-4"><h4 class="mb-1">Laba Rugi (Income Statement)</h4><div class="text-muted">Ringkasan pendapatan dan pengeluaran.</div></div>
     <div class="card mb-4"><div class="card-body">
         <form wire:submit.prevent="$refresh" class="row g-3 align-items-end">
@@ -35,5 +34,4 @@
         <div class="d-flex justify-content-between py-2"><span class="fs-5 fw-bold">Laba Bersih (Net Profit)</span><strong class="fs-5 {{ $netProfit >= 0 ? 'text-success' : 'text-danger' }}">Rp {{ number_format($netProfit, 0, ',', '.') }}</strong></div>
     </div></div>
 </div>
-@livewireScripts
 @endsection

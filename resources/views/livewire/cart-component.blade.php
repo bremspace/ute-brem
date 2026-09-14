@@ -1,16 +1,13 @@
 @php
     $formatRupiah = fn($value) => 'Rp ' . number_format((float) $value, 0, ',', '.');
-
     $cartItems   = $cartItems ?? collect();
     $cartSummary = $cartSummary ?? [];
     $subtotal    = (float) ($cartSummary['subtotal'] ?? 0);
     $discount    = (float) ($cartSummary['discount'] ?? 0);
     $total       = (float) ($cartSummary['total'] ?? 0);
     $itemCount   = (int) ($cartSummary['item_count'] ?? $cartItems->count());
-
     $checkoutUrl = \Illuminate\Support\Facades\Route::has('website.checkout') ? route('website.checkout') : url('/checkout');
 @endphp
-
 <div
     x-data="{
         toastMessage: @entangle('toastMessage'),
@@ -39,7 +36,6 @@
             <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
         </symbol>
     </svg>
-
     <div class="shop-container">
         <header class="shop-page-header anim-fade-in">
             <h1 class="shop-page-title">Keranjang</h1>
@@ -51,7 +47,6 @@
                 @endif
             </p>
         </header>
-
         {{-- ============================================================
              Empty cart state
              ============================================================ --}}
@@ -74,7 +69,6 @@
                 <p class="shop-empty-desc">Yuk isi keranjang dengan sparepart HP berkualitas dari katalog kami.</p>
                 <a href="{{ route('website.products.index') }}" class="shop-btn shop-btn-primary">Mulai Belanja</a>
             </div>
-
         {{-- ============================================================
              Cart items + summary
              ============================================================ --}}
@@ -140,7 +134,6 @@
                         </div>
                     @endforeach
                 </div>
-
                 <div class="shop-summary-sticky">
                     <div class="cart-summary shop-card anim-slide-up anim-delay-2">
                         <h2 class="cart-summary-title">Ringkasan Belanja</h2>
@@ -169,7 +162,6 @@
             </div>
         @endif
     </div>
-
     {{-- Toast notification --}}
     <div class="shop-toast" x-show="showToast" x-transition.opacity.duration.300ms role="status" aria-live="polite">
         <span x-text="toastMessage"></span>

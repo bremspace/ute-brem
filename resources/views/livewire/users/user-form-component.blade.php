@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', '{{ $user ? $user->name . " - Edit" : "Tambah User" }}')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -22,7 +18,6 @@
             <i class="bx bx-arrow-back me-1"></i> Kembali
         </a>
     </div>
-
     <!-- Form Card -->
     <div class="card">
         <div class="card-body">
@@ -42,7 +37,6 @@
                         <input type="email" name="email" wire:model="email" class="form-control" required>
                     </div>
                 </div>
-
                 <!-- Password, Branch -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-4">
@@ -66,7 +60,6 @@
                         </select>
                     </div>
                 </div>
-
                 <!-- Roles -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
@@ -84,7 +77,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Status -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-4">
@@ -94,7 +86,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="text-end mt-4">
                     <button type="submit" class="btn btn-primary">
                         <i class="bx bx-save me-1"></i> {{ $user ? 'Simpan Perubahan' : 'Simpan User' }}
@@ -104,6 +95,4 @@
         </div>
     </div>
 </div>
-
-@livewireScripts
 @endsection

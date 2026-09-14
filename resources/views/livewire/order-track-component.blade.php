@@ -10,7 +10,6 @@
             <p class="text-sm text-gray-500">Kode pesanan tidak ditemukan</p>
         @endif
     </header>
-
     @if (! $order)
         <div class="shop-card shop-empty anim-scale-in">
             <p class="text-center text-gray-600 mb-4">Pesanan dengan kode <strong>{{ $this->code }}</strong> tidak ditemukan.</p>
@@ -44,7 +43,6 @@
                         @endphp
                         <span class="track-status-badge">{{ $currentStatusLabel }}</span>
                     </div>
-
                     @if (in_array($currentStatus, ['cancelled', 'refunded'], true))
                         <div class="shop-empty" style="padding:1.5rem">
                             <p class="mb-0" style="color:var(--c-danger, #ef4444);font-weight:600">
@@ -75,7 +73,6 @@
                         </ol>
                     @endif
                 </div>
-
                 {{-- Delivery tracking events --}}
                 @if ($order->deliveryTrackings && $order->deliveryTrackings->isNotEmpty())
                     <div class="shop-card anim-slide-up anim-delay-1">
@@ -98,11 +95,9 @@
                     </div>
                 @endif
             </div>
-
             <div class="shop-summary-sticky">
                 <div class="cart-summary shop-card anim-slide-up anim-delay-2">
                     <h2 class="cart-summary-title">Ringkasan Pesanan</h2>
-
                     @if ($order->items && $order->items->isNotEmpty())
                         <div class="mb-3">
                             @foreach ($order->items as $item)
@@ -113,7 +108,6 @@
                             @endforeach
                         </div>
                     @endif
-
                     <div class="cart-summary-row">
                         <span>Subtotal</span>
                         <span class="value">{{ $formatRupiah($order->subtotal) }}</span>
@@ -133,7 +127,6 @@
                         <span class="label">Total Bayar</span>
                         <span class="amount">{{ $formatRupiah($order->grand_total) }}</span>
                     </div>
-
                     <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
                         @if (\Illuminate\Support\Facades\Route::has('website.order.show'))
                             <a href="{{ route('website.order.show', $order->order_code) }}" class="shop-btn shop-btn-outline flex-grow-1">Detail Pesanan</a>
@@ -145,7 +138,6 @@
         </div>
     @endif
 </div>
-
 @push('styles')
 <style>
     .track-timeline {
@@ -154,7 +146,6 @@
         margin: 0;
         list-style: none;
     }
-
     .track-timeline::before {
         content: '';
         position: absolute;
@@ -164,16 +155,13 @@
         width: 2px;
         background: var(--c-surface-200, #e5e7eb);
     }
-
     .track-timeline-item {
         position: relative;
         padding-bottom: 1.25rem;
     }
-
     .track-timeline-item:last-child {
         padding-bottom: 0;
     }
-
     .track-timeline-dot {
         position: absolute;
         left: -1.75rem;
@@ -184,34 +172,28 @@
         background: var(--c-surface-0, #fff);
         border: 2px solid var(--c-surface-300, #d1d5db);
     }
-
     .track-timeline-item.is-done .track-timeline-dot {
         background: var(--c-primary, #5c73f8);
         border-color: var(--c-primary, #5c73f8);
     }
-
     .track-timeline-item.is-current .track-timeline-dot {
         border-color: var(--c-primary, #5c73f8);
         box-shadow: 0 0 0 4px rgba(92, 115, 248, .15);
     }
-
     .track-timeline-title {
         font-weight: 600;
         font-size: .8125rem;
         color: var(--c-surface-800, #1f2937);
     }
-
     .track-timeline-meta {
         font-size: .75rem;
         color: var(--c-surface-500, #6b7280);
     }
-
     .track-timeline-note {
         font-size: .75rem;
         color: var(--c-surface-600, #4b5563);
         margin-top: .25rem;
     }
-
     .track-status-badge {
         display: inline-flex;
         align-items: center;
@@ -223,12 +205,10 @@
         background: rgba(92, 115, 248, .1);
         color: var(--c-primary, #5c73f8);
     }
-
     .countdown-expired {
         color: var(--c-danger, #ef4444);
         animation: pulse 1.5s infinite;
     }
-
     @keyframes pulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.6; }

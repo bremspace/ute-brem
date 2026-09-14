@@ -1,7 +1,6 @@
 @php
     $formatRupiah = fn($value) => 'Rp ' . number_format((float) $value, 0, ',', '.');
 @endphp
-
 <div class="container py-4">
     <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
         <div class="d-flex gap-3">
@@ -18,7 +17,6 @@
             </div>
         @endif
     </div>
-
     @if(!$customer)
         <div class="card border-0 shadow-sm rounded-3 p-5 text-center my-4">
             <h5 class="fw-bold mb-2">Silakan Masuk Terlebih Dahulu</h5>
@@ -77,9 +75,7 @@
                 </div>
                 <small class="text-muted">Total Poin Member</small>
             </div>
-
             <h6 class="fw-bold mb-3">Riwayat Poin</h6>
-
             @forelse($pointsHistory ?? [] as $point)
                 <div class="card border-0 shadow-sm rounded-3 mb-2">
                     <div class="card-body p-3 d-flex justify-content-between align-items-center">

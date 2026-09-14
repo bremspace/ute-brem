@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Livewire component view for category form.
  * Uses Sneat layout styling.

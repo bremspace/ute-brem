@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Migrasi SidRetail')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="mb-4"><h4 class="mb-1">Migrasi SidRetail</h4><div class="text-muted">Konfigurasi dan jalankan migrasi data dari SidRetail.</div></div>
     @if(session('success'))<div class="alert alert-success alert-dismissible" role="alert">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
     <div class="row g-4">
@@ -33,5 +32,4 @@
         </div>
     </div>
 </div>
-@livewireScripts
 @endsection

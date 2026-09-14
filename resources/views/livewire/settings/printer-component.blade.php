@@ -22,7 +22,6 @@
             Setting belum bisa disimpan karena tabel <code>pos_settings</code> belum tersedia.
         </div>
     @endif
-
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
         <div>
             <h4 class="mb-1">Setting</h4>
@@ -32,7 +31,6 @@
             <i class="bx bx-arrow-back me-1"></i> Kembali
         </a>
     </div>
-
     <div class="card">
         <div class="card-header pb-0">
             <ul class="nav nav-pills settings-tabs gap-2" role="tablist">
@@ -161,7 +159,6 @@
                         </div>
                     </form>
                 </div>
-
                 {{-- Printer Tab --}}
                 <div class="tab-pane fade {{ $activeTab === 'printer' ? 'show active' : '' }}" id="printer-pane" role="tabpanel" aria-labelledby="printer-tab">
                     <div class="row g-4">
@@ -287,7 +284,6 @@
                         </div>
                     </div>
                 </div>
-
                 {{-- Backup Tab --}}
                 <div class="tab-pane fade {{ $activeTab === 'backup' ? 'show active' : '' }}" id="backup-pane" role="tabpanel" aria-labelledby="backup-tab">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -355,7 +351,6 @@
         </div>
     </div>
 </div>
-
 @push('scripts')
 <script>
 (function() {
@@ -372,7 +367,6 @@
     const previewHeader = document.getElementById('preview_header_text');
     const previewFooter = document.getElementById('preview_footer_text');
     const previewDatetime = document.getElementById('preview_datetime_row');
-
     function updateModeVisibility() {
         const bridge = modeSelect.value === 'bridge';
         bridgeUrlWrap.classList.toggle('d-none', !bridge);

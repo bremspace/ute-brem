@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Laporan')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="mb-4"><h4 class="mb-1">Laporan (Reports)</h4><div class="text-muted">Ringkasan laporan operasional.</div></div>
     <div class="row g-4">
         <div class="col-md-3">
@@ -69,5 +68,4 @@
         </div>
     </div>
 </div>
-@livewireScripts
 @endsection

@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Neraca Saldo')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="mb-4"><h4 class="mb-1">Neraca Saldo (Trial Balance)</h4><div class="text-muted">Saldo semua akun postable per periode.</div></div>
     <div class="card mb-4"><div class="card-body">
         <form wire:submit.prevent="$refresh" class="row g-3 align-items-end">
@@ -42,5 +41,4 @@
         </div>
     </div></div>
 </div>
-@livewireScripts
 @endsection

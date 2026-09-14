@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', 'Tambah Role')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">{{ $role ? 'Edit Role' : 'Tambah Role' }}</h4>
@@ -15,7 +11,6 @@
             <i class="bx bx-arrow-back me-1"></i> Kembali
         </a>
     </div>
-
     <div class="card">
         <div class="card-body">
             <form wire:submit.prevent="{{ $role ? 'update' : 'store' }}">
@@ -33,7 +28,6 @@
                         <input type="text" name="description" wire:model="description" class="form-control">
                     </div>
                 </div>
-
                 <div class="mb-4">
                     <label class="form-label">Permissions</label>
                     @foreach($permissionsByModule as $module => $modulePermissions)
@@ -61,7 +55,6 @@
                         </div>
                     @endforeach
                 </div>
-
                 <div class="text-end mt-4">
                     <button type="submit" class="btn btn-primary">
                         <i class="bx bx-save me-1"></i> {{ $role ? 'Simpan Perubahan' : 'Simpan Role' }}
@@ -71,6 +64,4 @@
         </div>
     </div>
 </div>
-
-@livewireScripts
 @endsection

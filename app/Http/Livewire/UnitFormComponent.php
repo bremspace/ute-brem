@@ -24,11 +24,11 @@ class UnitFormComponent extends Component
         ];
     }
 
-    public function mount($unitId = null)
+    public function mount($unit = null)
     {
-        $this->unitId = $unitId;
-        if ($unitId) {
-            $unit = Unit::findOrFail($unitId);
+        $this->unitId = $unit instanceof \App\Models\Unit ? $unit->id : $unit;
+        if ($this->unitId) {
+            $unit = Unit::findOrFail($this->unitId);
             $this->name = $unit->name;
             $this->code = $unit->code;
             $this->is_active = (bool) $unit->is_active;

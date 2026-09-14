@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', 'Import Customer')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -16,14 +12,12 @@
             <i class="bx bx-arrow-back me-1"></i> Kembali
         </a>
     </div>
-
     @if(session('success'))
         <div class="alert alert-success alert-dismissible" role="alert">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
     @if($showResult)
         <div class="alert alert-success alert-dismissible" role="alert">
             <strong>Import berhasil!</strong> {{ $createdCount }} customer ditambahkan.
@@ -33,7 +27,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
     <!-- Template Info -->
     <div class="card mb-4">
         <div class="card-body">
@@ -50,7 +43,6 @@
             </div>
         </div>
     </div>
-
     <!-- Upload Form -->
     <div class="card">
         <div class="card-body">
@@ -78,7 +70,6 @@
             </form>
         </div>
     </div>
-
     <!-- Preview -->
     @if($showPreview && !empty($preview['rows']))
         <div class="card mt-4">
@@ -124,7 +115,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <div class="d-flex justify-content-end mt-4">
                     <form wire:submit.prevent="storeImport">
                         <input type="hidden" wire:model="defaultGroupId">
@@ -137,6 +127,4 @@
         </div>
     @endif
 </div>
-
-@livewireScripts
 @endsection

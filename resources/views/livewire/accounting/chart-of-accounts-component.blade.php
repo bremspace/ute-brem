@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Bagan Akun')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="mb-4"><h4 class="mb-1">Bagan Akun (Chart of Accounts)</h4><div class="text-muted">Daftar semua akun beserta saldo saat ini.</div></div>
     <div class="card"><div class="card-body">
         <div class="table-responsive">
@@ -26,5 +25,4 @@
         </div>
     </div></div>
 </div>
-@livewireScripts
 @endsection

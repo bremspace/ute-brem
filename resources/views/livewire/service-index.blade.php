@@ -9,7 +9,6 @@
             <i class="bi bi-plus-lg me-1"></i> Tambah Jasa
         </button>
     </div>
-
     <!-- Services Form -->
     @if($action === 'edit')
     <div class="card border-0 shadow-sm mb-4">
@@ -108,7 +107,6 @@
         </div>
     </div>
     @endif
-
     <!-- Filters -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
@@ -129,7 +127,6 @@
             </div>
         </div>
     </div>
-
     <!-- Services Table -->
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
@@ -216,13 +213,11 @@
             </div>
         </div>
     </div>
-
     <!-- Pagination -->
     <div class="mt-3 d-flex justify-content-end">
         {{ $services->links() }}
     </div>
 </div>
-
 @push('scripts')
 <script>
     document.addEventListener('livewire:initialized', function() {
@@ -235,7 +230,6 @@
                 showConfirmButton: false
             });
         });
-
         Livewire.on('flash.error', function(message) {
             Swal.fire({
                 icon: 'error',

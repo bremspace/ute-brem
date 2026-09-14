@@ -1,17 +1,14 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Kas & Bank')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div><h4 class="mb-1">Kas & Bank</h4><div class="text-muted">Kelola akun kas, bank, dan e-wallet.</div></div>
         <button wire:click="openFormModal" class="btn btn-primary"><i class="bx bx-plus me-1"></i> Tambah Akun</button>
     </div>
-
     @if(session('success'))
         <div class="alert alert-success alert-dismissible" role="alert">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     @endif
-
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -34,7 +31,6 @@
         </div>
     </div>
 </div>
-
 <div class="modal fade" x-show="showFormModal" x-transition.opacity role="dialog" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -51,5 +47,4 @@
         </div>
     </div>
 </div>
-@livewireScripts
 @endsection

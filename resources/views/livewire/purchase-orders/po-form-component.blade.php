@@ -1,11 +1,9 @@
 @php
     $formatRupiah = fn($value) => 'Rp ' . number_format((float) $value, 0, ',', '.');
 @endphp
-
 <div class="container-xxl flex-grow-1 container-p-y">
     @if (session('success'))<div class="alert alert-success alert-dismissible" role="alert">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
     @if (session('error'))<div class="alert alert-danger alert-dismissible" role="alert">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
-
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('purchase-orders.index') }}" class="btn btn-outline-secondary"><i class="bx bx-arrow-back"></i></a>
@@ -13,7 +11,6 @@
         </div>
         <button type="button" wire:click="submitPO" class="btn btn-primary"><i class="bx bx-save me-1"></i>Simpan PO</button>
     </div>
-
     <div class="row g-3">
         <div class="col-xl-8">
             <div class="card border-0 shadow-sm mb-3">
@@ -41,7 +38,6 @@
                             @endif
                         </div>
                     </div>
-
                     @if($selectedProduct)
                         <div class="alert alert-info mt-3 mb-0">
                             <div class="row">
@@ -59,7 +55,6 @@
                     @endif
                 </div>
             </div>
-
             @if($product_id)
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-header">
@@ -115,7 +110,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="card border-0 shadow-sm">
                     <div class="card-header">
                         <h6 class="mb-0">Ringkasan PO</h6>
@@ -139,7 +133,6 @@
                 </div>
             @endif
         </div>
-
         <div class="col-xl-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-header">
@@ -147,7 +140,6 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted small mb-3">Pastikan data sudah benar sebelum menyimpan PO. PO yang sudah disimpan akan otomatis memasukkan stok ke lokasi yang dipilih.</p>
-                    
                     <div class="d-grid gap-2">
                         <button type="button" wire:click="submitPO" class="btn btn-primary btn-lg">
                             <i class="bx bx-save me-1"></i>Simpan PO

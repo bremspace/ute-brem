@@ -1,19 +1,16 @@
 @php
     $formatRupiah = fn($value) => 'Rp ' . number_format((float) $value, 0, ',', '.');
-
     $cartItems   = $cartItems ?? collect();
     $cartSummary = $cartSummary ?? [];
     $subtotal    = (float) ($cartSummary['subtotal'] ?? 0);
     $discount    = (float) ($cartSummary['discount'] ?? 0);
     $total       = (float) ($cartSummary['total'] ?? 0);
     $itemCount   = (int) ($cartSummary['item_count'] ?? $cartItems->count());
-
     $deliveryOptions = $deliveryOptions ?? $this->deliveryOptions;
     $paymentMethods  = $paymentMethods ?? $this->paymentMethods;
     $pickupLocations = $pickupLocations ?? $this->pickupLocations;
     $customer        = $customer ?? $this->customer;
 @endphp
-
 <div
     x-data="{
         currentStep: @entangle('currentStep'),
@@ -118,13 +115,11 @@
             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
         </symbol>
     </svg>
-
     <div class="shop-container">
         <header class="shop-page-header anim-fade-in">
             <h1 class="shop-page-title">Checkout</h1>
             <p class="shop-page-sub">Selesaikan pesananmu dalam 4 langkah mudah</p>
         </header>
-
         @if ($cartItems->isEmpty())
             <div class="shop-card shop-empty anim-scale-in">
                 <svg class="shop-empty-icon" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -175,7 +170,6 @@
                     <span class="checkout-step-label">Konfirmasi</span>
                 </div>
             </div>
-
             <div class="shop-grid-2">
                 {{-- ==================== Steps ==================== --}}
                 <form wire:submit="submitOrder" novalidate>
@@ -215,12 +209,10 @@
                             @endforeach
                         </div>
                     </section>
-
                     {{-- Step 2: Address / pickup detail --}}
                     <section class="checkout-panel" :class="{ 'is-active': currentStep === 2 }" data-panel="2">
                         <h2 class="checkout-panel-title">Detail Pengiriman</h2>
                         <p class="checkout-panel-sub">Lengkapi alamat atau jadwal pengambilan</p>
-
                         <div x-show="!isPickup()">
                             <div class="shop-field">
                                 <label class="shop-label" for="address">Alamat Lengkap</label>
@@ -253,7 +245,6 @@
                                 Gunakan Lokasi Saya
                             </button>
                         </div>
-
                         <div x-show="isPickup()">
                             <div class="shop-field">
                                 <label class="shop-label" for="pickup_location">Lokasi Pengambilan</label>
@@ -276,7 +267,6 @@
                             </p>
                         </div>
                     </section>
-
                     {{-- Step 3: Payment method --}}
                     <section class="checkout-panel" :class="{ 'is-active': currentStep === 3 }" data-panel="3">
                         <h2 class="checkout-panel-title">Metode Pembayaran</h2>
@@ -303,12 +293,10 @@
                             @endforeach
                         </div>
                     </section>
-
                     {{-- Step 4: Confirm --}}
                     <section class="checkout-panel" :class="{ 'is-active': currentStep === 4 }" data-panel="4">
                         <h2 class="checkout-panel-title">Konfirmasi Pesanan</h2>
                         <p class="checkout-panel-sub">Periksa kembali pesananmu sebelum membayar</p>
-
                         <div class="shop-card" style="padding:1rem">
                             @foreach ($cartItems as $item)
                                 @php
@@ -323,13 +311,11 @@
                                 </div>
                             @endforeach
                         </div>
-
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <span style="font-weight:700;color:var(--c-surface-900)">Total Bayar</span>
                             <span style="font-size:1.25rem;font-weight:800;color:var(--c-primary)" x-text="formatRupiah(grandTotal())">{{ $formatRupiah($total) }}</span>
                         </div>
                     </section>
-
                     {{-- Step navigation --}}
                     <div class="d-flex gap-2 mt-4">
                         <button type="button" class="shop-btn shop-btn-outline" @click="prevStep()" x-show="currentStep > 1">
@@ -346,7 +332,6 @@
                         </button>
                     </div>
                 </form>
-
                 {{-- ==================== Summary sidebar ==================== --}}
                 <div class="shop-summary-sticky">
                     <div class="cart-summary shop-card anim-slide-up anim-delay-2">
@@ -379,7 +364,6 @@
             </div>
         @endif
     </div>
-
     {{-- Toast notification --}}
     <div class="shop-toast" x-show="showToast" x-transition.opacity.duration.300ms role="status" aria-live="polite">
         <span x-text="toastMessage"></span>

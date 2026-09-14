@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', 'User Activity Logs')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">User Activity Logs</h4>
@@ -15,7 +11,6 @@
             <i class="bx bx-arrow-back me-1"></i> Kembali
         </a>
     </div>
-
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
@@ -45,7 +40,6 @@
             </form>
         </div>
     </div>
-
     <!-- Table -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -106,6 +100,4 @@
         </div>
     </div>
 </div>
-
-@livewireScripts
 @endsection

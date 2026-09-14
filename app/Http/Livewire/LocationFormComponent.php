@@ -34,12 +34,12 @@ class LocationFormComponent extends Component
         ];
     }
 
-    public function mount($locationId = null)
+    public function mount($location = null)
     {
         $this->branches = Branch::where('is_active', true)->orderBy('name')->get();
-        $this->locationId = $locationId;
-        if ($locationId) {
-            $location = Location::with('racks')->findOrFail($locationId);
+        $this->locationId = $location instanceof \App\Models\Location ? $location->id : $location;
+        if ($this->locationId) {
+            $location = Location::with('racks')->findOrFail($this->locationId);
             $this->name = $location->name;
             $this->code = $location->code;
             $this->branch_id = $location->branch_id;

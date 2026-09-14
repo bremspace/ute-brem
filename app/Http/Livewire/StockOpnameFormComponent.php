@@ -23,7 +23,7 @@ class StockOpnameFormComponent extends Component
     public array $items = [];
     public array $locations = [];
 
-    public function mount(?int $opnameId = null): void
+    public function mount(?int $stockOpname = null): void
     {
         $this->opnameDate = now()->toDateString();
 
@@ -32,8 +32,8 @@ class StockOpnameFormComponent extends Component
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        if ($opnameId) {
-            $this->loadOpname($opnameId);
+        if ($stockOpname) {
+            $this->loadOpname($stockOpname);
         } else {
             // Default to first location
             $this->locationId = $this->locations[0]?->id;

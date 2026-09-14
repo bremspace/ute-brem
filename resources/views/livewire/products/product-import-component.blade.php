@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Import Produk')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div><h4 class="mb-1">Import Produk</h4><div class="text-muted">Upload Excel, cek preview, lalu simpan import.</div></div>
         <a href="{{ route('products.index') }}" class="btn btn-outline-secondary"><i class="bx bx-arrow-back me-1"></i> Kembali</a>
@@ -34,5 +33,4 @@
         </div>
     @endif
 </div>
-@livewireScripts
 @endsection

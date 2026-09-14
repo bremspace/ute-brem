@@ -2,7 +2,6 @@
     $formatRupiah = fn($value) => 'Rp ' . number_format((float) $value, 0, ',', '.');
     $paperWidth = $printer['paper_width_mm'] ?? 80;
 @endphp
-
 <div class="receipt-container" style="background: #f4f6f9; min-height: 100vh; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; line-height: 1.2;">
     {{-- Toolbar --}}
     <div class="d-flex justify-content-between align-items-center p-3 bg-white border-bottom shadow-sm">
@@ -21,7 +20,6 @@
             </button>
         </div>
     </div>
-
     {{-- Thermal Paper Simulation --}}
     <div class="d-flex justify-content-center py-4 px-2">
         @if (! $sale)
@@ -48,9 +46,7 @@
                     <div class="text-muted" style="font-size: 10px;">{{ $company['city'] }}</div>
                 @endif
             </div>
-
             <hr style="border-top: 1px dashed #999; margin: 4px 0;" />
-
             {{-- Metadata --}}
             <div style="font-size: 10px;" class="mb-2">
                 <div class="d-flex justify-content-between">
@@ -70,9 +66,7 @@
                     </div>
                 @endif
             </div>
-
             <hr style="border-top: 1px dashed #999; margin: 4px 0;" />
-
             {{-- Items --}}
             <div class="my-2">
                 @foreach ($sale->items as $item)
@@ -85,9 +79,7 @@
                     </div>
                 @endforeach
             </div>
-
             <hr style="border-top: 1px dashed #999; margin: 4px 0;" />
-
             {{-- Totals --}}
             <div style="font-size: 10px;" class="my-2">
                 <div class="d-flex justify-content-between">
@@ -115,9 +107,7 @@
                     </div>
                 @endif
             </div>
-
             <hr style="border-top: 1px dashed #999; margin: 4px 0;" />
-
             {{-- Footer Text --}}
             <div class="text-center mt-2 text-muted" style="font-size: 10px;">
                 @if (! empty($printer['footer_text']))

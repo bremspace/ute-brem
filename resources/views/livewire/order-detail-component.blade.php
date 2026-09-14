@@ -56,7 +56,6 @@
             <path d="M9 21v-6h6v6"/>
         </symbol>
     </svg>
-
     @if ($order)
         <div class="order-success anim-fade-in">
             <div class="order-success-card anim-scale-in">
@@ -67,15 +66,12 @@
                         <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
                     </svg>
                 </div>
-
                 <h1 class="order-success-title">Pesanan Berhasil Dibuat!</h1>
                 <p class="order-success-sub">Terima kasih, pesananmu sedang kami proses.</p>
-
                 <div class="order-code-box">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#c-icon-package"/></svg>
                     {{ $order->order_code }}
                 </div>
-
                 {{-- Payment countdown --}}
                 <p class="countdown-label">Selesaikan pembayaran sebelum</p>
         <div class="countdown" data-expires="{{ $order->payment_expires_at?->toIso8601String() ?? now()->addHours(24)->toIso8601String() }}">
@@ -92,7 +88,6 @@
                 <div class="countdown-unit">Detik</div>
             </div>
         </div>
-
                 {{-- Payment instructions --}}
                 <div class="payment-box">
                     <div class="payment-box-title">
@@ -101,7 +96,6 @@
                         </svg>
                         Bayar via {{ $order->payment_method_name }}
                     </div>
-
                     @if ($order->payment_method === 'va')
                         <div class="payment-va">
                             <div>
@@ -178,7 +172,6 @@
                         </ol>
                     @endif
                 </div>
-
                 {{-- Order meta --}}
                 <div class="order-meta">
                     <div class="order-meta-item">
@@ -198,7 +191,6 @@
                         <div class="order-meta-value">{{ $order->delivery_eta ?? '± 30 menit' }}</div>
                     </div>
                 </div>
-
                 {{-- Items --}}
                 @if ($order->items->isNotEmpty())
                     <div class="order-items">
@@ -210,7 +202,6 @@
                         @endforeach
                     </div>
                 @endif
-
                 {{-- Actions --}}
                 <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
                     @if (\Illuminate\Support\Facades\Route::has('website.order.track'))
@@ -237,7 +228,6 @@
             <a href="{{ route('website.products.index') }}" class="shop-btn shop-btn-primary">Kembali ke Beranda</a>
         </div>
     @endif
-
     {{-- Toast --}}
     <div class="shop-toast" x-show="showToast" x-transition.opacity.duration.300ms role="status" aria-live="polite"><span x-text="toastMessage"></span></div>
 </div>

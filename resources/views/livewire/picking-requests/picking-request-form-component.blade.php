@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', '{{ $request ? $request->request_code . " - Edit" : "Buat Picking Request" }}')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -22,14 +18,12 @@
             <i class="bx bx-arrow-back me-1"></i> Kembali
         </a>
     </div>
-
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible" role="alert">
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
     <!-- Form -->
     <div class="card">
         <div class="card-body">
@@ -58,7 +52,6 @@
                         <input type="text" name="notes" wire:model="notes" class="form-control" placeholder="Opsional">
                     </div>
                 </div>
-
                 <!-- Add Product -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
@@ -73,7 +66,6 @@
                         </button>
                     </div>
                 </div>
-
                 <!-- Items Table -->
                 @if(!empty($items))
                     <div class="table-responsive mb-4">
@@ -113,7 +105,6 @@
                         </table>
                     </div>
                 @endif
-
                 <div class="text-end mt-4">
                     <button type="submit" class="btn btn-primary">
                         <i class="bx bx-save me-1"></i> {{ $request ? 'Simpan Perubahan' : 'Simpan Request' }}
@@ -122,7 +113,6 @@
             </form>
         </div>
     </div>
-
     @if($request && $request->status === 'fulfilled')
         <div class="alert alert-success mt-4">
             <i class="bx bx-check-circle me-1"></i>
@@ -130,6 +120,4 @@
         </div>
     @endif
 </div>
-
-@livewireScripts
 @endsection

@@ -27,11 +27,11 @@ class CategoryFormComponent extends Component
         ];
     }
 
-    public function mount($categoryId = null)
+    public function mount($category = null)
     {
-        $this->categoryId = $categoryId;
-        if ($categoryId) {
-            $category = Category::findOrFail($categoryId);
+        $this->categoryId = $category instanceof \App\Models\Category ? $category->id : $category;
+        if ($this->categoryId) {
+            $category = Category::findOrFail($this->categoryId);
             $this->name = $category->name;
             $this->slug = $category->slug;
             $this->description = $category->description;

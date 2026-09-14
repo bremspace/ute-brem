@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Daftar Unit')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div><h4 class="mb-1">Satuan / Unit</h4><div class="text-muted">Kelola satuan produk.</div></div>
         <button wire:click="openFormModal" class="btn btn-primary"><i class="bx bx-plus me-1"></i> Tambah</button>
@@ -35,5 +34,4 @@
         <button type="submit" class="btn btn-primary"><i class="bx bx-save me-1"></i> Simpan</button>
     </form>
 </div></div></div></div>
-@livewireScripts
 @endsection

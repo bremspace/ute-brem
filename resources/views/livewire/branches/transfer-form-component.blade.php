@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', '{{ $transfer ? $transfer->transfer_code . " - Edit" : "Buat Transfer Stok" }}')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -20,14 +16,12 @@
             </a>
         </div>
     </div>
-
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible" role="alert">
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
     <!-- Form Card -->
     <div class="card">
         <div class="card-body">
@@ -39,7 +33,6 @@
                         <label class="form-label">Cabang Asal <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <select name="source_branch_id" wire:model="sourceBranchId" class="form-select" required>
-
                             @if($userBranchId)
                                 <option value="" disabled>Pilih Cabang</option>
                                 @foreach($branches as $branch)
@@ -55,11 +48,9 @@
                                         {{ $branch->name }}
                                     </option>
                                 @endforeach
-
                             </select>
                         </div>
                     </div>
-
                     <!-- Target Branch & Location -->
                     <div class="col-md-6">
                         <label class="form-label">Cabang Tujuan <span class="text-danger">*</span></label>
@@ -72,7 +63,6 @@
                             @endforeach
                         </select>
                     </div>
-
                     <!-- Locations -->
                     <div class="col-md-6">
                         <label class="form-label">Lokasi Asal <span class="text-danger">*</span></label>
@@ -85,7 +75,6 @@
                             @endforeach
                         </select>
                     </div>
-
                     <div class="col-md-6">
                         <label class="form-label">Lokasi Tujuan <span class="text-danger">*</span></label>
                         <select name="target_location_id" wire:model="targetLocationId" class="form-select" required>
@@ -97,7 +86,6 @@
                             @endforeach
                         </select>
                     </div>
-
                     <!-- Notes -->
                     <div class="col-12">
                         <label class="form-label">Catatan Pengiriman</label>
@@ -105,13 +93,11 @@
                                   placeholder="Contoh: Stok mingguan cabang, kirim via kurir"></textarea>
                     </div>
                 </div>
-
                 <!-- Items Table -->
                 <div class="mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Daftar Produk</h5>
                     </div>
-
                     <!-- Add Product Panel -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
@@ -133,7 +119,6 @@
                             </button>
                         </div>
                     </div>
-
                     <div class="table-responsive">
                         <table class="table table-bordered align-middle mb-0">
                             <thead>
@@ -154,7 +139,6 @@
                                         </td>
                                     </tr>
                                 @endif
-
                                 @foreach($items as $productId => $item)
                                     <tr class="item-row" data-product-id="{{ $productId }}">
                                         <td>
@@ -207,7 +191,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <div class="text-end mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bx bx-save me-1"></i> Simpan Draf
@@ -218,7 +201,6 @@
         </div>
     </div>
 </div>
-
 @push('styles')
 {{-- Alpine.js card styles for the rack selects --}}
 <style>
@@ -239,7 +221,6 @@
     }
 </style>
 @endpush
-
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
@@ -247,7 +228,6 @@
         $('.select2-basic').select2({
             width: '100%'
         });
-
         // Dynamic rack population for newly added items
         document.querySelectorAll('.source-rack-select').forEach(select => {
             select.addEventListener('change', function() {
@@ -257,6 +237,4 @@
     });
 </script>
 @endpush
-
-@livewireScripts
 @endsection

@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', 'Input Serial')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -16,7 +12,6 @@
             <i class="bx bx-arrow-back me-1"></i> Kembali
         </a>
     </div>
-
     @if($products->isEmpty())
         <div class="alert alert-warning">Belum ada produk dengan <b>Has Serial Number</b> aktif.</div>
     @else
@@ -57,6 +52,4 @@
         </form>
     @endif
 </div>
-
-@livewireScripts
 @endsection

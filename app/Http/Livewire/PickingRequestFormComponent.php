@@ -38,7 +38,7 @@ class PickingRequestFormComponent extends Component
         'notes' => 'nullable|string|max:500',
     ];
 
-    public function mount(?int $requestId = null): void
+    public function mount(?int $pickingRequest = null): void
     {
         // Load locations
         $this->locations = Location::where('is_active', true)
@@ -61,8 +61,8 @@ class PickingRequestFormComponent extends Component
             $this->locationId = $this->locations[0]['id'];
         }
 
-        if ($requestId) {
-            $this->loadRequest($requestId);
+        if ($pickingRequest) {
+            $this->loadRequest($pickingRequest);
         }
     }
 

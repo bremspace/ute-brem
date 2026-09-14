@@ -26,9 +26,19 @@ class BranchIndexComponent extends Component
     public $branchId = null;
     public $action = 'create'; // 'create' or 'edit'
 
-    public function mount()
+    public function mount($branch = null)
     {
         $this->perPage = session('branches_per_page', 15);
+        if ($branch) {
+            $this->branchId = $branch->id;
+            $this->action = 'edit';
+            $this->name = $branch->name;
+            $this->code = $branch->code;
+            $this->phone = $branch->phone;
+            $this->address = $branch->address;
+            $this->is_main = $branch->is_main;
+            $this->is_active = $branch->is_active;
+        }
     }
 
     public function updatedPerPage()

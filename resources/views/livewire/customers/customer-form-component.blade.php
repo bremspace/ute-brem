@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', '{{ $customer ? $customer->name . " - Edit" : "Tambah Customer" }}')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -22,7 +18,6 @@
             <i class="bx bx-arrow-back me-1"></i> Kembali
         </a>
     </div>
-
     <!-- Form Card -->
     <div class="card">
         <div class="card-body">
@@ -40,20 +35,17 @@
                             @endforeach
                         </select>
                     </div>
-
                     <!-- Name -->
                     <div class="col-md-4">
                         <label class="form-label">Nama <span class="text-danger">*</span></label>
                         <input type="text" name="name" wire:model="name" class="form-control" required placeholder="Nama lengkap">
                     </div>
-
                     <!-- Phone -->
                     <div class="col-md-4">
                         <label class="form-label">No HP <span class="text-danger">*</span></label>
                         <input type="text" name="phone" wire:model="phone" class="form-control" required placeholder="08xx-xxxx-xxxx">
                     </div>
                 </div>
-
                 <!-- Email, Type, Password -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-4">
@@ -76,7 +68,6 @@
                         @endif
                     </div>
                 </div>
-
                 <!-- Status -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-4">
@@ -86,7 +77,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Member Code -->
                 @if($customer && $customer->member_code)
                     <div class="alert alert-info">
@@ -94,7 +84,6 @@
                         Kode Member: <strong>{{ $customer->member_code }}</strong>
                     </div>
                 @endif
-
                 <div class="text-end mt-4">
                     <button type="submit" class="btn btn-primary">
                         <i class="bx bx-save me-1"></i> {{ $customer ? 'Simpan Perubahan' : 'Simpan Customer' }}
@@ -104,6 +93,4 @@
         </div>
     </div>
 </div>
-
-@livewireScripts
 @endsection

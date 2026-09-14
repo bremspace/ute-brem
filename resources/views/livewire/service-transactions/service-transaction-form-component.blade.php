@@ -1,11 +1,9 @@
 @php
     $formatRupiah = fn($value) => 'Rp ' . number_format((float) $value, 0, ',', '.');
 @endphp
-
 <div class="container-fluid flex-grow-1 container-p-y service-page">
     @if (session('success'))<div class="alert alert-success alert-dismissible" role="alert">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
     @if (session('error'))<div class="alert alert-danger alert-dismissible" role="alert">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
-
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('service-transactions.index') }}" class="btn btn-outline-secondary"><i class="bx bx-arrow-back"></i></a>
@@ -13,7 +11,6 @@
         </div>
         <button type="button" wire:click="submitTransaction" class="btn btn-primary"><i class="bx bx-save me-1"></i>Simpan</button>
     </div>
-
     <div class="row g-3 align-items-start">
         <div class="col-xl-5 col-lg-6">
             <div class="service-panel p-3 mb-3">
@@ -32,7 +29,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="service-panel p-3 mb-3">
                 <h6 class="mb-2">Identitas Pelanggan</h6>
                 <div class="row g-2">
@@ -58,7 +54,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="service-panel p-3 mb-3">
                 <h6 class="mb-2">Identitas Barang Servis</h6>
                 <div class="row g-2">
@@ -79,7 +74,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="service-panel p-3">
                 <h6 class="mb-2">Kerusakan dan Kelengkapan</h6>
                 <div class="row g-2">
@@ -98,7 +92,6 @@
                 </div>
             </div>
         </div>
-
         <div class="col-xl-7 col-lg-6">
             <div class="service-right-sticky">
                 <div class="row g-3 mb-3">
@@ -172,7 +165,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="card service-items mb-3">
                     <div class="table-responsive">
                         <table class="table mb-0">
@@ -226,7 +218,6 @@
                         </table>
                     </div>
                 </div>
-
                 <div class="service-panel p-3">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-3">
@@ -278,7 +269,6 @@
             </div>
         </div>
     </div>
-
     {{-- Cash Session Modal --}}
     <div x-data="{ open: @entangle('showCashSessionModal') }" x-show="open" class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" x-cloak>
         <div class="modal-dialog modal-dialog-centered">

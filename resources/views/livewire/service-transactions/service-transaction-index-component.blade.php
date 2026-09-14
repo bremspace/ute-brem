@@ -2,15 +2,12 @@
     $statusColors = ['process' => 'warning', 'done' => 'info', 'taken' => 'success', 'cancelled' => 'secondary'];
     $statusLabels = ['process' => 'Proses', 'done' => 'Selesai', 'taken' => 'Diambil', 'cancelled' => 'Batal'];
 @endphp
-
 <div class="container-xxl flex-grow-1 container-p-y">
     @if (session('success'))<div class="alert alert-success alert-dismissible" role="alert">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
     @if (session('error'))<div class="alert alert-danger alert-dismissible" role="alert">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
-
     @if (!$tableReady)
         <div class="alert alert-warning">Tabel transaksi service belum tersedia. Jalankan migration terlebih dahulu.</div>
     @endif
-
     {{-- Summary Cards --}}
     <div class="row g-3 mb-4">
         <div class="col-md-3">
@@ -82,7 +79,6 @@
             </div>
         </div>
     </div>
-
     <div class="card border-0 shadow-sm">
         <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
             <div>
@@ -117,7 +113,6 @@
                     </select>
                 </div>
             </div>
-
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
                     <thead>
@@ -166,7 +161,6 @@
                     </tbody>
                 </table>
             </div>
-
             <div class="d-flex justify-content-end">
                 {{ $transactions->links() }}
             </div>

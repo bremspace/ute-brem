@@ -1,13 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Back Office Dashboard')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="mb-4">
         <h4 class="mb-1">Back Office Dashboard</h4>
         <div class="text-muted">Ringkasan operasional back office.</div>
     </div>
-
     <!-- Cash Accounts Summary -->
     <div class="row g-3 mb-4">
         @foreach($this->cashAccounts as $account)
@@ -26,7 +24,6 @@
             </div>
         @endforeach
     </div>
-
     <!-- Quick Links -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
@@ -62,7 +59,6 @@
             </a>
         </div>
     </div>
-
     <!-- Recent Transactions -->
     <div class="row g-4">
         <div class="col-lg-6">
@@ -120,5 +116,4 @@
         </div>
     </div>
 </div>
-@livewireScripts
 @endsection

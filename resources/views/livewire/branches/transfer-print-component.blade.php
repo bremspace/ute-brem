@@ -46,13 +46,11 @@
 </head>
 <body>
     @vite(['resources/js/app.js'])
-
     @unless($branchTransfer)
         <div class="alert alert-warning">
             <i class="bx bx-error-circle me-1"></i> Data transfer tidak ditemukan.
         </div>
     @endunless
-
     <div class="container">
         @if($branchTransfer)
             <!-- Print Header -->
@@ -71,9 +69,7 @@
                     </button>
                 </div>
             </div>
-
             <hr class="my-5">
-
             <!-- Metadata -->
             <div class="row mb-5">
                 <div class="col-6">
@@ -115,7 +111,6 @@
                     </table>
                 </div>
             </div>
-
             <!-- Items Table -->
             <div class="row mb-5">
                 <div class="col-12">
@@ -143,7 +138,6 @@
                     </table>
                 </div>
             </div>
-
             @if($branchTransfer->notes)
                 <div class="row mb-5">
                     <div class="col-12">
@@ -154,7 +148,6 @@
                     </div>
                 </div>
             @endif
-
             <!-- Signatures -->
             <div class="row signature-section">
                 <div class="col-4">

@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', '{{ $opname ? $opname->opname_code . " - Edit" : "Buat Stock Opname" }}')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -22,14 +18,12 @@
             <i class="bx bx-arrow-back me-1"></i> Kembali
         </a>
     </div>
-
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible" role="alert">
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
     <!-- Form Card -->
     <div class="card">
         <div class="card-body">
@@ -51,13 +45,11 @@
                             <input type="hidden" name="location_id" value="{{ $opname->location_id }}">
                         @endif
                     </div>
-
                     <!-- Date -->
                     <div class="col-md-4">
                         <label class="form-label">Tanggal Opname <span class="text-danger">*</span></label>
                         <input type="date" name="opname_date" wire:model="opnameDate" class="form-control" required>
                     </div>
-
                     <!-- Notes -->
                     <div class="col-md-4">
                         <label class="form-label">Keterangan</label>
@@ -65,7 +57,6 @@
                                placeholder="Opsional">
                     </div>
                 </div>
-
                 @if(empty($items))
                     <div class="alert alert-warning">
                         <i class="bx bx-error me-1"></i>
@@ -119,7 +110,6 @@
                                 </tbody>
                             </table>
                         </div>
-
                         <div class="text-end mt-4">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bx bx-save me-1"></i> {{ $opname ? 'Simpan Perubahan' : 'Simpan Opname' }}
@@ -130,7 +120,6 @@
             </form>
         </div>
     </div>
-
     @if($opname && $hasDifference)
         <!-- Complete Alert -->
         <div class="alert alert-warning mt-4">
@@ -155,6 +144,4 @@
         </div>
     @endif
 </div>
-
-@livewireScripts
 @endsection

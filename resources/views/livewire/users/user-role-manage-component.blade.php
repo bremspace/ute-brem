@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Kelola Role User')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="mb-4">
         <h4 class="mb-1">Role User: {{ $user?->name }}</h4>
         <div class="text-muted">Kelola role assignment untuk user ini.</div>
@@ -48,5 +47,4 @@
         </div>
     </div>
 </div>
-@livewireScripts
 @endsection

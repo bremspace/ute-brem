@@ -14,7 +14,6 @@
             </a>
         </div>
     </div>
-
     <!-- Filters -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
@@ -52,7 +51,6 @@
             </div>
         </div>
     </div>
-
     <!-- Stock Table -->
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
@@ -127,7 +125,6 @@
             </div>
         </div>
     </div>
-
     <!-- Pagination -->
     <div class="mt-3 d-flex justify-content-end">
         {{ $products->links() }}

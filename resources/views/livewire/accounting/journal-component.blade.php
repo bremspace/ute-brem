@@ -1,8 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.sneat')
 @section('title', 'Jurnal Umum')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div><h4 class="mb-1">Jurnal Umum (General Journal)</h4><div class="text-muted">Lihat semua entri jurnal per periode.</div></div>
     </div>
@@ -46,5 +45,4 @@
         @endforelse
     </div></div>
 </div>
-@livewireScripts
 @endsection

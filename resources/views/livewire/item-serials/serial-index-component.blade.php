@@ -1,11 +1,7 @@
-@extends('layouts.app')
-
+@extends('layouts.sneat')
 @section('title', 'Serial & Bin Tracking')
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    @livewireStyles
-
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -16,7 +12,6 @@
             <i class="bx bx-plus me-1"></i> Input Serial
         </a>
     </div>
-
     <!-- Stats -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
@@ -72,7 +67,6 @@
             </div>
         </div>
     </div>
-
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
@@ -115,7 +109,6 @@
             </form>
         </div>
     </div>
-
     <!-- Table -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -180,7 +173,6 @@
         </div>
     </div>
 </div>
-
 <!-- Create Modal -->
 <div class="modal fade" x-show="showCreateModal" x-transition.opacity role="dialog" tabindex="-1">
     <div class="modal-dialog modal-lg" role="document">
@@ -235,6 +227,4 @@
         </div>
     </div>
 </div>
-
-@livewireScripts
 @endsection
