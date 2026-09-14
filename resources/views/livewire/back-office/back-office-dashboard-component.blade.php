@@ -1,6 +1,3 @@
-@extends('layouts.sneat')
-@section('title', 'Back Office Dashboard')
-@section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="mb-4">
         <h4 class="mb-1">Back Office Dashboard</h4>
@@ -116,4 +113,3 @@
         </div>
     </div>
 </div>
-@endsection

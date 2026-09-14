@@ -6,7 +6,9 @@ use App\Models\BackOfficeCashAccount;
 use App\Models\BackOfficeCashTransaction;
 use App\Models\BackOfficeStockDocument;
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 
+#[Layout('layouts.sneat')]
 class BackOfficeDashboardComponent extends Component
 {
     public function getCashAccountsProperty()
