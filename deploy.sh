@@ -5,7 +5,7 @@
 set -euo pipefail
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
-CYAN='\033[0;36m'; BLUE='\033[0;34m'
+CYAN='\033[0;36m'; BLUE='\033[0;34m'; NC='\033[0m'
 
 echo -e "${GREEN}UTE Parts POS — Deploy Script${NC}"
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
