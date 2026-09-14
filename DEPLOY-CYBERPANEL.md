@@ -275,8 +275,18 @@ npm -v
 ```bash
 rm -rf vendor                           # paksa fresh download (hindari vendor corrupt)
 composer clear-cache
-composer install --no-dev --optimize-autoloader 2>&1 | tail -10
+composer install --optimize-autoloader 2>&1 | tail -10
+php artisan package:discover --force    # regenerate bootstrap/cache/services.php
+composer dump-autoload -o               # optimize autoloader
 ```
+
+> **Jangan pakai `--no-dev`**: `laravel/pail` dan `laravel/sail` di `require-dev` di-discovered otomatis oleh Laravel. Jika `--no-dev` dipakai, `bootstrap/cache/services.php` tetap merujuk ke class-class tersebut tapi file-nya tidak ada di vendor → **"Class not found" error**. Karena itu, install semua dependency termasuk dev.
+
+> **Jika `package:discover` error**: Hapus cache services lama dulu:
+> ```bash
+> rm -f bootstrap/cache/services.php
+> php artisan package:discover --force
+> ```
 
 ### 5.4 — Install Node & Build Assets
 
@@ -297,50 +307,32 @@ Harusnya ada file `.css` dan `.js` hasil Vite build.
 
 ```bash
 cp .env.example .env
+# Pastikan .env terbuat dengan benar:
+cat .env | grep APP_KEY
 ```
 
-### 5.6 — Generate App Key & Cache (setelah .env ada)
+> **Jika `cat .env | grep APP_KEY` kosong**, `.env.example` tidak memiliki `APP_KEY=` atau `cp` gagal. Buat manual:
+> ```bash
+> echo 'APP_KEY=' >> .env
+> ```
+
+### 5.6 — Generate App Key & Cache
 
 ```bash
-rm -f bootstrap/cache/*.php              # hapus cache corrupt → fix "make() on null"
-php artisan key:generate --force && \
-php artisan package:discover --ansi && \
-php artisan config:cache && \
+rm -f bootstrap/cache/*.php              # hapus semua cache corrupt → fix "make() on null"
+rm -f bootstrap/cache/services.php       # hapus cached services (referensi package yang tidak konsisten)
+php artisan key:generate --force         # generate APP_KEY tanpa prompt interaktif
+php artisan package:discover --force     # regenerate services.php dengan package yang benar
+php artisan config:cache
 php artisan route:cache
+php artisan view:cache
 ```
 
-> **Bila `key:generate` masih error `make() on null`** meskipun sudah `rm -f bootstrap/cache/*.php`:
-> kemungkinan besar karena incompatibilitas Laravel <=12.37 dengan Symfony Console 7.4+ (known bug: laravel/framework#57955).
-> 
-> **Langkah deteksi:**
+> **Jika `key:generate --force` masih error**: Pastikan `.env` punya baris `APP_KEY=`. Jika tidak, generate manual:
 > ```bash
-> cd /home/sp.uteparts.id/public_html
-> php -r '$j=json_decode(file_get_contents("vendor/composer/installed.json"),true); foreach($j["packages"]??[] as $p){ if(in_array($p["name"],["symfony/console","laravel/framework"])){ echo $p["name"]." ".$p["version"]."\n"; } }' 2>/dev/null
+> php -r "echo 'APP_KEY=base64:' . base64_encode(random_bytes(32)) . PHP_EOL;" >> .env
 > ```
-> 
-> Jika output menunjukkan:
-> - `laravel/framework 12.23.1` (atau <=12.37)
-> - `symfony/console 7.4.*`
-> 
-> maka ini adalah penyebabnya.
-> 
-> **Solusi:** Kita sudah memperbaiki di `composer.json` dengan mem-pin `symfony/console: "7.3.*"` (commit `27dd7aa`). Pastikan Anda menjalankan:
-> ```bash
-> git pull origin main
-> rm -rf vendor
-> composer clear-cache
-> composer install --no-dev --optimize-autoloader
-> php artisan key:generate --force
-> ```
->
-> **Alternatif manual (jika belum pull):** Ubah di `composer.json` baris `"symfony/console": "^7.0"` menjadi `"symfony/console": "7.3.*"` lalu jalankan:
-> ```bash
-> composer update symfony/console --with-all-dependencies --no-scripts
-> composer dump-autoload -o
-> php artisan key:generate --force
-> ```
->
-> Setelah ini, `key:generate` harusnya sukses.
+> Lalu jalankan `php artisan key:generate --force` lagi.
 
 ### 5.7 — Edit .env
 
@@ -619,9 +611,14 @@ chmod -R 755 /home/103.57.200.1/public_html/bootstrap/cache
 # Cek apakah MySQL berjalan
 systemctl status mysql
 
+# Pastikan .env DB credentials benar
+cat .env | grep -E 'DB_HOST|DB_PORT|DB_DATABASE|DB_USERNAME|DB_PASSWORD'
+
 # Test koneksi
 mysql -u ute_parts -p -h 127.0.0.1 ute_parts_pos
 ```
+
+> **Jika connection refused**: Pastikan `DB_HOST=127.0.0.1` (bukan `localhost` untuk pakai TCP). Beberapa konfigurasi MySQL hanya mendengarkan `127.0.0.1`.
 
 ### 10.6 — Livewire Component Not Found
 
@@ -637,6 +634,30 @@ php artisan optimize
 ### 10.7 — PHP Version Terlalu Rendah
 
 CyberPanel → **PHP** → **Install Extensions** → pilih PHP 8.2 → pastikan semua extension terinstall.
+
+### 10.9 — Class "NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider" not found
+
+Sama seperti 10.8. `nunomaduro/collision` juga di `require-dev` dan auto-discovered.
+
+**Fix:**
+```bash
+rm -f bootstrap/cache/services.php bootstrap/cache/packages.php
+composer install --optimize-autoloader
+php artisan package:discover --force
+```
+
+Masalah umum: `bootstrap/cache/services.php` merujuk ke `PailServiceProvider` atau `SailServiceProvider` dari environment dev, tapi package tidak ter-install (karena `composer install --no-dev`).
+
+**Fix:**
+```bash
+cd /home/IP_ADDRESS/public_html
+rm -f bootstrap/cache/services.php
+rm -f bootstrap/cache/packages.php
+composer install --optimize-autoloader
+php artisan package:discover --force
+```
+
+**Penyebab**: `composer.json` tidak memiliki `--no-dev` yang tepat. Solusi: gunakan `composer install --optimize-autoloader` tanpa `--no-dev`.
 
 ---
 
@@ -676,10 +697,14 @@ mv composer.phar /usr/local/bin/composer
 # === SETUP PROJECT ===
 cd /home/IP_ADDRESS/public_html
 cp .env.example .env
-php artisan key:generate
+cat .env | grep APP_KEY || echo 'APP_KEY=' >> .env
+rm -f bootstrap/cache/*.php bootstrap/cache/services.php
+php artisan key:generate --force
+php artisan package:discover --force
 
 # Install dependencies
-composer install --no-dev --optimize-autoloader
+composer install --optimize-autoloader
+php artisan package:discover --force
 npm install
 npm run build
 
@@ -714,9 +739,14 @@ cd /home/IP_ADDRESS/public_html
 
 # Pull update (kalau pakai git)
 git pull origin main
+# NOTE: .env TIDAK akan di-overwrite oleh git pull (sudah di .gitignore)
+# Jika .env perlu diupdate, edit manual:
+# nano .env
 
 # Install new dependencies (kalau ada)
-composer install --no-dev --optimize-autoloader
+composer install --optimize-autoloader
+php artisan package:discover --force
+composer dump-autoload -o
 npm install
 npm run build
 
@@ -724,8 +754,15 @@ npm run build
 php artisan migrate --force
 
 # Clear & rebuild cache
-php artisan optimize:clear
+rm -f bootstrap/cache/*.php bootstrap/cache/services.php
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 php artisan optimize
+
+# Set permissions
+chown -R cyberpanel:cyberpanel storage bootstrap/cache
+chmod -R 755 storage bootstrap/cache
 
 # Restart
 systemctl restart lsws

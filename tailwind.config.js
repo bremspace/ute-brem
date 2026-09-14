@@ -5,7 +5,7 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     "./resources/**/*.blade.php",
     "./resources/**/*.js",
-    "./app/Livewire/**/*.php",
+    "./app/Http/Livewire/**/*.php",
   ],
   darkMode: 'class',
   theme: {
