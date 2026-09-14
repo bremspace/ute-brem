@@ -24,6 +24,14 @@ class StockOpnameIndexComponent extends Component
 
     protected $queryString = ['search', 'statusFilter', 'locationFilter', 'perPage'];
 
+    public function mount($stockOpname = null)
+    {
+        if ($stockOpname) {
+            $this->selectedOpnameId = (int) $stockOpname;
+            $this->showDetailModal = true;
+        }
+    }
+
     #[On('opname-created')]
     public function refresh(): void
     {
