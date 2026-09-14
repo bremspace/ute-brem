@@ -1,6 +1,4 @@
 {{-- resources/views/livewire/auth/admin-login.blade.php --}}
-@extends('layouts.auth')
-@section('content')
 <div class="auth-page">
     <div class="auth-card">
         <div class="auth-header">
@@ -67,4 +65,3 @@
         </div>
     </div>
 </div>
-@endsection

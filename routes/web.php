@@ -113,7 +113,7 @@ Route::get('/payment/return', [PaymentController::class, 'return'])->name('websi
 Route::get('/payment/{code}/status', [PaymentController::class, 'status'])->name('website.payment.status');
 
 // Admin auth routes
-Route::get('/login', [AdminLoginComponent::class, 'render'])->name('login');
+Route::get('/login', AdminLoginComponent::class)->name('login');
 Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
 // Keep other Laravel auth routes (register, password reset, etc.)
