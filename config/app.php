@@ -154,12 +154,10 @@ return [
          * Package Service Providers...
          */
         Livewire\LivewireServiceProvider::class,
-        // Spatie\Permission\PermissionServiceProvider::class,
-        // Yajra\DataTables\DataTablesServiceProvider::class,
-        // Yajra\DataTables\HtmlServiceProvider::class,
-        // Intervention\Image\ImageServiceProvider::class,
-        // Maatwebsite\Excel\ExcelServiceProvider::class,
-        // Laravel\Sanctum\SanctumServiceProvider::class,
+        Spatie\Permission\PermissionServiceProvider::class,
+        Yajra\DataTables\ButtonsServiceProvider::class,
+        Yajra\DataTables\HtmlServiceProvider::class,
+        Laravel\Sanctum\SanctumServiceProvider::class,
         // Laravel\Telescope\TelescopeServiceProvider::class,
 
         /*
