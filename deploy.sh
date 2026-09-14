@@ -1,166 +1,154 @@
 #!/usr/bin/env bash
 # UTE Parts POS Deployment Script
-# Copy-paste: bash deploy.sh
-set -euo pipefail
+# Usage: bash deploy.sh
+
+export COMPOSER_ALLOW_SUPERUSER=1
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
-CYAN='\033[0;36m'; BLUE='\033[0;34m'; NC='\033[0m'
-
-echo -e "${GREEN}UTE Parts POS — Deploy Script${NC}"
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CYAN='\033[0;36m'; NC='\033[0m'
 
 info()  { echo -e "${CYAN}[INFO]${NC}  $1"; }
 ok()    { echo -e "${GREEN}[OK]${NC}    $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC}  $1"; }
-fail()  { echo -e "${RED}[FAIL]${NC}    $1"; }
-load()  { echo -n "${BLUE}[${1}]${NC} ... "; }
+fail()  { echo -e "${RED}[FAIL]${NC}  $1"; }
 
-cd "$PROJECT_DIR"
-
-echo ""
-load "Navigate to project"
-cd "$PROJECT_DIR"; ok "Working: $(pwd)"
+echo -e "${GREEN}UTE Parts POS — Deploy Script${NC}"
 
 if [ -d ".git" ]; then
-    CURRENT_BRANCH=$(git branch --show-current)
-    load "Pull git $CURRENT_BRANCH"
+    info "Pull git..."
     git stash --include-untracked -q 2>/dev/null || true
-    git pull origin "$CURRENT_BRANCH" 2>/dev/null || git pull origin "$CURRENT_BRANCH" --no-ff
-    GIT_COMMIT=$(git log --oneline -1)
-    info "Latest: $GIT_COMMIT"
-    ok "Git pull selesai"
-else
-    warn "Bukan git repo, skip pull"
+    git pull origin main 2>/dev/null || git pull origin main --no-ff
+    info "Latest: $(git log --oneline -1)"
 fi
 
-load "Clear bootstrap cache"
+info "Clear cache..."
 rm -f bootstrap/cache/*.php bootstrap/cache/services.php bootstrap/cache/packages.php
-ok "Cache cleared"
 
-load "Backup .env (jika ada)"
+info "Backup .env..."
 cp .env .env.bak 2>/dev/null || true
-ok "Backup selesai"
 
 echo ""
-load "Composer install (30 mnt)"
+info "=== COMPOSER INSTALL ==="
 rm -rf vendor
 composer clear-cache 2>/dev/null || true
+echo -e "${CYAN}  [composer] Starting install...${NC}"
+echo ""
 
-echo -ne "${CYAN}  Running composer install...${NC}"
-timeout 1800 composer install --no-interaction --verbose 2>&1 && ok || {
-echo ""
-warn "Composer install timeout / error"
-warn "Coba manual di VPS:"
-warn "  cd /home/sp.uteparts.id/public_html"
-warn "  composer install --no-interaction --verbose"
-warn ""
-warn "Cek output error composer di atas"
-echo ""
-info "Mencoba fallback..."
-composer install --no-interaction -o 2>&1 | grep -E "Success|Error|Failed" | tail -5 || true
-exit 1
-}
-
-echo ""
-load "Package discovery"
-timeout 600 php artisan package:discover --force --ansi 2>&1 && ok "Package discovered" || {
-    warn "Timeout, coba manual:"
-    composer dump-autoload -o
-    ok "Autoloader optimized"
-}
+if ! composer install --no-interaction 2>&1; then
+    echo ""
+    fail "COMPOSER INSTALL FAILED!"
+    fail "Check the error above."
+    fail ""
+    fail "Common causes:"
+    fail "  - PHP extension missing (php -m | grep -i pdo)"
+    fail "  - PHP version too low (need >= 8.2)"
+    fail "  - Network issue (try again)"
+    fail ""
+    fail "Manual fix:"
+    fail "  cd $(pwd)"
+    fail "  rm -rf vendor"
+    fail "  composer clear-cache"
+    fail "  composer install --no-interaction --verbose"
+    exit 1
+fi
+ok "Composer install selesai"
 
 echo ""
-ok "Autoloader optimized"
+info "=== PACKAGE DISCOVER ==="
+if ! php artisan package:discover --ansi 2>&1; then
+    warn "package:discover error, trying fallback..."
+    composer dump-autoload 2>&1 || true
+fi
+ok "Package discovered"
 
 echo ""
-load "Setup .env"
+info "=== SETUP .ENV ==="
 [ -f .env ] || cp .env.example .env
 if ! grep -q "APP_KEY=" .env; then
     echo "APP_KEY=" >> .env
 fi
 if grep -q "APP_KEY=base64:" .env; then
-    APP_KEY=$(grep "^APP_KEY=" .env | cut -d= -f2 | cut -c1-30)  
-    ok "APP_KEY: ${APP_KEY}..."
+    ok "APP_KEY present: $(grep '^APP_KEY=' .env | cut -d= -f2 | cut -c1-25)..."
 else
     info "Generating APP_KEY..."
-    timeout 60 php artisan key:generate --force 2>&1 || {
+    php artisan key:generate 2>&1 || {
+        warn "key:generate failed, generating manual..."
         KEY=$(php -r "echo 'base64:' . base64_encode(random_bytes(32));")
         sed -i "s|APP_KEY=.*|APP_KEY=$KEY|" .env
     }
-    ok "APP_KEY ready"
+    ok "APP_KEY generated"
 fi
 
 echo ""
+info "=== NPM INSTALL & BUILD ==="
 if command -v npm &>/dev/null; then
     rm -rf node_modules
-    info "Installing npm packages..."
-    timeout 600 npm install --no-audit --no-fund 2>&1 && ok "NPM installed" || {
-        warn "NPM install error/timeuot"
-        warn "Coba: npm install --no-audit --no-fund"
-    }
+    echo -e "${CYAN}  [npm] Installing packages...${NC}"
+    if ! npm install --no-audit --no-fund 2>&1; then
+        fail "NPM INSTALL FAILED!"
+        fail "Check the error above."
+        fail "Manual fix: npm install --no-audit --no-fund"
+        exit 1
+    fi
+    ok "NPM installed"
 
-    echo ""
-    load "Build assets (Vite - 30 mnt)"
-    timeout 1800 npm run build 2>&1 && ok "Assets built" || {
-        warn "Build error/timeout"
-        warn "Coba: npm run build"
-    }
+    echo -e "${CYAN}  [npm] Building assets...${NC}"
+    if ! npm run build 2>&1; then
+        fail "NPM BUILD FAILED!"
+        fail "Manual fix: npm run build"
+        exit 1
+    fi
+    if [ -d "public/build" ]; then
+        ok "Assets built: $(ls public/build/assets/ 2>/dev/null | wc -l) files"
+    else
+        fail "public/build not created!"
+    fi
 else
-    warn "npm belum terinstall"
+    fail "npm not found! Install Node.js first:"
+    echo "  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -"
+    echo "  sudo apt-get install -y nodejs"
     exit 1
 fi
 
 echo ""
-load "Database migration"
-timeout 600 php artisan migrate --force 2>&1 && ok "Migrate selesai" || {
-    warn "Migration error / already up"
-}
+info "=== MIGRATE ==="
+php artisan migrate --force 2>&1 && ok "Migration done" || warn "Migration skipped or already up"
 
 echo ""
-echo -ne "${CYAN}  Total users di DB: ${NC}"
-TABLE_COUNT=$(php artisan tinker --execute="echo DB::table('users')->count();" 2>/dev/null || echo "?")
-echo "$TABLE_COUNT"
-if [ "$TABLE_COUNT" = "0" ]; then
-    info "Seeder running..."
-    timeout 600 php artisan db:seed --force 2>&1 && ok "Seeder selesai"
-fi
-
-echo ""
-load "Set permissions"
+info "=== PERMISSIONS ==="
 chown -R cyberpanel:cyberpanel storage bootstrap/cache 2>/dev/null || \
-    chown -R www-data:www-data storage bootstrap/cache
+    chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 chmod -R 755 storage bootstrap/cache 2>/dev/null || true
 ok "Permissions set"
 
 echo ""
-load "Cache config"
-timeout 300 php artisan config:cache 2>&1 && ok "Config cached"
-echo ""
-load "Route cache"
-timeout 300 php artisan route:cache 2>&1 && ok "Routes cached"
-echo ""
-load "View cache"
-timeout 300 php artisan view:cache 2>&1 && ok "Views cached"
+info "=== CACHE ==="
+php artisan config:cache 2>&1 && ok "Config cached" || warn "Config cache skipped"
+php artisan route:cache 2>&1 && ok "Routes cached" || warn "Route cache skipped"
+php artisan view:cache 2>&1 && ok "Views cached" || warn "View cache skipped"
 
 echo ""
-load "Restart web server"
+info "=== RESTART WEB SERVER ==="
 if systemctl restart lsws 2>/dev/null || systemctl restart openlitespeed 2>/dev/null; then
-    ok "Server restarted"
+    ok "OpenLiteSpeed restarted"
 elif systemctl restart nginx 2>/dev/null; then
     ok "Nginx restarted"
 elif systemctl restart apache2 2>/dev/null; then
     ok "Apache restarted"
 else
-    warn "Gagal restart - restart manual jika perlu"
+    warn "No web server restarted (manual restart may be needed)"
 fi
 
 echo ""
-echo -e "${GREEN}≡≡≡ DEPLOY SELESAI ≡≡≡${NC}"
-info "Access: http://DOMAIN_ULANGANAMILIK"
+info "=== VERIFY ==="
+echo -e "  Laravel: $(php artisan --version 2>&1)"
+echo -e "  Routes: $(php artisan route:list --statie 2>/dev/null | wc -l) loaded"
 
 echo ""
-warn "JALANKAN TESTING:"
-warn "  1. Buka browser ke website"
-warn "  2. Coba login via /admin/login"
-warn "  3. Check error log jika ada: cat storage/logs/laravel.log"
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN}  DEPLOY SELESAI!                       ${NC}"
+echo -e "${GREEN}========================================${NC}"
 echo ""
+info "Jika masih error, cek log:"
+warn "  cat storage/logs/laravel.log"
+warn "  tail -50 /home/103.57.200.1/logs/error.log"
