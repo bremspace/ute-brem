@@ -13,6 +13,7 @@ info()  { echo -e "${CYAN}[INFO]${NC}  $1"; }
 ok()    { echo -e "${GREEN}[OK]${NC}    $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC}  $1"; }
 fail()  { echo -e "${RED}[FAIL]${NC}    $1"; }
+load()  { echo -n "${BLUE}[${1}]${NC} ... "; }
 
 cd "$PROJECT_DIR"
 
