@@ -3,7 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Models\StockOpname;
-use App\Models\StockLedgerService;
+use App\Services\StockLedgerService;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
