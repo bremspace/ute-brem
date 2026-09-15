@@ -1,6 +1,30 @@
 :root {
-  --bs-primary: #5c73f8;
+  --bs-primary: #5c73f8; /* DESIGN.md primary-500 */
   --bs-primary-rgb: 92, 115, 248;
+  /* DESIGN.md surface palette for neutral states */
+  --bs-surface-50: #f8f9fc;
+  --bs-surface-100: #f1f3f8;
+  --bs-surface-200: #e5e8f0;
+  --bs-surface-300: #d2d6e2;
+  --bs-surface-400: #9ba3b5;
+  --bs-surface-500: #6b7385;
+  --bs-surface-600: #4b5569;
+  --bs-surface-700: #374151;
+  --bs-surface-800: #1f2937;
+  --bs-surface-900: #111827;
+  /* DESIGN.md status colors */
+  --bs-success: #10b981;
+  --bs-success-50: #ecfdf5;
+  --bs-success-200: #a7f3d0;
+  --bs-success-800: #064e3b;
+  --bs-warning: #f59e0b;
+  --bs-warning-50: #fffbeb;
+  --bs-warning-200: #fde68a;
+  --bs-warning-800: #78350f;
+  --bs-danger: #ef4444;
+  --bs-danger-50: #fef2f2;
+  --bs-danger-200: #fecaca;
+  --bs-danger-800: #7f1d1d;
 }
 
 .bg-primary {
@@ -21,6 +45,6 @@
 }
 
 .btn-primary:hover {
-  background-color: #4a5fd4; /* versi lebih gelap */
-  border-color: #4a5fd4;
+  background-color: var(--bs-primary-600, #4f55eb); /* DESIGN.md primary-600 */
+  border-color: var(--bs-primary-600, #4f55eb);
 }
