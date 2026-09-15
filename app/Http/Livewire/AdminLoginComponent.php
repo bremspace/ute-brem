@@ -3,11 +3,9 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 
-#[Layout('layouts.auth')]
 class AdminLoginComponent extends Component
 {
     public $login;
