@@ -57,6 +57,7 @@
 
     <div class="container-fluid">
         @yield('content')
+        {{ $slot ?? '' }}
     </div>
 
     <!-- / Content -->

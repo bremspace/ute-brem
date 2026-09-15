@@ -410,6 +410,7 @@
 
 
                     @yield('content')
+                    {{ $slot ?? '' }}
                     <!-- / Content -->
 
                     <!-- Footer -->

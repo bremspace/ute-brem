@@ -48,6 +48,29 @@ return [
 
     /*
     |---------------------------------------------------------------------------
+    | Layout
+    |---------------------------------------------------------------------------
+    | Default layout for Livewire page components. Uses layouts.app which
+    | supports both @extends/@yield (traditional Blade) and @component/$slot (Livewire).
+    |
+    */
+
+    'layout' => 'layouts.app',
+
+    /*
+    |---------------------------------------------------------------------------
+    | Lazy Loading Placeholder
+    |---------------------------------------------------------------------------
+    | Livewire allows you to lazy load components that would otherwise slow down
+    | the initial page load. Every component can have a custom placeholder or
+    | you can define the default placeholder view for all components below.
+    |
+    */
+
+    'component_placeholder' => null, // Example: 'placeholders::skeleton'
+
+    /*
+    |---------------------------------------------------------------------------
     | Lazy Loading Placeholder
     |---------------------------------------------------------------------------
     | Livewire allows you to lazy load components that would otherwise slow down
