@@ -21,7 +21,7 @@ class AdminLoginComponent extends Component
 
     public function render()
     {
-        return view('livewire.auth.admin-login');
+        return view('livewire.admin-login-component')->layout('layouts.auth');
     }
 
     public function login()
