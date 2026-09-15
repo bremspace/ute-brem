@@ -129,7 +129,7 @@ Route::get('/email/verify', [\App\Http\Controllers\Auth\VerificationController::
 Route::get('/verify/email/{id}/{hash}', [\App\Http\Controllers\Auth\VerificationController::class, 'verify'])->name('verification.verify');
 Route::post('/verification/resend', [\App\Http\Controllers\Auth\VerificationController::class, 'resend'])->name('verification.resend');
 
-Route::get('/home', \App\Http\Livewire\BackOfficeDashboardComponent::class)->name('home');
+Route::get('/home', [\App\Http\Livewire\BackOfficeDashboardComponent::class, 'render'])->name('home')->middleware('auth');
 
 Route::get('/stocks', [StockIndexComponent::class, 'render'])->name('livewire.stocks.index');
 
