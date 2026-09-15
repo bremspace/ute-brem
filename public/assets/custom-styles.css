@@ -1,7 +1,17 @@
 :root {
-  --bs-primary: #5c73f8; /* DESIGN.md primary-500 */
+  --bs-primary-50: #f0f4ff;
+  --bs-primary-100: #e0eaff;
+  --bs-primary-200: #c7d7fe;
+  --bs-primary-300: #a4bcfd;
+  --bs-primary-400: #7c9afb;
+  --bs-primary-500: #5c73f8;
+  --bs-primary-600: #4f55eb;
+  --bs-primary-700: #4040d3;
+  --bs-primary-800: #3535ab;
+  --bs-primary-900: #2f3187;
+  --bs-primary: var(--bs-primary-500);
   --bs-primary-rgb: 92, 115, 248;
-  /* DESIGN.md surface palette for neutral states */
+  --bs-surface-0: #ffffff;
   --bs-surface-50: #f8f9fc;
   --bs-surface-100: #f1f3f8;
   --bs-surface-200: #e5e8f0;
@@ -12,7 +22,6 @@
   --bs-surface-700: #374151;
   --bs-surface-800: #1f2937;
   --bs-surface-900: #111827;
-  /* DESIGN.md status colors */
   --bs-success: #10b981;
   --bs-success-50: #ecfdf5;
   --bs-success-200: #a7f3d0;
@@ -25,6 +34,7 @@
   --bs-danger-50: #fef2f2;
   --bs-danger-200: #fecaca;
   --bs-danger-800: #7f1d1d;
+  --bs-info: #3b82f6;
 }
 
 .bg-primary {
